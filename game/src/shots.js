@@ -1,79 +1,110 @@
-// The screenshot scenes behind ?shot=start|play|end. Each one plays the real rules forward from a
-// fresh world for a fixed number of steps, steered by a simple autopilot (look ahead each way the
-// paddle could move, keep clear of blocks, chase the lowest coin when that is safe), so the frame
-// is what a short game really looks like and the same seed always gives the same frame.
-import { FIELD, PLAYER, STEP } from './config.js';
-import { EVENT_OVER, KIND_BLOCK } from './world.js';
-import { SCREEN_OVER, SCREEN_PLAY, SCREEN_TITLE } from './render.js';
+// The screenshot scenes behind ?shot=start|drive|chase|mission. Each one plays
+// the real rules forward from a fresh game for a fixed number of steps, steered
+// by a simple scripted driver, so the frame is what a short game really looks
+// like and the same seed always gives the same frame.
 
-const START_SECONDS = 5;
-const PLAY_SECONDS = 26;
-const END_LIMIT_SECONDS = 600;
-/**
- * How far ahead, in seconds, the autopilot checks each way it could move: the play scene's pilot
- * looks well ahead and keeps all its lives; the end scene's looks only a moment ahead, so it is
- * caught out once the blocks speed up, as a hurried player is.
- */
-const HORIZON_PLAY = 0.7;
-const HORIZON_END = 0.25;
-const SAMPLE = 1 / 30;
-const DIRECTIONS = [0, -1, 1];
-/** Extra room, each side, it keeps between the paddle and a block. */
-const MARGIN = 10;
+import { STEP } from './tune.js';
+import { SCREEN_PLAY, SCREEN_TITLE } from './render.js';
 
-/** Seconds until moving in `direction` (-1, 0, 1) runs the paddle into a block; Infinity when it never does. */
-function timeToHit(state, direction, horizon) {
-  const player = state.player;
-  for (let t = SAMPLE; t <= horizon; t += SAMPLE) {
-    const x = Math.min(FIELD.width - player.width, Math.max(0, player.x + direction * PLAYER.speed * t));
-    for (let index = 0; index < state.items.length; index += 1) {
-      const item = state.items[index];
-      if (!item.active || item.kind !== KIND_BLOCK) continue;
-      const y = item.y + item.speed * t;
-      if (y + item.height > player.y && y < player.y + player.height && item.x < x + player.width + MARGIN && item.x + item.width > x - MARGIN) return t;
-    }
+const IDLE = { up: false, down: false, left: false, right: false, run: false, enter: false, punch: false, reload: false, shoot: false };
+
+function runFor(game, seconds, inputFor) {
+  const steps = Math.round(seconds / STEP);
+  for (let i = 0; i < steps; i += 1) {
+    game.step(STEP, typeof inputFor === 'function' ? inputFor() : inputFor);
   }
-  return Infinity;
 }
 
-/** Of the safe ways to move, the one toward the lowest coin (or the centre); else the one that is hit last. */
-function autopilot(state, horizon) {
-  const player = state.player;
-  let coin = null;
-  for (let index = 0; index < state.items.length; index += 1) {
-    const item = state.items[index];
-    if (item.active && item.kind !== KIND_BLOCK && (coin === null || item.y > coin.y)) coin = item;
+/** Steer the player's car south down avenue 900, in the southbound lane (x 875),
+ * correcting back to it — the centre of the road sideswipes both lanes.
+ * Angles: 0 is east, PI/2 is south, so east of south is a smaller angle. */
+function driveSouth(game) {
+  const car = game.playerCar();
+  if (!car) return IDLE;
+  let want = Math.PI / 2;
+  if (car.x < 860) want -= 0.3; // too far west: steer east, back to the lane
+  else if (car.x > 890) want += 0.3; // too far east: steer west, back to the lane
+  let diff = want - car.angle;
+  while (diff > Math.PI) diff -= Math.PI * 2;
+  while (diff < -Math.PI) diff += Math.PI * 2;
+  return { ...IDLE, up: true, left: diff < -0.08, right: diff > 0.08 };
+}
+
+function putPlayerInSedan(game, x, y) {
+  const p = game.state.player;
+  p.x = 830;
+  p.y = 660;
+  const car = game.nearestCar(85);
+  if (car) game.enterCar(car);
+  const mine = game.playerCar();
+  if (mine) {
+    mine.x = x;
+    mine.y = y;
+    mine.angle = Math.PI / 2;
+    mine.speed = 0;
   }
-  const target = coin === null ? FIELD.width / 2 : coin.x + coin.width / 2;
-  const centre = player.x + player.width / 2;
-  const wanted = target > centre + 8 ? 1 : target < centre - 8 ? -1 : 0;
-  let best = wanted;
-  let bestTime = timeToHit(state, wanted, horizon);
-  for (let index = 0; index < DIRECTIONS.length && bestTime !== Infinity; index += 1) {
-    const time = timeToHit(state, DIRECTIONS[index], horizon);
-    if (time > bestTime) {
-      bestTime = time;
-      best = DIRECTIONS[index];
-    }
-  }
-  return best;
 }
 
 /**
- * Set `world` to the named scene (start, play or end; any other name is start) and return the
- * screen to draw over it and the best score to show.
+ * Set `game` to the named scene (start, drive, chase or mission; any other name
+ * is start) and return the screen to draw over it.
  */
-export function stageShot(name, world) {
-  world.reset();
-  if (name !== 'play' && name !== 'end') {
-    for (let index = 0; index < START_SECONDS / STEP; index += 1) world.step(STEP, 0, true);
-    return { screen: SCREEN_TITLE, best: 0 };
+export function stageShot(name, game) {
+  const state = game.state;
+  if (name === 'drive') {
+    game.reset();
+    putPlayerInSedan(game, 900, 300);
+    runFor(game, 5, () => driveSouth(game));
+    return { screen: SCREEN_PLAY };
   }
-  const limit = name === 'end' ? END_LIMIT_SECONDS : PLAY_SECONDS;
-  const horizon = name === 'end' ? HORIZON_END : HORIZON_PLAY;
-  for (let index = 0; index < limit / STEP; index += 1) {
-    if (world.step(STEP, autopilot(world.state, horizon), false) & EVENT_OVER) break;
+  if (name === 'chase') {
+    game.reset();
+    const sports = game.spawnParkedCar('sports', 900, 200, Math.PI / 2);
+    const p = state.player;
+    p.x = 900;
+    p.y = 230;
+    game.enterCar(sports);
+    sports.speed = 350;
+    game.setWanted(6);
+    // Patrol cars behind the player, in pursuit but not yet ramming.
+    const p1 = game.spawnPatrolCar();
+    p1.x = 878; p1.y = 120; p1.angle = Math.PI / 2; p1.speed = 250;
+    const p2 = game.spawnPatrolCar();
+    p2.x = 922; p2.y = 170; p2.angle = Math.PI / 2; p2.speed = 230;
+    game.spawnFootCop();
+    game.spawnFootCop();
+    runFor(game, 2.5, () => driveSouth(game));
+    return { screen: SCREEN_PLAY };
   }
-  const over = world.state.lives === 0;
-  return { screen: over ? SCREEN_OVER : SCREEN_PLAY, best: world.state.score };
+  if (name === 'mission') {
+    game.reset();
+    game.startMission(3);
+    const p = state.player;
+    p.x = 2400;
+    p.y = 2200;
+    // Reaching the docks completes the first stage and spawns the five rivals.
+    runFor(game, 0.5, IDLE);
+    p.x = 2330;
+    p.y = 2290;
+    p.pistol = true;
+    p.mag = 12;
+    // Aim at the nearest rival and shoot, so the frame shows the firefight.
+    // Short enough that the stage does not finish mid-scene.
+    runFor(game, 1.5, () => {
+      let target = null;
+      let best = Infinity;
+      for (const rival of state.rivals) {
+        const d = Math.hypot(rival.x - p.x, rival.y - p.y);
+        if (d < best) { best = d; target = rival; }
+      }
+      if (!target) return IDLE;
+      return { ...IDLE, shoot: true, aimX: target.x, aimY: target.y };
+    });
+    return { screen: SCREEN_PLAY };
+  }
+  // start: the title screen over a living street outside the diner.
+  game.reset();
+  putPlayerInSedan(game, 900, 700);
+  runFor(game, 8, IDLE);
+  return { screen: SCREEN_TITLE };
 }
