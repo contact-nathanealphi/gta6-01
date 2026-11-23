@@ -69,3 +69,12 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 44 | Musik latar: bassline synthwave A minor (8 not, 112 BPM) via setInterval | headless test | KEEP |
 | 45 | Musik mulai saat audio context dibuat; music(on) diekspos; mute menghentikan musik | headless test | KEEP |
 | 46 | Hint kontrol + title screen sebutkan H (klakson) | headless test | KEEP |
+| 47 | Courier: state field (courier, courierCd) untuk aktivitas free roam | headless test | KEEP |
+| 48 | Courier: pickup paket mulai pengiriman 40 dtk ke tujuan acak ($120–200) | headless test | KEEP |
+| 49 | updateCourier: spawn berkala, timer, bayar saat sampai, gagal saat habis waktu | headless test (courier test) | KEEP |
+| 50 | Courier: render amplop + dot putih di minimap | headless test | KEEP |
+| 51 | Speed lines di tepi layar saat mobil >420 | headless test | KEEP |
+| 52 | Pause screen tampilkan progres misi + cash + wanted | headless test | KEEP |
+| 53 | Bintang wanted berkedip merah saat naik level | headless test | KEEP |
+| 54 | Hurt flash merah saat pemain kena tembak | headless test | KEEP |
+| 55 | Hurt flash juga saat mobil ditabrak patroli | headless test | KEEP |

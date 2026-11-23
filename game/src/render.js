@@ -265,6 +265,18 @@ export function createRenderer(canvas) {
         ctx.strokeStyle = PALETTE.gold;
         ctx.lineWidth = 3;
         ctx.strokeRect(item.x - 14, y - 14, 28, 28);
+      } else if (item.kind === 'courier') {
+        // A courier parcel: a white envelope with a gold seal.
+        ctx.fillStyle = '#f4f1e6';
+        ctx.fillRect(item.x - 13, y - 9, 26, 18);
+        ctx.strokeStyle = PALETTE.gold;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(item.x - 13, y - 9, 26, 18);
+        ctx.beginPath();
+        ctx.moveTo(item.x - 13, y - 9);
+        ctx.lineTo(item.x, y + 2);
+        ctx.lineTo(item.x + 13, y - 9);
+        ctx.stroke();
       }
     }
   }
@@ -465,6 +477,7 @@ export function createRenderer(canvas) {
       if (item.kind === 'health') ctx.fillStyle = '#57d977';
       else if (item.kind === 'cash') ctx.fillStyle = '#2fae5f';
       else if (item.kind === 'ammo') ctx.fillStyle = '#f2c94c';
+      else if (item.kind === 'courier') ctx.fillStyle = '#ffffff';
       else ctx.fillStyle = '#8a6f4d';
       ctx.fillRect(x0 + item.x * sx - 2, y0 + item.y * sy - 2, 4, 4);
     }
@@ -503,7 +516,9 @@ export function createRenderer(canvas) {
     ctx.fillRect(28, 58, 180 * (p.health / PLAYER.health), 12);
     text(`${Math.ceil(p.health)}`, 216, 70, 14, PALETTE.hudText, 'left', true);
     for (let i = 0; i < 5; i += 1) {
-      text('★', 28 + i * 26, 96, 20, i < state.wanted ? PALETTE.gold : '#555', 'left');
+      // A fresh star flashes red briefly when the heat rises.
+      const flash = state.wantedFlash > 0 && i === state.wanted - 1;
+      text('★', 28 + i * 26, 96, 20, flash ? PALETTE.danger : (i < state.wanted ? PALETTE.gold : '#555'), 'left');
     }
     if (p.pistol) {
       text(`Pistol  ${p.mag}/${PLAYER.magSize}`, 28, 122, 15, PALETTE.hudText, 'left');
@@ -580,6 +595,12 @@ export function createRenderer(canvas) {
       ctx.lineWidth = 26;
       ctx.strokeRect(0, 0, viewW, viewH);
     }
+    // A red flash at the screen edge when the player is just hit.
+    if (state.hurtFlash > 0) {
+      ctx.strokeStyle = `rgba(255,40,40,${0.45 * state.hurtFlash})`;
+      ctx.lineWidth = 34;
+      ctx.strokeRect(0, 0, viewW, viewH);
+    }
   }
 
   function drawPanel(title, lines, prompt, accent) {
@@ -626,6 +647,27 @@ export function createRenderer(canvas) {
     drawBulletsAndParticles(state, cam);
     drawMarker(state, cam);
     ctx.restore();
+    // Speed lines at very high speed: short streaks near the screen edges.
+    if (!state.player.onFoot) {
+      let myCar = null;
+      for (const car of state.cars) if (car.driver === 'player') { myCar = car; break; }
+      if (myCar && Math.abs(myCar.speed) > 420) {
+        const strength = Math.min(1, (Math.abs(myCar.speed) - 420) / 160);
+        ctx.strokeStyle = `rgba(255,255,255,${0.25 * strength})`;
+        ctx.lineWidth = 2;
+        const cx = viewW / 2;
+        const cy = viewH / 2;
+        for (let i = 0; i < 10; i += 1) {
+          const a = (i / 10) * Math.PI * 2 + state.time * 0.7;
+          const r1 = Math.min(viewW, viewH) * 0.42;
+          const r2 = r1 + 26 + strength * 20;
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+          ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
+          ctx.stroke();
+        }
+      }
+    }
     // A warm sunset wash over everything.
     ctx.fillStyle = 'rgba(255,150,60,0.06)';
     ctx.fillRect(0, 0, viewW, viewH);
@@ -643,7 +685,7 @@ export function createRenderer(canvas) {
     }
     drawHud(state, ui);
     if (screen === SCREEN_PAUSED) {
-      drawPanel('Paused', ['The city waits for you.', 'WASD move · E car · F punch · Click shoot · P save'], 'Press Esc or Enter to keep playing');
+      drawPanel('Paused', [`Mission ${state.missionIndex + 1} of ${MISSIONS.length} — ${state.missionActive ? 'in progress' : 'free roam'}`, `Cash: $${state.cash.toLocaleString('en-US')}   ·   Wanted: ${'★'.repeat(state.wanted)}${'☆'.repeat(5 - state.wanted)}`, 'WASD move · E car · F punch · Click shoot · H horn · P save'], 'Press Esc or Enter to keep playing');
     } else if (screen === SCREEN_BUSTED) {
       drawPanel('BUSTED', ['The NBPD caught up with you.', state.banner || ''], 'Press Enter to keep playing', '#4d8dff');
     } else if (screen === SCREEN_WASTED) {

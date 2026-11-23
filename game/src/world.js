@@ -137,6 +137,10 @@ export function createGame(rng) {
     shake: 0,
     roadblockCd: 0,
     nearMissCd: 0,
+    courier: null,
+    courierCd: 20,
+    wantedFlash: 0,
+    hurtFlash: 0,
   };
 
   function newPlayer(x, y) {
@@ -231,7 +235,10 @@ export function createGame(rng) {
     state.wantedPoints = Math.min(WANTED.maxPoints, state.wantedPoints + points);
     state.lastCrime = state.time;
     const level = Math.min(5, Math.floor(state.wantedPoints / 2));
-    if (level > state.wanted) state.wanted = level;
+    if (level > state.wanted) {
+      state.wanted = level;
+      state.wantedFlash = 1.2;
+    }
     return EVENT_CRIME;
   }
 
@@ -259,6 +266,8 @@ export function createGame(rng) {
     state.skids = [];
     state.roadblockCd = 0;
     state.nearMissCd = 0;
+    state.courier = null;
+    state.courierCd = 20;
     state.missionIndex = 0;
     state.stageIndex = 0;
     state.missionActive = false;
@@ -416,6 +425,8 @@ export function createGame(rng) {
     let events = 0;
     state.time += dt;
     if (state.shake > 0) state.shake = Math.max(0, state.shake - dt * 26);
+    if (state.wantedFlash > 0) state.wantedFlash = Math.max(0, state.wantedFlash - dt);
+    if (state.hurtFlash > 0) state.hurtFlash = Math.max(0, state.hurtFlash - dt * 2.5);
     if (state.nearMissCd > 0) state.nearMissCd -= dt;
     if (state.bannerTimer > 0) state.bannerTimer -= dt;
     if (state.dialogue.length > 0) {
@@ -456,6 +467,7 @@ export function createGame(rng) {
       events |= EVENT_WASTED;
     }
     updatePickups(dt);
+    updateCourier(dt);
     updateParticles(dt);
     events |= updateWanted(dt);
     events |= updateMissions(dt);
@@ -878,6 +890,7 @@ export function createGame(rng) {
           pc.speed *= 0.92;
           if (rng.chance(0.02)) {
             p.health -= 1;
+            state.hurtFlash = Math.max(state.hurtFlash, 0.6);
             burst(pc.x, pc.y, '#ffd23d', 4, 160);
           }
         }
@@ -996,6 +1009,7 @@ export function createGame(rng) {
         } else if (p.invuln <= 0 && hitCircle(p)) {
           p.health -= b.damage;
           p.invuln = 0.4;
+          state.hurtFlash = 1;
           burst(p.x, p.y, '#c94f43', 6, 160);
           dead = true;
           if (p.health <= 0) {
@@ -1030,6 +1044,40 @@ export function createGame(rng) {
     state.wastedFlag = true;
   }
 
+  function updateCourier(dt) {
+    // Courier jobs only in free roam (after the story), so they never fight
+    // the mission objective for the marker.
+    if (!state.storyDone) return;
+    if (state.courier) {
+      const c = state.courier;
+      c.timer -= dt;
+      state.objective = { x: c.x, y: c.y, label: `Courier delivery — ${Math.max(0, Math.ceil(c.timer))}s` };
+      const p = state.player;
+      if (Math.hypot(p.x - c.x, p.y - c.y) < 75) {
+        state.cash += c.reward;
+        showBanner(`Courier done — +$${c.reward}`, 2.5);
+        state.courier = null;
+        state.objective = null;
+        state.courierCd = 35;
+        return;
+      }
+      if (c.timer <= 0) {
+        showBanner('Courier job expired — too slow', 2.5);
+        state.courier = null;
+        state.objective = null;
+        state.courierCd = 25;
+      }
+      return;
+    }
+    state.courierCd -= dt;
+    if (state.courierCd <= 0) {
+      const spot = randomSidewalkPoint(rng);
+      spawnPickup('courier', spot.x, spot.y, 0);
+      showBanner('Courier job available — grab the package', 2.5);
+      state.courierCd = 9999; // next one spawns after this job resolves
+    }
+  }
+
   function updatePickups(dt) {
     const p = state.player;
     for (let i = state.pickups.length - 1; i >= 0; i -= 1) {
@@ -1061,6 +1109,12 @@ export function createGame(rng) {
         const mission = MISSIONS[state.missionIndex];
         const stage = mission.stages[state.stageIndex];
         state.objective = { x: stage.x, y: stage.y, label: stage.label };
+      } else if (item.kind === 'courier') {
+        // A courier package: a timed delivery appears (free roam only).
+        const dest = randomSidewalkPoint(rng);
+        state.courier = { x: dest.x, y: dest.y, timer: 40, reward: rng.int(120, 200) };
+        state.objective = { x: dest.x, y: dest.y, label: `Courier delivery — ${Math.ceil(state.courier.timer)}s` };
+        showBanner('Courier job — deliver the package in 40s!', 3);
       }
       state.pickups.splice(i, 1);
     }
