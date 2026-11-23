@@ -1,7 +1,7 @@
 // @vertex
 precision highp float;
 attribute vec3 aPos;uniform mat4 uVP;uniform vec3 uCam;varying vec3 vDir;
-void main(){vDir=aPos;vec4 p=uVP*vec4(aPos+uCam,1.);gl_Position=p.xyww;}
+void main(){vDir=aPos;vec4 p=uVP*vec4(aPos+uCam,1.);gl_Position=vec4(p.xy,p.w*.9999,p.w);}
 // @fragment
 precision highp float;
 varying vec3 vDir;uniform vec3 uSD;uniform float uTime;
