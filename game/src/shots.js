@@ -52,7 +52,7 @@ export function stageShot(name, g, o) {
     s.race = { active: true, circuit: 1, gate: 1, lap: 2, laps: 3, reward: 800 };
     const rivals = s.cars.filter((c) => c.driver === 'race');
     rivals.forEach((c, i) => { c.x = px + (i % 2 === 0 ? -32 : 32); c.y = py + 150 + i * 110; c.angle = Math.PI / 2; c.speed = 330; c.raceGate = 0; c.raceLap = 1; });
-    const ahead = [[1475, 480, 'sedan', Math.PI / 2], [1525, 560, 'taxi', -Math.PI / 2], [1475, 650, 'van', Math.PI / 2], [1525, 740, 'pickup', -Math.PI / 2], [1475, 830, 'sedan', Math.PI / 2], [1525, 920, 'limo', -Math.PI / 2]];
+    const ahead = [[1475, 480, 'sedan', Math.PI / 2], [1525, 560, 'taxi', -Math.PI / 2], [1475, 650, 'van', Math.PI / 2], [1525, 740, 'pickup', -Math.PI / 2], [1475, 830, 'sedan', Math.PI / 2], [1525, 920, 'limo', -Math.PI / 2], [1475, 1010, 'sedan', Math.PI / 2], [1525, 1100, 'taxi', -Math.PI / 2]];
     for (const [x, y, k, a] of ahead) g.spawnParkedCar(k, px + (x - 1500), py + (y - 300), a);
     ped(g, px - 92, py + 320, '#7fb3d5');
     ped(g, px + 92, py + 520, '#d4693c');
@@ -75,13 +75,13 @@ export function stageShot(name, g, o) {
     rf(g, 2, IDLE);
     sp.x = 875; sp.y = 200; sp.angle = Math.PI / 2; sp.speed = 420; sp.health = 100;
     const staged = [sp];
-    for (const [x, y, v, k] of [[925, 320, 320, 'patrol'], [830, 380, 300, 'patrol'], [875, 480, 280, 'van']]) { const c = g.spawnPatrolCar(k); c.x = x; c.y = y; c.angle = Math.PI / 2; c.speed = v; staged.push(c); }
+    for (const [x, y, v, k, a] of [[860, 280, 380, 'patrol', Math.PI / 2], [930, 250, 360, 'patrol', Math.PI / 2], [872, 410, 0, 'van', Math.PI / 2 + 0.45]]) { const c = g.spawnPatrolCar(k); c.x = x; c.y = y; c.angle = a; c.speed = v; staged.push(c); }
     s.cars = s.cars.filter((c) => staged.includes(c));
     s.cops = [];
-    for (const [x, y] of [[820, 380], [930, 450], [820, 600]]) { const c = g.spawnFootCop(); c.x = x; c.y = y; }
+    for (const [x, y] of [[830, 390], [920, 435], [800, 330]]) { const c = g.spawnFootCop(); c.x = x; c.y = y; }
     const h = s.air.heli;
-    if (h) { h.x = 875; h.y = 320; h.z = 120; h.spotX = 875; h.spotY = 200; h.angle = -Math.PI / 2 + 0.5; }
-    wreck(s, 860, 225, 0.6);
+    if (h) { h.x = 875; h.y = 320; h.z = 92; h.spotX = 875; h.spotY = 200; h.angle = -0.5; }
+    wreck(s, 940, 330, 0.6);
     s.upgrades.glow = 1;
     s.dialogue = [];
     sc(g); st();
@@ -103,6 +103,9 @@ export function stageShot(name, g, o) {
     g.spawnParkedCar('taxi', 3150, 330, Math.PI);
     g.spawnParkedCar('sports', 2850, 300, 0);
     g.spawnParkedCar('van', 3275, 430, Math.PI / 2);
+    g.spawnParkedCar('pickup', 2620, 420, Math.PI / 2);
+    g.spawnParkedCar('limo', 3300, 330, Math.PI);
+    for (const [x, y] of [[2740, 330], [3260, 330], [2700, 430], [3300, 430]]) g.city.palms.push({ x, y });
     ped(g, 2900, 430, '#7fb3d5');
     ped(g, 3100, 430, '#e8e2d4');
     ped(g, 2950, 700, '#c2a06a');
@@ -119,6 +122,8 @@ export function stageShot(name, g, o) {
   g.spawnParkedCar('sports', 3275, 2400, Math.PI / 2);
   g.spawnParkedCar('muscle', 875, 2500, 0);
   for (const [x, k] of [[1200, 'sedan'], [1500, 'taxi'], [1800, 'pickup'], [2000, 'van'], [2500, 'limo'], [2900, 'sports'], [3100, 'muscle']]) g.spawnParkedCar(k, x, 2500, 0);
+  ped(g, 2400, 2560, '#7fb3d5');
+  ped(g, 2620, 2560, '#d4693c');
   sc(g); st();
   return { screen: TI };
 }

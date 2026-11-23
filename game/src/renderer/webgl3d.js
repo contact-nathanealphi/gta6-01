@@ -1,7 +1,7 @@
 import { WORLD } from '../tune.js';
 import { lineBlocked } from '../city.js';
 import { createViceDuskTextureAtlas } from './textures3d.js';
-import { VICE_VERT_STRIDE, buildViceAdditiveGeometry, buildViceCityStaticGeometry, buildViceDynamicGeometry, viceCreateMesh } from './meshes3d.js';
+import { VICE_VERT_STRIDE, buildViceAdditiveGeometry, buildViceCityStaticGeometry, buildViceDynamicGeometry, buildViceSmokeGeometry, viceCreateMesh } from './meshes3d.js';
 async function loadShaderText(url) {
   const res = await fetch(url);
   const src = await res.text();
@@ -54,7 +54,8 @@ function duskSun(hour) {
 }
 function skyCube() {
   const s = 4000;
-  const v = [[-s, -s, -s], [s, -s, -s], [s, s, -s], [-s, s, -s], [-s, -s, s], [s, -s, s], [s, s, s], [-s, s, s]];
+  const v = [];
+  for (let i = 0; i < 8; i += 1) v.push([(i + 3) % 4 < 2 ? s : -s, i & 2 ? s : -s, i & 4 ? s : -s]);
   const f = [[0, 1, 2, 3], [5, 4, 7, 6], [4, 0, 3, 7], [1, 5, 6, 2], [3, 2, 6, 7], [4, 5, 1, 0]];
   const out = new Float32Array(36 * 3);
   let n = 0;
@@ -62,8 +63,7 @@ function skyCube() {
   return out;
 }
 function waterGrid() {
-  const cols = 32, rows = 10;
-  const x0 = -200, x1 = 3800, z0 = 2630, z1 = 3050;
+  const cols = 32, rows = 10, x0 = -200, x1 = 3800, z0 = 2630, z1 = 3050;
   const verts = [];
   for (let r = 0; r < rows; r += 1) for (let c = 0; c < cols; c += 1) {
     const ax = x0 + (x1 - x0) * (c / cols), az = z0 + (z1 - z0) * (r / rows);
@@ -92,6 +92,7 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
   const atlas = createViceDuskTextureAtlas(gl);
   const dynMesh = viceCreateMesh(16000);
   const addMesh = viceCreateMesh(4000);
+  const smokeMesh = viceCreateMesh(4000);
   let staticBuf = null, staticCount = 0;
   let skyBuf = null, waterBuf = null, dynBuf = null;
   let viewW = 0, viewH = 0, dpr = 1;
@@ -153,17 +154,16 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
   }
   function cinematicCamera(state) {
     const p = state.player;
-    const t = state.time * 0.08;
-    const R = 280, H = 130;
+    const t = state.time * 0.08, R = 280, H = 130;
     return { eye: [p.x + Math.cos(t) * R, H, p.y + Math.sin(t) * R], target: [p.x, 12, p.y], fov: 58 * Math.PI / 180 };
   }
   function shotCamera(state) {
     const p = state.player;
     const car = state.cars.find((c) => c.driver === 'player'), o = car && !p.onFoot ? car : p;
     const cx = o.x, cz = o.y, fx = Math.cos(o.angle), fz = Math.sin(o.angle);
-    if (state.shotCam === 'drone') return { eye: [150, 300, 2960], target: [3200, 0, 2700], fov: 58 * Math.PI / 180 };
-    if (state.shotCam === 'hero') return { eye: [3000, 150, 100], target: [3000, 25, 650], fov: 58 * Math.PI / 180 };
-    if (state.shotCam === 'action') return { eye: [cx - fx * 150, 72, cz - fz * 150], target: [cx + fx * 90, 8, cz + fz * 90], fov: 62 * Math.PI / 180 };
+    if (state.shotCam === 'drone') return { eye: [550, 330, 3040], target: [2850, 0, 2430], fov: 58 * Math.PI / 180 };
+    if (state.shotCam === 'hero') return { eye: [3000, 170, 90], target: [3000, 30, 620], fov: 58 * Math.PI / 180 };
+    if (state.shotCam === 'action') return { eye: [cx - fx * 135, 64, cz - fz * 135], target: [cx + fx * 100, 10, cz + fz * 100], fov: 62 * Math.PI / 180 };
     return { eye: [cx - fx * 115, 55, cz - fz * 115], target: [cx + fx * 110, 6, cz + fz * 110], fov: 62 * Math.PI / 180 };
   }
   window.addEventListener('keydown', (e) => {
@@ -217,13 +217,15 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
       bindAttribs(waterProg, waterBuf, 3, [['aPos', 3, 0]]);
       gl.drawArrays(gl.TRIANGLES, 0, 32 * 10 * 6);
       gl.useProgram(cityProg);
-      gl.uniformMatrix4fv(gl.getUniformLocation(cityProg, 'uVP'), false, vp);
-      gl.uniform3fv(gl.getUniformLocation(cityProg, 'uCam'), smoothEye);
-      gl.uniform3fv(gl.getUniformLocation(cityProg, 'uSunDir'), sun.dir);
-      gl.uniform3fv(gl.getUniformLocation(cityProg, 'uSunCol'), sun.col);
-      gl.uniform3fv(gl.getUniformLocation(cityProg, 'uAmb'), sun.amb);
-      gl.uniform3fv(gl.getUniformLocation(cityProg, 'uFogCol'), sun.fog);
-      gl.uniform1f(gl.getUniformLocation(cityProg, 'uFogDen'), 0.00022);
+      const UL = (n) => gl.getUniformLocation(cityProg, n);
+      gl.uniformMatrix4fv(UL('uVP'), false, vp);
+      gl.uniform3fv(UL('uCam'), smoothEye);
+      gl.uniform3fv(UL('uSunDir'), sun.dir);
+      gl.uniform3fv(UL('uSunCol'), sun.col);
+      gl.uniform3fv(UL('uAmb'), sun.amb);
+      gl.uniform3fv(UL('uFogCol'), sun.fog);
+      gl.uniform1f(UL('uFogDen'), 0.00022);
+      gl.uniform1f(UL('uSoft'), 0);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, atlas);
       gl.uniform1i(gl.getUniformLocation(cityProg, 'uTex'), 0);
@@ -238,13 +240,19 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
       gl.depthMask(false);
+      gl.uniform1f(UL('uSoft'), 1);
       const add = buildViceAdditiveGeometry(state, addMesh);
       gl.bindBuffer(gl.ARRAY_BUFFER, dynBuf);
       gl.bufferData(gl.ARRAY_BUFFER, add, gl.DYNAMIC_DRAW);
       bindAttribs(cityProg, dynBuf, VICE_VERT_STRIDE, defs);
       gl.drawArrays(gl.TRIANGLES, 0, add.length / VICE_VERT_STRIDE);
-      gl.depthMask(true);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      const smoke = buildViceSmokeGeometry(state, smokeMesh);
+      gl.bindBuffer(gl.ARRAY_BUFFER, dynBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, smoke, gl.DYNAMIC_DRAW);
+      bindAttribs(cityProg, dynBuf, VICE_VERT_STRIDE, defs);
+      gl.drawArrays(gl.TRIANGLES, 0, smoke.length / VICE_VERT_STRIDE);
+      gl.depthMask(true);
       gl.disable(gl.BLEND);
     },
   };

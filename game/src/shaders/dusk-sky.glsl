@@ -21,7 +21,7 @@ void main(){
   float s=dot(d,sd);
   vec3 hor=vec3(1.0,0.55,0.20);
   vec3 mid=vec3(0.78,0.26,0.38);
-  vec3 top=vec3(0.09,0.06,0.26);
+  vec3 top=vec3(0.16,0.10,0.30);
   vec3 col=mix(hor,mid,smoothstep(0.0,0.28,h));
   col=mix(col,top,smoothstep(0.22,0.75,h));
   col=mix(vec3(0.14,0.09,0.22),col,smoothstep(-0.12,0.02,h));

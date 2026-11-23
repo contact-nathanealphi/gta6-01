@@ -36,13 +36,15 @@ uniform vec3 uSunCol;
 uniform vec3 uAmb;
 uniform vec3 uFogCol;
 uniform float uFogDen;
+uniform float uSoft;
 uniform vec3 uCam;
 void main(){
   vec3 base=texture2D(uTex,vUv).rgb*vCol;
   vec3 n=normalize(vNor);
   vec3 sd=normalize(uSunDir);
   float dif=max(dot(n,sd),0.0);
-  vec3 col=base*(uAmb+uSunCol*dif*1.15);
+  vec3 sh=mix(vec3(.3,.22,.4),uSunCol*1.4,dif);
+  vec3 col=base*(uAmb*0.55+sh);
   vec3 v=normalize(uCam-vWp);
   vec3 h=normalize(sd+v);
   float sp=pow(max(dot(n,h),0.0),28.0);
@@ -58,5 +60,8 @@ void main(){
   float f=1.0-exp(-uFogDen*uFogDen*vDist*vDist);
   col=mix(col,uFogCol,clamp(f,0.0,1.0));
   col=mix(col,base*1.7,vEmi);
-  gl_FragColor=vec4(col,vEmi);
+  vec2 q=(vUv-vec2(.25,.6875))/.0625;
+  float rad=pow(clamp(1.-length(q-.5)*2.,0.,1.),2.2);
+  float fa=uSoft<.5?1.:rad;
+  gl_FragColor=vec4(col,vEmi*fa);
 }

@@ -160,7 +160,7 @@ function runGame() {
     const wheelOpen = input.wheelHeld();
     accumulator += Math.min(Math.max(0, (now - last) / 1000), MAX_FRAME) * (wheelOpen ? 0.2 : 1);
     last = now;
-    const presses = input.takePresses();
+    let presses = input.takePresses(); // let: cleared after 1st world step so one E press toggles once
     if (screen !== SCREEN_PLAY) input.takeDigits();
     if (presses & PRESS_MUTE) {
       audio.setMuted(!audio.isMuted());
@@ -204,6 +204,7 @@ function runGame() {
         }
         while (accumulator >= STEP) {
           stepWorld(presses);
+          presses = 0;
           accumulator -= STEP;
           if (screen !== SCREEN_PLAY) break;
         }
