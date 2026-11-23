@@ -78,3 +78,13 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 53 | Bintang wanted berkedip merah saat naik level | headless test | KEEP |
 | 54 | Hurt flash merah saat pemain kena tembak | headless test | KEEP |
 | 55 | Hurt flash juga saat mobil ditabrak patroli | headless test | KEEP |
+| 56 | Perf: ground statis di-pre-render ke offscreen canvas 3600×2700, di-blit per frame | headless test | KEEP |
+| 57 | Robustness: cap partikel 500 di burst() | headless test | KEEP |
+| 58 | Robustness: cap peluru 60 di fireBullet() | headless test | KEEP |
+| 59 | Courier dibersihkan saat busted/wasted (objective ikut reset bila free roam) | headless test | KEEP |
+| 60 | Shotgun: field p.shotgun (jumlah shell) | headless test | KEEP |
+| 61 | Shotgun pickup spawn di dermaga + markas polisi (6 shell) | headless test | KEEP |
+| 62 | Shotgun: tembak 5 pelet menyebar, cooldown 0.7 dtk, damage 12/pelet | headless test (shotgun test) | KEEP |
+| 63 | Shotgun: pickup memberi shell + banner | headless test | KEEP |
+| 64 | Shotgun: render pickup + di tangan + HUD "Shotgun X shells" + dot oranye minimap | headless test | KEEP |
+| 65 | Shotgun disimpan di save/load | headless test | KEEP |

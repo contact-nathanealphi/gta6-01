@@ -146,7 +146,7 @@ export function createGame(rng) {
   function newPlayer(x, y) {
     return {
       x, y, angle: -Math.PI / 2, speed: 0, onFoot: true, carId: 0, radius: PLAYER.radius,
-      health: PLAYER.health, pistol: false, mag: 0, punchCd: 0, shootCd: 0, reloadT: 0, invuln: 0,
+      health: PLAYER.health, pistol: false, mag: 0, shotgun: 0, punchCd: 0, shootCd: 0, reloadT: 0, invuln: 0,
       aimX: x, aimY: y - 100,
     };
   }
@@ -244,6 +244,8 @@ export function createGame(rng) {
 
   function burst(x, y, color, count, speed) {
     for (let i = 0; i < count; i += 1) {
+      // Cap particles so a big chain reaction cannot grow the array forever.
+      if (state.particles.length >= 500) return;
       const a = rng.range(0, Math.PI * 2);
       const v = rng.range(speed * 0.4, speed);
       state.particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rng.range(0.25, 0.6), maxLife: 0.6, color, size: rng.range(2, 5) });
@@ -299,6 +301,9 @@ export function createGame(rng) {
     spawnPickup('health', 900, 1620, 40);
     spawnPickup('ammo', 800, 1500, 24);
     spawnPickup('ammo', 1560, 1600, 24);
+    // A shotgun waits at the docks and one by the police HQ.
+    spawnPickup('shotgun', 2380, 2240, 6);
+    spawnPickup('shotgun', 2150, 1350, 6);
     startMission(0);
   }
 
@@ -506,15 +511,28 @@ export function createGame(rng) {
       state.punchSound = true;
       events |= punch();
     }
-    if (input.shoot && p.pistol && p.mag > 0 && p.shootCd <= 0 && p.reloadT <= 0) {
-      p.shootCd = 0.2;
-      p.mag -= 1;
-      fireBullet(p.x, p.y, p.aimX, p.aimY, 'player', PLAYER.pistolDamage, 950);
-      // Muzzle flash at the gun tip.
-      const ma = Math.atan2(p.aimY - p.y, p.aimX - p.x);
-      burst(p.x + Math.cos(ma) * 26, p.y + Math.sin(ma) * 26, '#ffe9a3', 4, 140);
-      state.shotFired = true;
-      state.shotSound = true;
+    if (input.shoot && p.shootCd <= 0 && p.reloadT <= 0) {
+      if (p.shotgun > 0) {
+        // Shotgun: five pellets in a spread, slower to fire.
+        p.shootCd = 0.7;
+        p.shotgun -= 1;
+        for (let i = -2; i <= 2; i += 1) {
+          const a = Math.atan2(p.aimY - p.y, p.aimX - p.x) + i * 0.07;
+          state.bullets.push({ x: p.x + Math.cos(a) * 24, y: p.y + Math.sin(a) * 24, vx: Math.cos(a) * 800, vy: Math.sin(a) * 800, life: 0.5, from: 'player', damage: 12 });
+        }
+        const ma = Math.atan2(p.aimY - p.y, p.aimX - p.x);
+        burst(p.x + Math.cos(ma) * 26, p.y + Math.sin(ma) * 26, '#ffe9a3', 7, 180);
+        state.shotFired = true;
+        state.shotSound = true;
+      } else if (p.pistol && p.mag > 0) {
+        p.shootCd = 0.2;
+        p.mag -= 1;
+        fireBullet(p.x, p.y, p.aimX, p.aimY, 'player', PLAYER.pistolDamage, 950);
+        const ma = Math.atan2(p.aimY - p.y, p.aimX - p.x);
+        burst(p.x + Math.cos(ma) * 26, p.y + Math.sin(ma) * 26, '#ffe9a3', 4, 140);
+        state.shotFired = true;
+        state.shotSound = true;
+      }
     }
     if (input.reload && p.pistol && p.mag < PLAYER.magSize && p.reloadT <= 0) p.reloadT = 0.9;
     return events;
@@ -554,6 +572,7 @@ export function createGame(rng) {
   }
 
   function fireBullet(x, y, tx, ty, from, damage, speed) {
+    if (state.bullets.length >= 60) return;
     const ang = Math.atan2(ty - y, tx - x);
     const spread = from === 'player' ? 0.015 : 0.12;
     const a = ang + (rng.next() - 0.5) * spread * 2;
@@ -909,6 +928,8 @@ export function createGame(rng) {
     state.wantedPoints = 0;
     state.wanted = 0;
     state.cops = [];
+    state.courier = null;
+    state.objective = state.missionActive ? state.objective : null;
     for (const car of state.cars) if (car.driver === 'police') { car.driver = 'parked'; car.speed = 0; }
     const p = state.player;
     p.health = PLAYER.health;
@@ -1028,6 +1049,8 @@ export function createGame(rng) {
     state.wantedPoints = 0;
     state.wanted = 0;
     state.cops = [];
+    state.courier = null;
+    state.objective = state.missionActive ? state.objective : null;
     for (const car of state.cars) if (car.driver === 'police') { car.driver = 'parked'; car.speed = 0; }
     const p = state.player;
     p.health = PLAYER.health;
@@ -1093,6 +1116,9 @@ export function createGame(rng) {
         if (!p.pistol) continue;
         p.mag = PLAYER.magSize;
         showBanner('Pistol reloaded', 1.5);
+      } else if (item.kind === 'shotgun') {
+        p.shotgun = item.amount;
+        showBanner(`Shotgun acquired — ${item.amount} shells`, 2);
       } else if (item.kind === 'cash') {
         state.cash += item.amount;
         state.cashSound = true;
@@ -1202,6 +1228,7 @@ export function createGame(rng) {
       health: p.health,
       missionIndex: state.missionIndex,
       pistol: p.pistol,
+      shotgun: p.shotgun,
       x: p.x,
       y: p.y,
       storyDone: state.storyDone,
@@ -1213,6 +1240,7 @@ export function createGame(rng) {
     state.cash = save.cash ?? 120;
     state.player.health = save.health ?? PLAYER.health;
     state.player.pistol = !!save.pistol;
+    state.player.shotgun = save.shotgun ?? 0;
     if (state.player.pistol) state.player.mag = PLAYER.magSize;
     state.player.x = save.x ?? 870;
     state.player.y = save.y ?? 640;

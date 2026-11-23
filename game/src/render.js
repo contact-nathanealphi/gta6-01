@@ -21,6 +21,65 @@ export function createRenderer(canvas) {
   let viewW = 1280;
   let viewH = 800;
   const fonts = new Map();
+  // The static ground (grass, beach, water, roads, lane dashes) is painted
+  // once to an offscreen canvas and blitted each frame, instead of redrawing
+  // hundreds of shapes 60 times a second.
+  let groundCanvas = null;
+
+  function buildGround() {
+    try {
+      groundCanvas = document.createElement('canvas');
+      groundCanvas.width = WORLD.width;
+      groundCanvas.height = WORLD.height;
+      const g = groundCanvas.getContext('2d');
+      g.fillStyle = PALETTE.grass;
+      g.fillRect(0, 0, WORLD.width, WORLD.height);
+      g.fillStyle = PALETTE.sand;
+      g.fillRect(0, 2440, WORLD.width, WORLD.height - 2440);
+      g.fillStyle = PALETTE.water;
+      g.fillRect(0, 2630, WORLD.width, WORLD.height - 2630);
+      g.strokeStyle = 'rgba(255,255,255,0.5)';
+      g.lineWidth = 2;
+      g.beginPath();
+      for (let x = 0; x < WORLD.width; x += 90) {
+        g.moveTo(x, 2632);
+        g.quadraticCurveTo(x + 22, 2626, x + 45, 2632);
+      }
+      g.stroke();
+      for (const ax of AVENUES) {
+        g.fillStyle = PALETTE.sidewalk;
+        g.fillRect(ax - 86, 0, 172, WORLD.height);
+      }
+      for (const sy of STREETS) {
+        g.fillStyle = PALETTE.sidewalk;
+        g.fillRect(0, sy - 86, WORLD.width, 172);
+      }
+      for (const ax of AVENUES) {
+        g.fillStyle = PALETTE.asphalt;
+        g.fillRect(ax - 60, 0, 120, WORLD.height);
+      }
+      for (const sy of STREETS) {
+        g.fillStyle = PALETTE.asphalt;
+        g.fillRect(0, sy - 60, WORLD.width, 120);
+      }
+      g.strokeStyle = PALETTE.lane;
+      g.lineWidth = 3;
+      g.setLineDash([26, 30]);
+      g.beginPath();
+      for (const ax of AVENUES) {
+        g.moveTo(ax, 0);
+        g.lineTo(ax, WORLD.height);
+      }
+      for (const sy of STREETS) {
+        g.moveTo(0, sy);
+        g.lineTo(WORLD.width, sy);
+      }
+      g.stroke();
+      g.setLineDash([]);
+    } catch {
+      groundCanvas = null;
+    }
+  }
 
   function resize() {
     dpr = window.devicePixelRatio || 1;
@@ -58,6 +117,10 @@ export function createRenderer(canvas) {
   }
 
   function drawGround(cam) {
+    if (groundCanvas) {
+      ctx.drawImage(groundCanvas, cam.x, cam.y, cam.w, cam.h, cam.x, cam.y, cam.w, cam.h);
+      return;
+    }
     ctx.fillStyle = PALETTE.grass;
     ctx.fillRect(cam.x, cam.y, cam.w, cam.h);
     // Beach along the south edge, water at its foot.
@@ -252,6 +315,14 @@ export function createRenderer(canvas) {
         ctx.fillRect(item.x - 6, y - 4, 4, 8);
         ctx.fillRect(item.x, y - 4, 4, 8);
         ctx.fillRect(item.x + 6, y - 4, 4, 8);
+      } else if (item.kind === 'shotgun') {
+        // A shotgun: a dark barrel with a wooden pump.
+        ctx.fillStyle = '#3a3a3a';
+        ctx.fillRect(item.x - 14, y - 4, 28, 8);
+        ctx.fillStyle = '#8a6f4d';
+        ctx.fillRect(item.x - 4, y - 5, 10, 10);
+        ctx.fillStyle = PALETTE.gold;
+        ctx.fillRect(item.x + 10, y - 3, 4, 6);
       } else if (item.kind === 'cash') {
         ctx.fillStyle = '#2fae5f';
         ctx.beginPath();
@@ -356,7 +427,21 @@ export function createRenderer(canvas) {
     ctx.beginPath();
     ctx.arc(p.x + Math.cos(p.angle) * 5, p.y + Math.sin(p.angle) * 5, 6, 0, Math.PI * 2);
     ctx.fill();
-    if (p.pistol) {
+    if (p.shotgun > 0) {
+      // A shotgun is drawn longer and thicker than the pistol.
+      ctx.strokeStyle = '#3a3a3a';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x + Math.cos(p.angle) * 30, p.y + Math.sin(p.angle) * 30);
+      ctx.stroke();
+      ctx.strokeStyle = '#8a6f4d';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(p.x + Math.cos(p.angle) * 12, p.y + Math.sin(p.angle) * 12);
+      ctx.lineTo(p.x + Math.cos(p.angle) * 20, p.y + Math.sin(p.angle) * 20);
+      ctx.stroke();
+    } else if (p.pistol) {
       ctx.strokeStyle = '#222';
       ctx.lineWidth = 4;
       ctx.beginPath();
@@ -478,6 +563,7 @@ export function createRenderer(canvas) {
       else if (item.kind === 'cash') ctx.fillStyle = '#2fae5f';
       else if (item.kind === 'ammo') ctx.fillStyle = '#f2c94c';
       else if (item.kind === 'courier') ctx.fillStyle = '#ffffff';
+      else if (item.kind === 'shotgun') ctx.fillStyle = '#ff8c42';
       else ctx.fillStyle = '#8a6f4d';
       ctx.fillRect(x0 + item.x * sx - 2, y0 + item.y * sy - 2, 4, 4);
     }
@@ -520,7 +606,9 @@ export function createRenderer(canvas) {
       const flash = state.wantedFlash > 0 && i === state.wanted - 1;
       text('★', 28 + i * 26, 96, 20, flash ? PALETTE.danger : (i < state.wanted ? PALETTE.gold : '#555'), 'left');
     }
-    if (p.pistol) {
+    if (p.shotgun > 0) {
+      text(`Shotgun  ${p.shotgun} shells`, 28, 122, 15, PALETTE.gold, 'left', true);
+    } else if (p.pistol) {
       text(`Pistol  ${p.mag}/${PLAYER.magSize}`, 28, 122, 15, PALETTE.hudText, 'left');
       if (p.reloadT > 0) text('Reloading…', 150, 122, 15, PALETTE.gold, 'left');
     }
@@ -696,6 +784,7 @@ export function createRenderer(canvas) {
   }
 
   resize();
+  buildGround();
   window.addEventListener('resize', resize);
   return { draw, camera, viewSize() { return { w: viewW, h: viewH }; } };
 }
