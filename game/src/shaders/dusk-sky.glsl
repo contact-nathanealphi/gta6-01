@@ -13,7 +13,7 @@ vec3 d=normalize(vDir);float h=d.y;vec3 sd=normalize(uSD);float s=dot(d,sd);
 vec3 col=mix(vec3(.98,.42,.06),vec3(.85,.25,.12),smoothstep(0.,.16,h));
 col=mix(col,vec3(.16,.07,.26),smoothstep(.18,.7,h));
 col=mix(vec3(.12,.06,.2),col,smoothstep(-.12,.02,h));
-float disc=smoothstep(.997,.998,s);
+float disc=smoothstep(.9965,.998,s);
 col+=vec3(1.,.5,.3)*pow(max(s,0.),6.)*smoothstep(.55,0.,abs(h-.06))*.08;
 col+=vec3(1.,.45,.18)*pow(max(s,0.),24.)*.06;
 col=mix(col,vec3(1.3,.5,.1),disc*.95);

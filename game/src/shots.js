@@ -41,7 +41,7 @@ export function stageShot(name, g, o) {
   rf(g, 5, () => drv(g, 1500));
   const mine = g.playerCar();
   const px = mine ? mine.x : 1500, py = mine ? mine.y : 900;
-  if (mine) { mine.speed = 380; mine.angle = H + 0.25; s.nitrousT = 2.5; }
+  if (mine) { mine.speed = 380; mine.angle = H + 0.25; s.nitrousT = 2.8; }
   RC.CIRCUITS[1].gates = [[px, py - 600], [px, py + 420], [px + 600, py + 420], [px + 600, py - 600]];
   s.race = { active: true, circuit: 1, gate: 1, lap: 2, laps: 3, reward: 800 };
   const rivals = s.cars.filter((c) => c.driver === 'race');

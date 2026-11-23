@@ -22,7 +22,7 @@ if(uSHO>.5){vec3 sp=vSh.xyz/vSh.w;if(sp.x>0.&&sp.x<1.&&sp.y>0.&&sp.y<1.){float b
 vec3 amb=mix(uAmb*vec3(.55,.42,.38),uAmb,n.y*.5+.5);
 vec3 col=base*(amb+uSunCol*dif*sh*1.6);
 vec3 h=normalize(sd+v);
-col+=uSunCol*pow(max(dot(n,h),0.),32.)*.7*(.4+.6*sh);
+col+=uSunCol*pow(max(dot(n,h),0.),32.)*.75*(.4+.6*sh);
 col+=uSunCol*pow(max(dot(n,h),0.),8.)*.18*(.4+.6*sh);
 vec3 r=reflect(-v,n);
 float fres=pow(1.-max(dot(n,v),0.),5.),lum=dot(base,vec3(.33));
