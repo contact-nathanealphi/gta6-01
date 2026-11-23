@@ -8,6 +8,7 @@ export const VICE_FACADE_UV = [
 ];
 export const VICE_ROOF_UV = [0.0, 0.5, 0.25, 0.75];
 export const VICE_WHITE_UV = [0.25, 0.6875, 0.3125, 0.75];
+export const VICE_CASINO_UV = [0.5, 0.5, 0.75, 0.75];
 
 export function createViceDuskTextureAtlas(gl) {
   const c = document.createElement('canvas');
@@ -29,6 +30,22 @@ export function createViceDuskTextureAtlas(gl) {
     F(neon[t], x0, 200, 256, 6);
     F('rgba(255,255,255,0.25)', x0, 210, 256, 2);
   }
+  F('#14101f', 512, 256, 256, 256);
+  for (let r = 0; r < 6; r += 1) for (let col = 0; col < 6; col += 1) F(((r + col) % 3 === 0) ? '#7fe3ff' : 'rgba(0,0,0,0.4)', 526 + col * 40, 440 + r * 12, 26, 8);
+  g.textAlign = 'center';
+  g.font = 'bold 58px sans-serif';
+  g.shadowBlur = 20;
+  g.save();
+  g.translate(1280, 0);
+  g.scale(-1, 1);
+  g.shadowColor = '#00e5ff'; g.fillStyle = '#00e5ff';
+  g.fillText('NEON', 640, 330);
+  g.shadowColor = '#ff9d00'; g.fillStyle = '#ffd23d';
+  g.fillText('CASINO', 640, 396);
+  g.restore();
+  g.shadowBlur = 0;
+  F('#ff2d78', 540, 410, 200, 6);
+  F('#00e5ff', 540, 420, 200, 3);
   F('#3a3f4a', 0, 256, 256, 256);
   g.strokeStyle = '#f2c94c';
   g.lineWidth = 6;

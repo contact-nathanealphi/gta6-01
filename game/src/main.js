@@ -1,4 +1,3 @@
-// Boot and the one loop. ?seed=N fixes the city; ?shot= stages a scene.
 import { SAVE_KEY, STEP } from './tune.js';
 import { createRng } from './rng.js';
 import { createGame, EVENT_BUSTED, EVENT_MISSION, EVENT_STORY, EVENT_WASTED } from './world.js';
@@ -170,7 +169,6 @@ function runGame() {
     if (presses & PRESS_HORN) audio.horn();
     if (screen === SCREEN_TITLE) {
       handleTitle(presses);
-      // The city lives behind the title: traffic and pedestrians keep moving.
       while (accumulator >= STEP) {
         game.step(STEP, { up: false, down: false, left: false, right: false, run: false, enter: false, punch: false, reload: false, shoot: false });
         accumulator -= STEP;

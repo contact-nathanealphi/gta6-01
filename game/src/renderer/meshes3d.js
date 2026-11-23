@@ -1,15 +1,11 @@
 // Vice-Dusk 3D geometry: static city mesh + dynamic mesh per frame.
-
 import { AVENUES, CAR_KINDS, STREETS, WORLD } from '../tune.js';
-import { VICE_FACADE_UV, VICE_ROOF_UV, VICE_WHITE_UV } from './textures3d.js';
+import { VICE_CASINO_UV, VICE_FACADE_UV, VICE_ROOF_UV, VICE_WHITE_UV } from './textures3d.js';
 import { StreetRaceCircuit } from '../crew-garage-race.js';
-
 export const VICE_VERT_STRIDE = 12;
-
 export function viceHex(h) {
   return [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
 }
-
 export function viceCreateMesh(capacity) {
   const data = new Float32Array(capacity * VICE_VERT_STRIDE);
   let n = 0;
@@ -47,23 +43,14 @@ export function viceCreateMesh(capacity) {
     quad(P[2], P[3], P[7], P[6], ...N[3], col, uv, emi);
     quad(P[0], P[1], P[5], P[4], ...N[4], col, uv, emi);
   }
-  return {
-    data,
-    get count() { return n; },
-    reset() { n = 0; },
-    slice() { return data.subarray(0, n * VICE_VERT_STRIDE); },
-    vert, quad, tri, groundQuad, box,
-  };
+  return { data, get count() { return n; }, reset() { n = 0; }, slice() { return data.subarray(0, n * VICE_VERT_STRIDE); }, vert, quad, tri, groundQuad, box };
 }
-
 export function viceBuildingHeight(b) {
   const h = (((b.x * 7 + b.y * 13) % 100) + 100) % 100 / 100;
   const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
   return (60 + h * 140) * (cx > 1200 && cx < 3000 && cy > 600 && cy < 2000 ? 1.5 : 1) * (cy > 2300 ? 0.6 : 1);
 }
-
 const NEON_TRIM = [[1, 0.18, 0.47], [0, 0.9, 1], [1, 0.82, 0.24], [1, 0.48, 0.18]];
-
 export function buildViceCityStaticGeometry(city) {
   const m = viceCreateMesh(32000);
   const white = [1, 1, 1];
@@ -92,10 +79,12 @@ export function buildViceCityStaticGeometry(city) {
     const ti = Math.floor(b.x * 3 + b.y * 5) % 4;
     const trim = NEON_TRIM[Math.floor(b.x + b.y) % 4];
     if (b.kind === 'casino') {
-      m.box(cx, 30, cz, b.w, 60, b.h, 0, white, VICE_FACADE_UV[2], 0.4, VICE_ROOF_UV, 0);
+      m.box(cx, 30, cz, b.w, 60, b.h, 0, white, VICE_CASINO_UV, 0.4, VICE_ROOF_UV, 0);
       m.box(cx, 82, cz, b.w * 0.7, 45, b.h * 0.7, 0, white, VICE_FACADE_UV[2], 0.5, VICE_ROOF_UV, 0);
       m.box(cx, 125, cz, b.w * 0.5, 18, 14, 0, [1, 0.18, 0.47], VICE_WHITE_UV, 1);
       m.box(cx, 103, cz, b.w + 4, 4, b.h + 4, 0, trim, VICE_WHITE_UV, 1);
+      for (const s of [-1, 1]) m.box(cx + s * (b.w / 2 - 12), 16, cz + b.h / 2 + 10, 9, 32, 9, 0, s < 0 ? [0, 0.9, 1] : [1, 0.18, 0.47], VICE_WHITE_UV, 1);
+      m.box(cx, 34, cz + b.h / 2 + 10, b.w - 16, 5, 7, 0, [1, 0.82, 0.24], VICE_WHITE_UV, 1);
       continue;
     }
     if (b.kind === 'stadium') {
@@ -107,9 +96,9 @@ export function buildViceCityStaticGeometry(city) {
       continue;
     }
     if (b.kind === 'lighthouse') {
-      m.box(cx, 32, cz, 34, 64, 34, 0, viceHex('#c94f43'), VICE_WHITE_UV, 0.15);
-      m.box(cx, 96, cz, 30, 64, 30, 0, white, VICE_WHITE_UV, 0.3);
-      m.box(cx, 132, cz, 22, 10, 22, 0, [1, 0.82, 0.24], VICE_WHITE_UV, 1);
+      m.box(cx, 45, cz, 34, 90, 34, 0, viceHex('#c94f43'), VICE_WHITE_UV, 0.15);
+      m.box(cx, 135, cz, 30, 90, 30, 0, white, VICE_WHITE_UV, 0.3);
+      m.box(cx, 185, cz, 22, 12, 22, 0, [1, 0.82, 0.24], VICE_WHITE_UV, 1);
       continue;
     }
     const hgt = viceBuildingHeight(b);
@@ -162,11 +151,11 @@ export function buildViceCityStaticGeometry(city) {
   }
   return m.slice();
 }
-
 export function buildViceDynamicGeometry(state, m) {
   m.reset();
   const dark = [0.08, 0.08, 0.1];
   const skin = viceHex('#e8b98a');
+  const glass = viceHex('#0e1a26');
   const px = state.player.x, pz = state.player.y;
   for (const car of state.cars) {
     const dx = car.x - px, dz = car.y - pz;
@@ -177,28 +166,34 @@ export function buildViceDynamicGeometry(state, m) {
     const L = spec.length, W = spec.width;
     const co = Math.cos(car.angle), si = Math.sin(car.angle);
     const X = (a, b) => car.x + co * a - si * b, Z = (a, b) => car.y + si * a + co * b;
+    const P = (a, y, b) => [X(a, b), y, Z(a, b)];
     m.box(X(-L * 0.18, 0), 7, Z(-L * 0.18, 0), L * 0.62, 7, W, yaw, col, VICE_WHITE_UV, 0);
     m.box(X(L * 0.32, 0), 6, Z(L * 0.32, 0), L * 0.3, 5, W * 0.94, yaw, col, VICE_WHITE_UV, 0);
     m.box(X(-L * 0.3, 0), 6, Z(-L * 0.3, 0), L * 0.28, 5, W * 0.94, yaw, col, VICE_WHITE_UV, 0);
-    m.box(X(-2, 0), 14, Z(-2, 0), L * 0.42, 7, W * 0.8, yaw, viceHex('#0e1a26'), VICE_WHITE_UV, 0.35);
+    m.box(X(-2, 0), 14, Z(-2, 0), L * 0.42, 7, W * 0.8, yaw, glass, VICE_WHITE_UV, 0.35);
+    m.quad(P(L * 0.30, 10, W * 0.38), P(L * 0.30, 10, -W * 0.38), P(L * 0.08, 17.5, -W * 0.38), P(L * 0.08, 17.5, W * 0.38), co * 0.7, 0.7, si * 0.7, glass, VICE_WHITE_UV, 0.5);
+    m.quad(P(-L * 0.24, 17.5, W * 0.38), P(-L * 0.24, 17.5, -W * 0.38), P(-L * 0.40, 10, -W * 0.38), P(-L * 0.40, 10, W * 0.38), -co * 0.7, 0.7, -si * 0.7, glass, VICE_WHITE_UV, 0.5);
+    m.box(X(L / 2 - 1, 0), 5, Z(L / 2 - 1, 0), 4, 4, W * 0.98, yaw, dark, VICE_WHITE_UV, 0);
+    m.box(X(-L / 2 + 1, 0), 5, Z(-L / 2 + 1, 0), 4, 4, W * 0.98, yaw, dark, VICE_WHITE_UV, 0);
+    if (car.kind === 'muscle' || car.kind === 'sports') m.box(X(-L * 0.44, 0), 12.5, Z(-L * 0.44, 0), 3, 2, W * 0.92, yaw, dark, VICE_WHITE_UV, 0.2);
     const fx0 = X(L / 2, 0), fz0 = Z(L / 2, 0);
-    m.tri([fx0, 0.5, fz0], [X(L / 2 + 70, 20), 0.5, Z(L / 2 + 70, 20)], [X(L / 2 + 70, -20), 0.5, Z(L / 2 + 70, -20)], 0, 1, 0, [1, 0.93, 0.65], VICE_WHITE_UV, 0.3);
+    m.tri([fx0, 0.5, fz0], [X(L / 2 + 45, 16), 0.5, Z(L / 2 + 45, 16)], [X(L / 2 + 45, -16), 0.5, Z(L / 2 + 45, -16)], 0, 1, 0, [0.9, 0.8, 0.55], VICE_WHITE_UV, 0.35);
     for (const [lx, lz] of [[L * 0.32, W / 2], [L * 0.32, -W / 2], [-L * 0.32, W / 2], [-L * 0.32, -W / 2]]) {
       m.box(X(lx, lz), 4, Z(lx, lz), 10, 8, 3, yaw, dark, VICE_WHITE_UV, 0);
     }
     for (const s of [-1, 1]) {
       m.box(X(L / 2 - 1, s * (W / 2 - 4)), 8, Z(L / 2 - 1, s * (W / 2 - 4)), 3, 3, 5, yaw, [1, 0.9, 0.6], VICE_WHITE_UV, 1);
-      m.box(X(-(L / 2 - 1), s * (W / 2 - 4)), 8, Z(-(L / 2 - 1), s * (W / 2 - 4)), 3, 3, 5, yaw, [1, 0.15, 0.15], VICE_WHITE_UV, car.speed < -20 ? 1 : 0.5);
+      m.box(X(-(L / 2 - 1), s * (W / 2 - 4)), 8, Z(-(L / 2 - 1), s * (W / 2 - 4)), 3, 3, 5, yaw, [1, 0.15, 0.15], VICE_WHITE_UV, 1);
     }
-    m.box(car.x, 1.5, car.y, L + 8, 1.5, W + 8, yaw, col, VICE_WHITE_UV, 0.7);
-    if (car.kind === 'patrol') {
+    if (car.driver === 'player' && state.upgrades && state.upgrades.glow > 0) { const q = Math.abs(si) > 0.7 ? [16, 26] : [26, 16]; m.groundQuad(car.x - q[0], car.y - q[1], car.x + q[0], car.y + q[1], 0.4, [0, 0.9, 1], 0.8); }
+    if (car.driver === 'race') { const q = Math.abs(si) > 0.7 ? [16, 26] : [26, 16]; m.groundQuad(car.x - q[0], car.y - q[1], car.x + q[0], car.y + q[1], 0.4, [1, 0.18, 0.55], 0.7); }
+    if (car.driver === 'police') {
       const flash = Math.floor(state.time * 3) % 2 === 0;
       m.box(car.x - Math.cos(car.angle) * 4, 23, car.y - Math.sin(car.angle) * 4, 8, 3, W * 0.6, yaw, flash ? [1, 0.2, 0.2] : [0.2, 0.4, 1], VICE_WHITE_UV, 1);
     }
     if (car.kind === 'taxi') {
       m.box(car.x, 22, car.y, 14, 4, 8, yaw, [1, 0.82, 0.24], VICE_WHITE_UV, 0.8);
     }
-    if (car.driver === 'player' && state.upgrades && state.upgrades.glow > 0) { const q = Math.abs(si) > 0.7 ? [16, 26] : [26, 16]; m.groundQuad(car.x - q[0], car.y - q[1], car.x + q[0], car.y + q[1], 0.4, [1, 0.18, 0.55], 0.8); }
     if (car.driver === 'player' && state.nitrousT > 0) for (const s of [-6, 6]) m.box(car.x - co * (L / 2 + 4) - si * s, 4, car.y - si * (L / 2 + 4) + co * s, 5, 4, 5, yaw, [0.2, 0.6, 1], VICE_WHITE_UV, 1);
   }
   function person(x, y, shirt, angle) {
@@ -246,27 +241,34 @@ export function buildViceDynamicGeometry(state, m) {
     m.box(o.x, 75, o.y, 5, 150, 5, 0, [1, 0.82, 0.24], VICE_WHITE_UV, 0.8);
   }
   const beam = (state.time * 0.9) % (Math.PI * 2);
-  const lx = 3335, lz = 2515, ly = 136;
+  const lx = 3335, lz = 2515, ly = 190;
   const bx = lx + Math.cos(beam) * 320, bz = lz + Math.sin(beam) * 320;
   fan(lx, ly + 4, lz, bx, ly - 20, bz, 34, [1, 0.9, 0.6], 0.55);
   const air = state.air;
   if (air && air.heli) {
     const h = air.heli;
     const strobe = Math.floor(state.time * 3) % 2 === 0;
-    m.box(h.x, h.z, h.y, 46, 12, 20, -h.angle, [0.12, 0.29, 0.54], VICE_WHITE_UV, 0.3);
-    m.box(h.x, h.z + 8, h.y, 6, 4, 6, 0, [0.1, 0.1, 0.12], VICE_WHITE_UV, 0);
-    m.box(h.x, h.z + 11, h.y, 56, 1.5, 3, -h.rotor, [0.9, 0.9, 0.9], VICE_WHITE_UV, 0.4);
-    m.box(h.x, h.z + 11, h.y, 56, 1.5, 3, -h.rotor + Math.PI / 2, [0.9, 0.9, 0.9], VICE_WHITE_UV, 0.4);
-    m.box(h.x, h.z + 2, h.y, 6, 3, 6, 0, strobe ? [1, 0.2, 0.2] : [0.2, 0.4, 1], VICE_WHITE_UV, 1);
-    fan(h.x, h.z - 2, h.y, h.spotX, 1, h.spotY, 35, [1, 0.93, 0.6], 0.15);
-    m.groundQuad(h.spotX - 35, h.spotY - 35, h.spotX + 35, h.spotY + 35, 0.3, [1, 0.93, 0.6], 0.22);
+    m.box(h.x, h.z, h.y, 58, 15, 26, -h.angle, [0.16, 0.45, 0.85], VICE_WHITE_UV, 0.45);
+    m.box(h.x, h.z + 3, h.y, 40, 3, 27, -h.angle, [0.9, 0.9, 0.9], VICE_WHITE_UV, 0.5);
+    m.box(h.x - Math.cos(h.angle) * 34, h.z + 2, h.y - Math.sin(h.angle) * 34, 26, 6, 8, -h.angle, [0.10, 0.24, 0.45], VICE_WHITE_UV, 0.3);
+    m.box(h.x, h.z + 10, h.y, 8, 5, 8, 0, [0.1, 0.1, 0.12], VICE_WHITE_UV, 0);
+    m.box(h.x, h.z + 14, h.y, 72, 2, 6, -h.rotor, [0.9, 0.9, 0.9], VICE_WHITE_UV, 0.5);
+    m.box(h.x, h.z + 14, h.y, 72, 2, 6, -h.rotor + Math.PI / 2, [0.9, 0.9, 0.9], VICE_WHITE_UV, 0.5);
+    m.box(h.x, h.z + 2, h.y, 10, 4, 10, 0, strobe ? [1, 0.2, 0.2] : [0.2, 0.4, 1], VICE_WHITE_UV, 1);
+    fan(h.x, h.z - 2, h.y, h.spotX, 1, h.spotY, 32, [0.35, 0.32, 0.2], 0.3);
+    fan(h.x, h.z - 2, h.y, h.spotX, 1, h.spotY, 16, [0.45, 0.4, 0.25], 0.35);
+    m.groundQuad(h.spotX - 36, h.spotY - 36, h.spotX + 36, h.spotY + 36, 0.3, [0.6, 0.55, 0.35], 0.2);
   }
   for (const w of state.wrecks || []) {
-    m.box(w.x, 7, w.y, 44, 12, 22, -w.angle, [0.1, 0.1, 0.1], VICE_WHITE_UV, 0);
-    const fl = 14 + Math.sin(state.time * 9 + w.x) * 5;
-    m.box(w.x, 16, w.y, 14, fl, 14, 0, [1, 0.48, 0.1], VICE_WHITE_UV, 1);
-    m.box(w.x + 8, 14, w.y, 10, fl * 0.7, 10, 0, [1, 0.82, 0.24], VICE_WHITE_UV, 1);
-    m.box(w.x - 6, 34, w.y, 14, 26, 14, 0, [0.22, 0.22, 0.25], VICE_WHITE_UV, 0);
+    const fl = 20 + Math.sin(state.time * 9 + w.x) * 7;
+    m.box(w.x, 7, w.y, 46, 12, 22, -w.angle + 0.18, [0.08, 0.08, 0.09], VICE_WHITE_UV, 0);
+    m.box(w.x + 6, 13, w.y + 3, 24, 8, 18, -w.angle + 0.35, [0.12, 0.11, 0.11], VICE_WHITE_UV, 0.1);
+    m.box(w.x, 18, w.y, 16, fl, 16, 0, [1, 0.48, 0.1], VICE_WHITE_UV, 1);
+    m.box(w.x + 7, 15, w.y, 11, fl * 0.75, 11, 0, [1, 0.82, 0.24], VICE_WHITE_UV, 1);
+    m.box(w.x - 3, 20, w.y - 2, 7, fl * 0.5, 7, 0, [1, 0.95, 0.75], VICE_WHITE_UV, 1);
+    m.box(w.x - 8, 36, w.y, 13, 24, 13, 0, [0.16, 0.16, 0.18], VICE_WHITE_UV, 0);
+    m.box(w.x - 12, 58, w.y - 2, 17, 24, 17, 0, [0.2, 0.2, 0.22], VICE_WHITE_UV, 0);
+    m.box(w.x - 16, 80, w.y - 4, 21, 24, 21, 0, [0.24, 0.24, 0.26], VICE_WHITE_UV, 0);
   }
   if (state.race && state.race.active) {
     const circ = StreetRaceCircuit.CIRCUITS[state.race.circuit];
@@ -275,6 +277,8 @@ export function buildViceDynamicGeometry(state, m) {
     for (let i = 0; i < cg.length; i += 1) {
       const g = cg[i], col = i === state.race.gate ? [1, 0.18, 0.55] : [0, 0.9, 1];
       for (const s of [-30, 30]) m.box(g[0] + s, 22, g[1], 6, 44, 6, 0, col, VICE_WHITE_UV, 1);
+      m.box(g[0], 44, g[1], 66, 5, 6, 0, col, VICE_WHITE_UV, 1);
+      m.box(g[0], 8, g[1], 66, 3, 6, 0, col, VICE_WHITE_UV, 0.9);
     }
   }
   return m.slice();

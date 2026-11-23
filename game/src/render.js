@@ -3,7 +3,7 @@
 import { AVENUES, CAR_KINDS, FONT, PALETTE, PLAYER, STREETS, WORLD } from './tune.js';
 import { MISSIONS } from './world.js';
 import { renderChopperSearchlight, renderNbpdDispatchBoard } from './police-air-support.js';
-import { WEAPON_SLOTS_6, renderRadialWeaponWheel } from './weapon-wheel.js';
+import { renderRadialWeaponWheel } from './weapon-wheel.js';
 import { CITY_DISTRICTS_6, rankFor, renderFixerDialogueBox } from './district-fixer.js';
 import { renderCrewHud, renderGarageShowroom, renderRaceHud, renderRadioToast } from './crew-garage-race.js';
 
@@ -65,25 +65,6 @@ export function createRenderer(canvas) {
   function inView(cam, x, y, margin) {
     return x > cam.x - margin && x < cam.x + cam.w + margin && y > cam.y - margin && y < cam.y + cam.h + margin;
   }
-  function drawHeadlights(state, cam) {
-    const hour = (8 + state.time / 10) % 24;
-    const dayness = Math.sin(((hour - 6) / 12) * Math.PI);
-    if (dayness > -0.1) return;
-    const strength = Math.min(1, (-dayness - 0.1) / 0.6);
-    for (const car of state.cars) {
-      if (!inView(cam, car.x, car.y, 200)) continue;
-      const spec = CAR_KINDS[car.kind];
-      const fx = Math.cos(car.angle), fy = Math.sin(car.angle), px = -fy, py = fx;
-      const hl = spec.length / 2, far = hl + 170;
-      ctx.fillStyle = `rgba(255, 233, 163, ${0.10 * strength})`;
-      ctx.beginPath();
-      ctx.moveTo(car.x + fx * hl, car.y + fy * hl);
-      ctx.lineTo(car.x + fx * far + px * 46, car.y + fy * far + py * 46);
-      ctx.lineTo(car.x + fx * far - px * 46, car.y + fy * far - py * 46);
-      ctx.closePath();
-      ctx.fill();
-    }
-  }
   function drawFallbackWorld(state, city, cam) {
     const R = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); };
     R(cam.x, cam.y, cam.w, cam.h, PALETTE.grass);
@@ -139,7 +120,7 @@ export function createRenderer(canvas) {
         ctx.stroke();
       }
       if (car.driver === 'player' && state.upgrades && state.upgrades.glow > 0) {
-        ctx.fillStyle = 'rgba(255,46,136,0.35)';
+        ctx.fillStyle = 'rgba(0,229,255,0.35)';
         ctx.beginPath(); ctx.arc(car.x, car.y, 34, 0, Math.PI * 2); ctx.fill();
       }
     }
@@ -292,15 +273,6 @@ export function createRenderer(canvas) {
       renderRaceHud(hud, s);
       if (s.garageOpen) renderGarageShowroom(hud, s, sys.garage);
       if (ui.wheelOpen) renderRadialWeaponWheel(hud, s, ui.wheelSlot || s.player.weapon || 1, ui.wheelPos || null);
-      const sw = 46, sg = 6, sx0 = (viewW - (sw * 6 + sg * 5)) / 2, sy0 = 76;
-      for (let i = 0; i < 6; i += 1) {
-        const sl = WEAPON_SLOTS_6[i];
-        const cur = p.weapon === sl.key;
-        const owned = sys.wheel.available(sl.key);
-        R(sx0 + i * (sw + sg), sy0, sw, sw, cur ? 'rgba(242,201,76,0.9)' : 'rgba(12,16,26,0.8)');
-        text(String(sl.key), sx0 + i * (sw + sg) + sw / 2, sy0 + 18, 13, owned ? sl.color : '#555', 'center', true);
-        text(sl.name.split(' ')[0], sx0 + i * (sw + sg) + sw / 2, sy0 + 36, 9, owned ? '#ffffff' : '#555', 'center');
-      }
     }
     const clock = (8 + s.time / 10) % 24, hours = Math.floor(clock), mins = Math.floor((clock % 1) * 60);
     const night = hours < 6 || hours >= 18;
@@ -388,22 +360,6 @@ export function createRenderer(canvas) {
     ctx.translate(-cam.x + shX, -cam.y + shY);
     drawFallbackWorld(state, city, cam);
     ctx.restore();
-    if (!state.player.onFoot) {
-      const myCar = playerCar(state);
-      if (myCar && Math.abs(myCar.speed) > 420) {
-        const strength = Math.min(1, (Math.abs(myCar.speed) - 420) / 160);
-        ctx.strokeStyle = `rgba(255,255,255,${0.25 * strength})`;
-        ctx.lineWidth = 2;
-        const cx = viewW / 2, cy = viewH / 2, r1 = Math.min(viewW, viewH) * 0.42, r2 = r1 + 26 + strength * 20;
-        for (let i = 0; i < 10; i += 1) {
-          const a = (i / 10) * Math.PI * 2 + state.time * 0.7;
-          ctx.beginPath();
-          ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
-          ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
-          ctx.stroke();
-        }
-      }
-    }
     const hour = (8 + state.time / 10) % 24;
     const dayness = Math.sin(((hour - 6) / 12) * Math.PI);
     if (dayness > 0.35) {
@@ -414,10 +370,6 @@ export function createRenderer(canvas) {
       ctx.fillStyle = `rgba(10,12,40,${(0.26 * Math.min(1, (-dayness - 0.25) / 0.75)).toFixed(3)})`;
     }
     ctx.fillRect(0, 0, viewW, viewH);
-    ctx.save();
-    ctx.translate(-cam.x + shX, -cam.y + shY);
-    drawHeadlights(state, cam);
-    ctx.restore();
     }
     if (screen === SCREEN_TITLE) {
       hud.rect(0, 0, viewW, viewH, 'rgba(8,10,20,0.18)');

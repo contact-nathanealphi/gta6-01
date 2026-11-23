@@ -6,11 +6,7 @@ export const CITY_DISTRICTS_6 = [
   { name: 'Ember Docks', x: 1200, y: 1300, w: 1500, h: 1400, color: '#ff7a18' },
   { name: 'Lighthouse Point', x: 2700, y: 1300, w: 900, h: 1400, color: '#b678ff' },
 ];
-
-export const RESPECT_RANKS = [
-  [0, 'Street Runner'], [20, 'Hustler'], [40, 'Made Man'],
-  [60, 'Vice Lieutenant'], [80, 'Syndicate Boss'], [95, 'Vice Kingpin'],
-];
+export const RESPECT_RANKS = [[0, 'Street Runner'], [20, 'Hustler'], [40, 'Made Man'], [60, 'Vice Lieutenant'], [80, 'Syndicate Boss'], [95, 'Vice Kingpin']];
 
 export function districtAt(x, y) {
   for (const d of CITY_DISTRICTS_6) if (x >= d.x && x < d.x + d.w && y >= d.y && y < d.y + d.h) return d;

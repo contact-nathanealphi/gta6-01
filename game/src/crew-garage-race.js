@@ -62,8 +62,8 @@ export class StreetRaceCircuit {
   constructor(state, fx) { this.s = state; this.fx = fx; }
   start(idx) {
     const s = this.s, p = s.player;
-    if (s.race.active) { s.banner = 'Race already running'; s.bannerTimer = 1.5; return false; }
-    if (p.onFoot) { s.banner = 'Need a car to race'; s.bannerTimer = 1.5; return false; }
+    if (s.race.active) { s.banner = 'Race running'; s.bannerTimer = 1.5; return false; }
+    if (p.onFoot) { s.banner = 'Need a car'; s.bannerTimer = 1.5; return false; }
     const c = S.CIRCUITS[idx % 2];
     s.race = { active: true, circuit: idx % 2, gate: 0, lap: 1, laps: c.laps, reward: c.reward };
     const g0 = c.gates[0];
@@ -71,7 +71,7 @@ export class StreetRaceCircuit {
       const car = this.fx.spawnRaceCar(['muscle', 'sports', 'sedan'][i], g0[0] + (i - 1) * 60, g0[1] + 90);
       car.raceGate = 0; car.raceLap = 1;
     }
-    s.banner = 'STREET RACE: ' + c.name + ' — ' + c.laps + ' laps!'; s.bannerTimer = 3;
+    s.banner = 'RACE: ' + c.name + ' — ' + c.laps + ' laps!'; s.bannerTimer = 3;
     return true;
   }
   update(dt) {
@@ -124,7 +124,7 @@ export class ProceduralFmRadio {
     this.idx = (this.idx + 1) % 3;
     const st = F.STATIONS[this.idx];
     this.s.radioToast = { name: st.name, until: performance.now() + 3000 };
-    this.s.banner = st.name + ' — now playing'; this.s.bannerTimer = 2;
+    this.s.banner = st.name; this.s.bannerTimer = 2;
     if (this.audio) this.audio.station(st.bass, st.bpm, st.wave);
     return st.name;
   }
@@ -158,7 +158,7 @@ export function renderRadioToast(hud, state) {
   R(x, y, w, h, 'rgba(12,16,26,0.85)');
   R(x, y, 4, h, '#00e5ff');
   T('♪ ' + t.name, x + 14, y + 22, 15, '#ffffff', 'left', true);
-  T('[R] switch station', x + 14, y + 42, 12, '#b9b3a4', 'left');
+  T('[R] switch', x + 14, y + 42, 12, '#b9b3a4', 'left');
   for (let i = 0; i < 8; i += 1) {
     const bh = 6 + Math.abs(Math.sin(performance.now() / 140 + i * 0.9)) * 22;
     R(x + w - 66 + i * 7, y + h - 8 - bh, 5, bh, '#00e5ff');

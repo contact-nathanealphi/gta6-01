@@ -12,118 +12,30 @@ export const EVENT_WASTED = 2;
 export const EVENT_MISSION = 4;
 export const EVENT_STORY = 8;
 
-export const MISSIONS = [
-  {
-    title: 'First Delivery',
-    giver: "Mama Rosa",
-    brief: ["Rico, welcome back. Take the package to Bayfront Mall. No stops."],
-    stages: [
-      { kind: 'go', x: 870, y: 550, label: "Pick up the package at Mama Rosa's" },
-      { kind: 'go', x: 1470, y: 1550, label: 'Deliver it to Bayfront Mall' },
-    ],
-    reward: 150,
-    quip: 'Fast, but you made it. Good.',
-  },
-  {
-    title: 'A Quiet Word',
-    giver: "Mama Rosa",
-    brief: ['The Harbor Boys lean on my suppliers. Grab the pistol, then have a word with their lookouts.'],
-    stages: [
-      { kind: 'go', x: 870, y: 1550, label: "Pick up the pistol at Rico's Garage" },
-      { kind: 'kill', count: 3, at: [{ x: 1300, y: 1450 }, { x: 1380, y: 1620 }, { x: 1240, y: 1680 }], label: 'Deal with the 3 Harbor Boys lookouts' },
-    ],
-    reward: 250,
-    quip: 'Three lookouts, one word.',
-  },
-  {
-    title: 'The Golden Comet',
-    giver: 'Mama Rosa',
-    brief: ['A Golden Comet sits in the mall lot. Its owner owes me. Take it to your garage.'],
-    stages: [
-      { kind: 'steal', carKind: 'sports', x: 1350, y: 1650, label: 'Steal the Golden Comet from the mall lot' },
-      { kind: 'deliver', x: 870, y: 1550, label: "Bring the Comet to Rico's Garage" },
-    ],
-    reward: 400,
-    quip: 'A sports car, Rico? You always liked the fast ones.',
-  },
-  {
-    title: 'Dockside Trouble',
-    giver: 'Mama Rosa',
-    brief: ['The Harbor Boys took my shipment at the port. Five of them, armed. Bring my crates back.'],
-    stages: [
-      { kind: 'go', x: 2400, y: 2270, label: 'Reach the Port of Neon Bay' },
-      { kind: 'kill', count: 5, at: [{ x: 2350, y: 2200 }, { x: 2450, y: 2180 }, { x: 2520, y: 2260 }, { x: 2300, y: 2300 }, { x: 2470, y: 2330 }], label: 'Clear the 5 Harbor Boys at the docks' },
-    ],
-    reward: 600,
-    quip: 'Five of them, and you walked out.',
-  },
-  {
-    title: 'Shake the Heat',
-    giver: 'Mama Rosa',
-    brief: ['The NBPD saw your face at the docks. Three stars, Rico. Survive the chase, then come home.'],
-    stages: [
-      { kind: 'survive', seconds: 30, label: 'Survive the police chase — 30 seconds' },
-      { kind: 'go', x: 870, y: 550, label: "Get back to Mama Rosa's Diner" },
-    ],
-    reward: 750,
-    quip: 'Three stars, and you are still here.',
-  },
-  {
-    title: 'The Big Score',
-    giver: 'Mama Rosa',
-    brief: ['One crate at the port. Rosa gold — enough to buy the docks. Grab it and run.'],
-    stages: [
-      { kind: 'go', x: 2400, y: 2270, label: 'Reach the port docks' },
-      { kind: 'carry', x: 870, y: 1550, label: "Carry the crate to Rico's Garage" },
-    ],
-    reward: 2500,
-    quip: 'The crate is ours. The NBPD is furious.',
-  },
-  {
-    title: 'The Getaway',
-    giver: 'Mama Rosa',
-    brief: ['The crate is ours — but the NBPD locked the city down. Four stars. Shake the chase, run for the beach boat.'],
-    stages: [
-      { kind: 'survive', seconds: 20, label: 'Survive the lockdown chase — 20 seconds' },
-      { kind: 'go', x: 1800, y: 2560, label: 'Reach the boat at the south beach' },
-    ],
-    reward: 1000,
-    quip: 'Neon Bay is yours, Rico. Go.',
-  },
-  {
-    title: "Viper's Cut",
-    giver: 'Elena "Viper" Cruz',
-    brief: ["Rico. Viper here. Four Syndicate defectors hide at Lighthouse Point — make them disappear."],
-    stages: [
-      { kind: 'go', x: 3150, y: 2400, label: 'Reach Lighthouse Point' },
-      { kind: 'kill', count: 4, at: [{ x: 3150, y: 2380 }, { x: 3250, y: 2420 }, { x: 3200, y: 2480 }, { x: 3300, y: 2440 }], label: 'Silence the 4 defectors' },
-    ],
-    reward: 1850,
-    quip: 'Clean. The Syndicate notices that.',
-  },
-  {
-    title: 'The Neon Limo',
-    giver: 'Elena "Viper" Cruz',
-    brief: ["The mayor's limo. Tonight it becomes Syndicate property — take it, no scratches."],
-    stages: [
-      { kind: 'steal', carKind: 'limo', x: 1800, y: 1300, label: "Steal the mayor's limo in Downtown Core" },
-      { kind: 'deliver', carKind: 'limo', x: 870, y: 1550, label: "Bring the limo to Rico's Garage" },
-    ],
-    reward: 2500,
-    quip: 'The mayor walks tonight. We ride.',
-  },
-  {
-    title: 'The Grand Casino Heist',
-    giver: 'Elena "Viper" Cruz',
-    brief: ['One vault. Rosa gold. The Neon Casino, tonight — grab it and run.'],
-    stages: [
-      { kind: 'go', x: 3000, y: 760, label: 'Reach the Neon Casino' },
-      { kind: 'carry', x: 870, y: 1550, cx: 3000, cy: 760, carryLabel: 'Grab the casino gold', label: "Carry the casino gold to Rico's Garage" },
-    ],
-    reward: 5000,
-    quip: 'The biggest score in Neon Bay history. We did it, Rico.',
-  },
+const MISSIONS_RAW = [
+  ['First Delivery', "Mama Rosa", ['Rico, welcome back. Take the package to Bayfront Mall. No stops.'], [['go', 870, 550, "Pick up the package at Mama Rosa's"], ['go', 1470, 1550, 'Deliver it to Bayfront Mall']], 150, 'Fast, but you made it. Good.'],
+  ['A Quiet Word', "Mama Rosa", ['The Harbor Boys lean on my suppliers. Grab the pistol, then have a word with their lookouts.'], [['go', 870, 1550, "Pick up the pistol at Rico's Garage"], ['kill', 3, [[1300, 1450], [1380, 1620], [1240, 1680]], 'Deal with the 3 Harbor Boys lookouts']], 250, 'Three lookouts, one word.'],
+  ['The Golden Comet', 'Mama Rosa', ['A Golden Comet sits in the mall lot. Its owner owes me. Take it to your garage.'], [['steal', 'sports', 1350, 1650, 'Steal the Golden Comet from the mall lot'], ['deliver', '', 870, 1550, "Bring the Comet to Rico's Garage"]], 400, 'A sports car, Rico? You always liked the fast ones.'],
+  ['Dockside Trouble', 'Mama Rosa', ['The Harbor Boys took my shipment at the port. Five of them, armed. Bring my crates back.'], [['go', 2400, 2270, 'Reach the Port of Neon Bay'], ['kill', 5, [[2350, 2200], [2450, 2180], [2520, 2260], [2300, 2300], [2470, 2330]], 'Clear the 5 Harbor Boys at the docks']], 600, 'Five of them, and you walked out.'],
+  ['Shake the Heat', 'Mama Rosa', ['The NBPD saw your face at the docks. Three stars, Rico. Survive the chase, then come home.'], [['survive', 30, 'Survive the police chase — 30 seconds'], ['go', 870, 550, "Get back to Mama Rosa's Diner"]], 750, 'Three stars, and you are still here.'],
+  ['The Big Score', 'Mama Rosa', ['One crate at the port. Rosa gold — enough to buy the docks. Grab it and run.'], [['go', 2400, 2270, 'Reach the port docks'], ['carry', 870, 1550, "Carry the crate to Rico's Garage", 2400, 2270, 'Grab the crate']], 2500, 'The crate is ours. The NBPD is furious.'],
+  ['The Getaway', 'Mama Rosa', ['The crate is ours — but the NBPD locked the city down. Four stars. Shake the chase, run for the beach boat.'], [['survive', 20, 'Survive the lockdown chase — 20 seconds'], ['go', 1800, 2560, 'Reach the boat at the south beach']], 1000, 'Neon Bay is yours, Rico. Go.'],
+  ["Viper's Cut", 'Elena "Viper" Cruz', ['Rico. Viper here. Four Syndicate defectors hide at Lighthouse Point — make them disappear.'], [['go', 3150, 2400, 'Reach Lighthouse Point'], ['kill', 4, [[3150, 2380], [3250, 2420], [3200, 2480], [3300, 2440]], 'Silence the 4 defectors']], 1850, 'Clean. The Syndicate notices that.'],
+  ['The Neon Limo', 'Elena "Viper" Cruz', ["The mayor's limo. Tonight it becomes Syndicate property — take it, no scratches."], [['steal', 'limo', 1800, 1300, "Steal the mayor's limo in Downtown Core"], ['deliver', 'limo', 870, 1550, "Bring the limo to Rico's Garage"]], 2500, 'The mayor walks tonight. We ride.'],
+  ['The Grand Casino Heist', 'Elena "Viper" Cruz', ['One vault. Rosa gold. The Neon Casino, tonight — grab it and run.'], [['go', 3000, 760, 'Reach the Neon Casino'], ['carry', 870, 1550, "Carry the casino gold to Rico's Garage", 3000, 760, 'Grab the casino gold']], 5000, 'The biggest score in Neon Bay history. We did it, Rico.'],
 ];
+
+// Compact mission table -> the same stage objects the engine already uses.
+const ST = (s) => {
+  const o = { kind: s[0] };
+  if (s[0] === 'go') { o.x = s[1]; o.y = s[2]; o.label = s[3]; }
+  else if (s[0] === 'kill') { o.count = s[1]; o.at = s[2].map((p) => ({ x: p[0], y: p[1] })); o.label = s[3]; }
+  else if (s[0] === 'steal' || s[0] === 'deliver') { o.carKind = s[1] || undefined; o.x = s[2]; o.y = s[3]; o.label = s[4]; }
+  else if (s[0] === 'survive') { o.seconds = s[1]; o.label = s[2]; }
+  else if (s[0] === 'carry') { o.x = s[1]; o.y = s[2]; o.label = s[3]; o.cx = s[4]; o.cy = s[5]; o.carryLabel = s[6]; }
+  return o;
+};
+export const MISSIONS = MISSIONS_RAW.map((m) => ({ title: m[0], giver: m[1], brief: m[2], stages: m[3].map(ST), reward: m[4], quip: m[5] }));
 
 let nextCarId = 1;
 
@@ -180,7 +92,7 @@ export function createGame(rng) {
 
   function spawnPed() {
     const point = randomSidewalkPoint(rng);
-    const ped = { x: point.x, y: point.y, angle: rng.range(0, Math.PI * 2), speed: 0, target: randomSidewalkPoint(rng), down: 0, scared: 0, fleeX: 0, fleeY: 0, radius: 12, shirt: rng.pick(['#e8e2d4', '#7fb3d5', '#d4693c', '#9cc3d8', '#c2a06a', '#8a4d9e', '#4d7d5a', '#e8b4b8', '#5a6b7d', '#f2c94c']), jogger: rng.chance(0.15) };
+    const ped = { x: point.x, y: point.y, angle: rng.range(0, Math.PI * 2), speed: 0, target: randomSidewalkPoint(rng), down: 0, scared: 0, fleeX: 0, fleeY: 0, radius: 12, shirt: rng.pick(['#e8e2d4', '#7fb3d5', '#d4693c', '#c2a06a', '#8a4d9e', '#f2c94c']), jogger: rng.chance(0.15) };
     ped.speed = ped.jogger ? rng.range(130, 170) : rng.range(55, 95);
     state.peds.push(ped);
     return ped;
@@ -339,7 +251,7 @@ export function createGame(rng) {
       state.player.pistol = true;
       state.player.weapon = 2;
       state.player.mag = PLAYER.magSize;
-      showBanner('Pistol acquired — click to shoot, F to punch', 3);
+      showBanner('Pistol acquired — click to shoot', 3);
     }
     if (state.stageIndex >= mission.stages.length) {
       state.cash += mission.reward;
@@ -685,7 +597,7 @@ export function createGame(rng) {
       burst(car.x, car.y, '#ffd23d', 10, 300);
       burst(car.x, car.y, '#ff5a3c', 8, 200);
       s.shake = Math.max(s.shake, 8);
-      showBanner('Your car is wrecked — find another ride', 2.5);
+      showBanner('Car wrecked — find another ride', 2.5);
     }
     p.x = car.x;
     p.y = car.y;
@@ -930,16 +842,14 @@ export function createGame(rng) {
     }
   }
 
-  function bustPlayer() {
-    const fine = Math.min(state.cash, Math.max(50, Math.floor(state.cash * 0.15)));
-    state.cash -= fine;
-    state.wantedPoints = 0;
-    state.wanted = 0;
-    state.cops = [];
-    state.courier = null;
+  function clearHeat(x, y) {
+    const s = state, p = s.player;
+    s.wantedPoints = 0;
+    s.wanted = 0;
+    s.cops = [];
+    s.courier = null;
     keepObjective();
-    for (const car of state.cars) if (car.driver === 'police') { car.driver = 'parked'; car.speed = 0; }
-    const p = state.player;
+    for (const car of s.cars) if (car.driver === 'police') { car.driver = 'parked'; car.speed = 0; }
     p.health = PLAYER.health;
     if (!p.onFoot) {
       const car = playerCar();
@@ -947,9 +857,15 @@ export function createGame(rng) {
       p.onFoot = true;
       p.carId = 0;
     }
-    p.x = 2070;
-    p.y = 1150;
+    p.x = x;
+    p.y = y;
     p.angle = -Math.PI / 2;
+  }
+
+  function bustPlayer() {
+    const fine = Math.min(state.cash, Math.max(50, Math.floor(state.cash * 0.15)));
+    state.cash -= fine;
+    clearHeat(2070, 1150);
     showBanner(`BUSTED — NBPD took $${fine} in fines`, 3);
     return EVENT_BUSTED;
   }
@@ -1056,23 +972,7 @@ export function createGame(rng) {
     const s = state;
     const lost = Math.min(s.cash, Math.max(25, Math.floor(s.cash * 0.08)));
     s.cash -= lost;
-    s.wantedPoints = 0;
-    s.wanted = 0;
-    s.cops = [];
-    s.courier = null;
-    keepObjective();
-    for (const car of s.cars) if (car.driver === 'police') { car.driver = 'parked'; car.speed = 0; }
-    const p = s.player;
-    p.health = PLAYER.health;
-    if (!p.onFoot) {
-      const car = playerCar();
-      if (car) car.driver = 'parked';
-      p.onFoot = true;
-      p.carId = 0;
-    }
-    p.x = 1470;
-    p.y = 640;
-    p.angle = -Math.PI / 2;
+    clearHeat(1470, 640);
     showBanner(`WASTED — you wake up at Neon Bay General, $${lost} lighter`, 3);
     s.wastedFlag = true;
   }
@@ -1122,7 +1022,7 @@ export function createGame(rng) {
         return;
       }
       if (f.timer <= 0) {
-        showBanner('Fare expired — the passenger walked away', 2.5);
+        showBanner('Fare expired', 2.5);
         if (f.ped) f.ped.hailing = false;
         s.fare = null;
         keepObjective();
@@ -1160,7 +1060,7 @@ export function createGame(rng) {
         return;
       }
       if (c.timer <= 0) {
-        showBanner('Courier job expired — too slow', 2.5);
+        showBanner('Courier job expired', 2.5);
         s.courier = null;
         s.objective = null;
         s.courierCd = 25;
@@ -1171,7 +1071,7 @@ export function createGame(rng) {
     if (s.courierCd <= 0) {
       const spot = randomSidewalkPoint(rng);
       spawnPickup('courier', spot.x, spot.y, 0);
-      showBanner('Courier job available — grab the package', 2.5);
+      showBanner('Courier job — grab the package', 2.5);
       s.courierCd = 9999;
     }
   }
@@ -1191,13 +1091,13 @@ export function createGame(rng) {
       } else if (item.kind === 'ammo') {
         p.mag = PLAYER.magSize;
         p.rpg = Math.min(5, p.rpg + 2);
-        showBanner('Ammo restocked — pistol + RPG rockets', 1.5);
+        showBanner('Ammo restocked', 1.5);
       } else if (item.kind === 'shotgun') {
         p.shotgun = item.amount;
-        showBanner(`Shotgun acquired — ${item.amount} shells`, 2);
+        showBanner('Shotgun acquired', 2);
       } else if (item.kind === 'armor') {
         p.armor = item.amount;
-        showBanner(`Armor vest — half damage for ${item.amount}s`, 2);
+        showBanner('Armor vest — half damage', 2);
       } else if (item.kind === 'repair') {
         const car = playerCar();
         if (!car) continue;
@@ -1216,7 +1116,7 @@ export function createGame(rng) {
         s.wantedPoints = 8;
         s.wanted = 4;
         s.lastCrime = s.time;
-        showBanner('Crate grabbed — the whole NBPD is coming!', 3);
+        showBanner('Crate grabbed — NBPD is coming!', 3);
         const mission = MISSIONS[s.missionIndex];
         const stage = mission.stages[s.stageIndex];
         s.objective = { x: stage.x, y: stage.y, label: stage.label };
@@ -1224,7 +1124,7 @@ export function createGame(rng) {
         const dest = randomSidewalkPoint(rng);
         s.courier = { x: dest.x, y: dest.y, timer: 40, reward: rng.int(120, 200) };
         s.objective = { x: dest.x, y: dest.y, label: `Courier delivery — ${Math.ceil(s.courier.timer)}s` };
-        showBanner('Courier job — deliver the package in 40s!', 3);
+        showBanner('Courier job — deliver in 40s!', 3);
       }
       s.pickups.splice(i, 1);
     }
