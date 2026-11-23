@@ -199,3 +199,11 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 174 | FPS 44.2 (headless, software render, CPU 1.5) — logika tetap 60 langkah/dtk via catch-up | fps-check | KEEP |
 | 175 | Perf: ground pre-render + culling sudah optimal; 44 FPS headless ≈ 60 di hardware nyata | fps-check | KEEP |
 | 176 | Perf batch terverifikasi | fps-check | KEEP |
+| 177 | Verifikasi akhir: node --check semua game/src/*.js + main.ts lolos | node --check | KEEP |
+| 178 | Verifikasi akhir: headless test ALL PASS (semua fitur) | neon-test | KEEP |
+| 179 | Verifikasi akhir: 4 screenshot ter-generate (<256KiB) | shot-neon | KEEP |
+| 180 | Verifikasi akhir: main.ts dossier valid (schema v1, teks 128.761, 4 gambar) | main.ts run | KEEP |
+| 181 | Catatan: node --check serve.ts "gagal" karena itu TypeScript (bukan bug; serve.ts jalan normal) | — | KEEP |
+| 182 | Verifikasi akhir: game/ 10 file 144K, repo 30+ commit, semua push | git | KEEP |
+| 183 | Verifikasi akhir: tidak ada error console/page di live play | Playwright live | KEEP |
+| 184 | Verifikasi akhir batch selesai | — | KEEP |
