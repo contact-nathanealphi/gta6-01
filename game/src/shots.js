@@ -3,7 +3,7 @@
 // by a simple scripted driver, so the frame is what a short game really looks
 // like and the same seed always gives the same frame.
 
-import { STEP } from './tune.js';
+import { PLAYER, STEP } from './tune.js';
 import { SCREEN_PLAY, SCREEN_TITLE } from './render.js';
 
 const IDLE = { up: false, down: false, left: false, right: false, run: false, enter: false, punch: false, reload: false, shoot: false };
@@ -108,7 +108,7 @@ export function stageShot(name, game) {
     p.x = 2330;
     p.y = 2290;
     p.pistol = true;
-    p.mag = 12;
+    p.mag = PLAYER.magSize;
     // Aim at the nearest rival and shoot, so the frame shows the firefight.
     // Short enough that the stage does not finish mid-scene.
     runFor(game, 1.5, () => {

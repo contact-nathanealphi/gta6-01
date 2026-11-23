@@ -497,6 +497,9 @@ export function createGame(rng) {
       p.shootCd = 0.2;
       p.mag -= 1;
       fireBullet(p.x, p.y, p.aimX, p.aimY, 'player', PLAYER.pistolDamage, 950);
+      // Muzzle flash at the gun tip.
+      const ma = Math.atan2(p.aimY - p.y, p.aimX - p.x);
+      burst(p.x + Math.cos(ma) * 26, p.y + Math.sin(ma) * 26, '#ffe9a3', 4, 140);
       state.shotFired = true;
       state.shotSound = true;
     }
@@ -556,6 +559,12 @@ export function createGame(rng) {
     if (throttle > 0) car.speed += spec.accel * throttle * dt;
     else if (throttle < 0) car.speed += spec.accel * throttle * dt * 1.4;
     else car.speed -= car.speed * 0.9 * dt;
+    // Exhaust puff when pulling away hard.
+    if (throttle > 0 && Math.abs(car.speed) > 120 && rng.chance(0.12)) {
+      const bx = car.x - Math.cos(car.angle) * (spec.length / 2);
+      const by = car.y - Math.sin(car.angle) * (spec.length / 2);
+      state.particles.push({ x: bx, y: by, vx: -Math.cos(car.angle) * 40, vy: -Math.sin(car.angle) * 40, life: 0.5, maxLife: 0.5, color: '#9a9a9a', size: 3 });
+    }
     car.speed -= car.speed * 0.12 * dt;
     car.speed = Math.max(-spec.topSpeed * 0.4, Math.min(spec.topSpeed, car.speed));
     const steer = (input.left ? -1 : 0) + (input.right ? 1 : 0);
@@ -630,6 +639,11 @@ export function createGame(rng) {
     if (car.health <= 0 && !car.smoked) {
       car.smoked = true;
       car.speed = 0;
+      // A wrecked car blows its doors off: a burst of smoke and sparks.
+      burst(car.x, car.y, '#888888', 16, 260);
+      burst(car.x, car.y, '#ffd23d', 10, 300);
+      burst(car.x, car.y, '#ff5a3c', 8, 200);
+      state.shake = Math.max(state.shake, 8);
       showBanner('Your car is wrecked — find another ride', 2.5);
     }
     p.x = car.x;

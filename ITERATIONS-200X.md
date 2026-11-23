@@ -54,3 +54,11 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 29 | Misi ke-7 "The Getaway" — epilog: survive 20 dtk (4 bintang) lalu ke pantai selatan, reward $1.000; total $5.650 | headless test (7 misi selesai) | KEEP |
 | 30 | HUD "Mission X of 6" → dinamis `of ${MISSIONS.length}` (render.js import MISSIONS) | headless test | KEEP |
 | 31 | README: six→seven jobs, mobil + landmark baru didokumentasikan | — | KEEP |
+| 32 | Muzzle flash (burst kuning di ujung pistol) saat menembak | headless test | KEEP |
+| 33 | Ledakan saat mobil hancur (asap + percikan + guncangan) | headless test | KEEP |
+| 34 | Asap knalpot saat akselerasi keras | headless test | KEEP |
+| 35 | Minimap tampilkan pickup (hijau health, hijau cash, emas ammo, coklat crate) | headless test | KEEP |
+| 36 | Lampu rem merah saat mobil mundur | headless test | KEEP |
+| 37 | Jendela gedung menyala (pola tetap per gedung, tidak berkedip) | headless test + screenshot | KEEP |
+| 38 | Title screen "Six jobs" → "Seven jobs" (konsisten dengan misi ke-7) | screenshot 1-start | KEEP |
+| 39 | shots.js mag hardcode 12 → PLAYER.magSize (14) | headless test + screenshot | KEEP |

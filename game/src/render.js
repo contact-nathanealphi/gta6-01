@@ -130,6 +130,14 @@ export function createRenderer(canvas) {
       ctx.fillRect(b.x, b.y, b.w, b.h);
       ctx.fillStyle = b.glass;
       ctx.fillRect(b.x + 8, b.y + 8, b.w - 16, 14);
+      // Lit windows: a fixed pattern per building (from its position, so it
+      // never flickers), a few warm dots on the roof face.
+      ctx.fillStyle = 'rgba(255, 220, 130, 0.75)';
+      const cols = Math.max(1, Math.floor((b.w - 20) / 26));
+      for (let i = 0; i < cols; i += 1) {
+        const lit = ((b.x * 7 + b.y * 13 + i * 17) % 5) < 2;
+        if (lit) ctx.fillRect(b.x + 12 + i * 26, b.y + 30, 10, 12);
+      }
       ctx.strokeStyle = 'rgba(0,0,0,0.35)';
       ctx.lineWidth = 2;
       ctx.strokeRect(b.x, b.y, b.w, b.h);
@@ -189,6 +197,12 @@ export function createRenderer(canvas) {
     ctx.fillStyle = '#ffe9a3';
     ctx.fillRect(len / 2 - 2, -wid / 2 + 2, 3, 5);
     ctx.fillRect(len / 2 - 2, wid / 2 - 7, 3, 5);
+    // Brake lights glow red at the rear when the car is reversing.
+    if (car.speed < -20) {
+      ctx.fillStyle = '#ff2a2a';
+      ctx.fillRect(-len / 2 - 1, -wid / 2 + 2, 3, 5);
+      ctx.fillRect(-len / 2 - 1, wid / 2 - 7, 3, 5);
+    }
     if (car.kind === 'patrol') {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(-len / 2 + 2, -wid / 2 + 2, 10, wid - 4);
@@ -446,6 +460,14 @@ export function createRenderer(canvas) {
       ctx.fillStyle = '#ff5a5a';
       ctx.fillRect(x0 + rival.x * sx - 2, y0 + rival.y * sy - 2, 4, 4);
     }
+    // Pickups on the minimap: health green, cash gold, crate brown.
+    for (const item of state.pickups) {
+      if (item.kind === 'health') ctx.fillStyle = '#57d977';
+      else if (item.kind === 'cash') ctx.fillStyle = '#2fae5f';
+      else if (item.kind === 'ammo') ctx.fillStyle = '#f2c94c';
+      else ctx.fillStyle = '#8a6f4d';
+      ctx.fillRect(x0 + item.x * sx - 2, y0 + item.y * sy - 2, 4, 4);
+    }
     if (state.objective) {
       ctx.fillStyle = PALETTE.marker;
       ctx.beginPath();
@@ -610,7 +632,7 @@ export function createRenderer(canvas) {
     if (screen === SCREEN_TITLE) {
       drawPanel('NEON BAY', [
         'Rico Vega is back in Neon Bay — and Mama Rosa has work for him.',
-        'Six jobs. One big score. The whole NBPD watching.',
+        'Seven jobs. One big score. The whole NBPD watching.',
         '',
         'WASD / arrows — move and drive      E — enter / steal a car',
         'Mouse + click — aim and shoot      F — punch      R — reload',
