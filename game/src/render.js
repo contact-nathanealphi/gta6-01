@@ -717,8 +717,11 @@ export function createRenderer(canvas) {
     if (p.shotgun > 0) {
       text(`Shotgun  ${p.shotgun} shells`, 28, 122, 15, PALETTE.gold, 'left', true);
     } else if (p.pistol) {
-      text(`Pistol  ${p.mag}/${PLAYER.magSize}`, 28, 122, 15, PALETTE.hudText, 'left');
+      // A low magazine warns the player to reload or find ammo.
+      const lowAmmo = p.mag <= 3 && p.reloadT <= 0;
+      text(`Pistol  ${p.mag}/${PLAYER.magSize}`, 28, 122, 15, lowAmmo ? PALETTE.danger : PALETTE.hudText, 'left', true);
       if (p.reloadT > 0) text('Reloading…', 150, 122, 15, PALETTE.gold, 'left');
+      else if (lowAmmo) text('LOW AMMO — press R', 150, 122, 15, PALETTE.danger, 'left', true);
     }
     if (p.armor > 0) {
       text(`Armor  ${Math.ceil(p.armor)}s`, 28, 140, 15, '#4d8dff', 'left', true);
@@ -911,6 +914,9 @@ export function createRenderer(canvas) {
     drawHeadlights(state, cam);
     ctx.restore();
     if (screen === SCREEN_TITLE) {
+      const saveLine = ui.hasSave
+        ? (ui.saveStoryDone ? `Saved game: $${ui.saveCash.toLocaleString('en-US')} — story complete, free roam` : `Saved game: $${ui.saveCash.toLocaleString('en-US')} — mission ${ui.saveMission + 1} of ${MISSIONS.length}`)
+        : '';
       drawPanel('NEON BAY', [
         'Rico Vega is back in Neon Bay — and Mama Rosa has work for him.',
         'Seven jobs. One big score. The whole NBPD watching.',
@@ -918,6 +924,7 @@ export function createRenderer(canvas) {
         'WASD / arrows — move and drive      E — enter / steal a car',
         'Mouse + click — aim and shoot      F — punch      R — reload',
         'H — horn      Shift — run      P — save      M — mute      Esc — pause',
+        ...(saveLine ? ['', saveLine] : []),
       ], ui.hasSave ? 'ENTER — Continue your story    ·    R — Start over' : 'ENTER — Start the story');
       text('A complete open-world crime game · built for make.fun', viewW / 2, viewH - 40, 15, PALETTE.hudMuted, 'center');
       return;

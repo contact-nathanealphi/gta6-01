@@ -169,3 +169,7 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 144 | Perbaiki: ?time diterapkan ulang setelah reset shot (shot me-reset waktu) | screenshot malam | KEEP |
 | 145 | Verifikasi malam: overlay gelap + jam ☾ 21:00 + kerucut headlight terlihat + game tetap terbaca | screenshot malam | KEEP |
 | 146 | Verifikasi headless test tetap ALL PASS | headless test | KEEP |
+| 147 | HUD: peringatan LOW AMMO merah saat mag ≤3 ("press R") | headless test | KEEP |
+| 148 | Title: info save (cash + misi ke-X / story complete) diteruskan via ui | headless test | KEEP |
+| 149 | Title: baris save tampil di panel bila ada save (panel tumbuh mengikuti) | headless test | KEEP |
+| 150 | Title batch terverifikasi (shot title tanpa save tetap sama) | headless test | KEEP |

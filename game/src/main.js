@@ -224,6 +224,9 @@ function runGame() {
     const mouse = input.mouse();
     renderer.draw(state, game.city, screen, {
       hasSave: !!save,
+      saveCash: save ? save.cash : 0,
+      saveMission: save ? save.missionIndex : 0,
+      saveStoryDone: save ? !!save.storyDone : false,
       nearCar: nearCar ? `Steal the ${nearCar.kind === 'patrol' ? 'NBPD Interceptor' : nearCar.kind}` : null,
       mouse,
     });
