@@ -15,8 +15,8 @@ export const WALK = 26;
 
 export const PLAYER = {
   radius: 14,
-  walkSpeed: 245,
-  runSpeed: 365,
+  walkSpeed: 250,
+  runSpeed: 375,
   health: 100,
   punchDamage: 15,
   punchRange: 46,
@@ -25,13 +25,13 @@ export const PLAYER = {
 };
 
 export const CAR_KINDS = {
-  sedan: { label: 'Bayside Sedan', topSpeed: 430, accel: 500, turn: 2.6, color: '#c94f43', length: 44, width: 22 },
-  sports: { label: 'Golden Comet', topSpeed: 580, accel: 680, turn: 3.1, color: '#f2c94c', length: 46, width: 22 },
+  sedan: { label: 'Bayside Sedan', topSpeed: 430, accel: 540, turn: 2.6, color: '#c94f43', length: 44, width: 22 },
+  sports: { label: 'Golden Comet', topSpeed: 600, accel: 680, turn: 3.1, color: '#f2c94c', length: 46, width: 22 },
   taxi: { label: 'Bay Cab', topSpeed: 420, accel: 480, turn: 2.6, color: '#f2d13d', length: 44, width: 22 },
   van: { label: 'Harbor Van', topSpeed: 350, accel: 380, turn: 2.2, color: '#7d8aa0', length: 52, width: 24 },
   pickup: { label: 'Dune Runner', topSpeed: 460, accel: 520, turn: 2.5, color: '#5a7d4a', length: 48, width: 23 },
-  patrol: { label: 'NBPD Interceptor', topSpeed: 520, accel: 620, turn: 3.0, color: '#2f6fd0', length: 46, width: 22 },
-  muscle: { label: 'Bay Muscle', topSpeed: 500, accel: 620, turn: 2.4, color: '#d4693c', length: 48, width: 23 },
+  patrol: { label: 'NBPD Interceptor', topSpeed: 530, accel: 620, turn: 3.0, color: '#2f6fd0', length: 46, width: 22 },
+  muscle: { label: 'Bay Muscle', topSpeed: 500, accel: 620, turn: 2.6, color: '#d4693c', length: 48, width: 23 },
   limo: { label: 'Neon Limo', topSpeed: 380, accel: 400, turn: 2.0, color: '#3a3a4a', length: 58, width: 24 },
 };
 
@@ -46,21 +46,21 @@ export const WANTED = {
   kill: 3,
   maxPoints: 10,
   /** Seconds with no crime before the heat starts cooling off. */
-  coolDelay: 15,
+  coolDelay: 13,
   coolRate: 0.5,
   /** A cop must be this close to spot the player and keep the heat on. */
   spotRange: 520,
 };
 
 export const COPS = {
-  footSpeed: 265,
+  footSpeed: 255,
   footArrestTime: 1.9,
   footHealth: 50,
   carChaseSpeed: 550,
   ramDamage: 8,
 };
 
-export const RIVAL = { health: 50, shootRange: 340, shootEvery: 1.1, damage: 6 };
+export const RIVAL = { health: 50, shootRange: 340, shootEvery: 1.2, damage: 5 };
 
 export const PALETTE = {
   grass: '#6f9e57',

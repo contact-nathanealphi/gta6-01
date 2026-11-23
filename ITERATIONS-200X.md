@@ -123,3 +123,13 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 98 | neon-test.mjs dibuat ulang lengkap (semua test 1–8) + perbaiki bug loop misi (pakai misi AKTIF, teleport mobil saat mengemudi) | headless test ALL PASS | KEEP |
 | 99 | shot-neon.mjs dibuat ulang (serve + Playwright + __shotReady + JPEG <256KiB) | screenshot 4 scene | KEEP |
 | 100 | Verifikasi visual: shotgun 3 shells + misi 4/7 + repair + cash + dialog tampil benar | screenshot 4-mission | KEEP |
+| 101 | Tuning: sports topSpeed 580→600 (hero car paling cepat) | headless test | KEEP |
+| 102 | Tuning: patrol topSpeed 520→530 (polisi lebih bisa mengejar) | headless test | KEEP |
+| 103 | Tuning: muscle turn 2.4→2.6 (handling lebih baik) | headless test | KEEP |
+| 104 | Tuning: sedan accel 500→540 (mobil awal tidak lemot) | headless test | KEEP |
+| 105 | Tuning: rival shootEvery 1.1→1.2 (grup musuh kurang menekan) | headless test | KEEP |
+| 106 | Tuning: rival damage 6→5 (pertarungan grup lebih bisa dimenangkan) | headless test | KEEP |
+| 107 | Tuning: foot cop speed 265→255 (lebih mudah lari dari polisi jalan kaki) | headless test | KEEP |
+| 108 | Tuning: wanted coolDelay 15→13 dtk (panas lebih cepat dingin) | headless test | KEEP |
+| 109 | Tuning: player walk 245→250, run 365→375 (jalan kaki lebih lincah) | headless test | KEEP |
+| 110 | Tuning batch terverifikasi: semua misi tetap selesai, soak stabil | headless test ALL PASS | KEEP |
