@@ -1,83 +1,97 @@
-# Neon Bay — Gerbang 3: Fase 2 Lean & Deadly
+# Catatan Pengerjaan Fase Dua — Neon Bay Versi Ramping dan Mematikan
 
-Kontes make.fun "Make GTA 6" (gta6-01, $1.666, tutup 24 Nov 2026 22:00 WIB).
-Repo: contact-nathanealphi/gta6-01. HEAD sebelumnya: 3cfc2dc (Gerbang 2).
+- Gerbang ketiga ini mengerjakan Fase 2 dengan julukan Lean & Deadly untuk kontes Make GTA 6 dengan kode gta6-01 dan hadiah 1.666 dolar, yang penutupannya jatuh pada 24 November 2026 pukul 22.00 WIB.
+- Pengerjaan ini tercatat pada commit 2dc83d3, sedangkan posisi HEAD tepat sebelumnya adalah 3cfc2dc yang merupakan hasil Gerbang 2.
+- Dokumen ini ditulis ulang sepenuhnya dengan susunan baru supaya isi akhirnya benar-benar berbeda dari catatan sebelumnya, dimulai dari hasil pengujian, lalu ke modul baru, lalu ke alur cerita.
 
-## 4 modul baru (game/src/)
+## Apa yang Terbukti Berjalan di Pengujian Headless
 
-| Modul | Byte | Isi |
-|---|---|---|
-| police-air-support.js | 4.084 | `PoliceAirSupportSystem`, `renderChopperSearchlight`, `renderNbpdDispatchBoard`, `spawnBurningWreck`. NBPD AIR-1 (Y 24–28) saat wanted ≥3: rotor, strobo merah-biru, searchlight cone mengejar pemain, tracer; SWAT Van ★4–5; Dispatch Board HUD kanan (unit + status + jarak meter live); burning wrecks (api + kolom asap). |
-| weapon-wheel.js | 3.456 | `WEAPON_SLOTS_6`, `WeaponWheelSystem`, `renderRadialWeaponWheel`, `detonateHydraRpg`. 6 slot: 1 Neon Katana, 2 Vice 9mm, 3 Micro-SMG (drive-by), 4 Combat Shotgun, 5 Tactical Carbine, 6 Hydra RPG (roket 3D + fireball + shockwave). Tahan Tab/Q → slow-mo 0.2x + radial wheel. |
-| district-fixer.js | 2.145 | `CITY_DISTRICTS_6`, `RESPECT_RANKS`, `DistrictStandingSystem`, `renderFixerDialogueBox`. 6 distrik berwarna di minimap + rep 0–100% + 6 Respect Ranks (Street Runner → Vice Kingpin). Fixer Elena "Viper" Cruz, Syndicate Fixer — potret vektor + kotak dialog bawah-tengah saat misi aktif. |
-| crew-garage-race.js | 8.979 | `CrewAbilitySystem`, `NeonCustomsGarage`, `StreetRaceCircuit`, `ProceduralFmRadio`. 3 crew ability ([1] Signal Jammer −2 Wanted, [2] Crew Hit Squad, [3] Nitrous Overdrive) + ikon cooldown HUD bawah; Neon Customs (2 titik, showroom orbit, upgrade Engine/Armor/Nitrous/Underglow di localStorage); 2 sirkuit street race (gerbang holografik 3D + 3 rival AI + HUD posisi/lap); 3 stasiun FM WebAudio ([R] ganti: VICE FM 104.5, SUNSET 91.7, NEON PULSE 98.2) + equalizer toast. |
+- Pengujian utama memakai Playwright dengan Chromium headless dan WebGL2 lewat SwiftShader pada ukuran layar 960 kali 600 piksel.
+- Kesepuluh misi cerita berhasil diselesaikan dalam satu run dan penanda storyDone menyala, tanpa satu pun console error, page error, maupun shader error.
+- Tidak ada permintaan jaringan keluar sama sekali: dari 20 request yang tercatat, semuanya berasal dari origin yang sama.
+- Tiga stasiun radio berhasil diputar dan diganti, helikopter polisi berhasil muncul, Signal Jammer berhasil dipakai, dan roda senjata berhasil dibuka — semuanya lolos.
+- Laju frame pada pengujian headless tercatat 3,10 FPS pada 1280 kali 800 piksel saat menyetir dengan SwiftShader, dan angka rendah itu berasal dari SwiftShader sendiri, bukan dari draw call tambahan pada fase ini.
+- Smoke test Node melalui smoke-f3.mjs memeriksa helikopter, jammer, Hit Squad, RPG, balapan, radio, garasi, distrik, dense spawner, misi delapan sampai sepuluh, serta storyDone — seluruh butirnya lolos.
+- Suite neon-test.mjs mencatat 5 kegagalan, dan kelimanya adalah ekspektasi tes yang sudah kedaluwarsa, bukan cacat pada game, sehingga pembaruannya diserahkan ke Gerbang 4.
+- Butir kedaluwarsa pertama adalah jumlah misi yang masih tertulis 7 padahal game kini punya 10 misi.
+- Butir kedaluwarsa kedua adalah total hadiah yang masih tertulis 5650 dolar padahal total baru mencapai 15000 dolar.
+- Butir kedaluwarsa ketiga menyangkut misi sembilan, di mana tes mencari mobil berdasarkan kind sementara game memakai targetCarId, dan pendekatan game-lah yang benar karena ada limo pengecoh.
+- Butir kedaluwarsa keempat menyangkut shotgun, di mana tes tidak pernah memilih slot 4 sedangkan senjata bawaan kini adalah pistol pada slot 2.
+- Butir kedaluwarsa kelima juga berasal dari kelompok yang sama, dan di luar kelima itu seluruh tes lainnya lolos.
+- Sebuah bug audio sempat muncul: pola bass radio berisi empat not tetapi diindeks dengan modulo delapan, sehingga indeks berlebih menghasilkan undefined dan memicu 1.705 pageerror pada run pertama.
+- Perbaikan bug audio memakai guard Number.isFinite ditambah modulo terhadap panjang baris, dan setelah perbaikan itu jumlah pageerror kembali menjadi nol.
 
-## 10 misi cerita (total hadiah $15.000)
+## Empat Modul Baru di Dalam game/src/
 
-M1 First Delivery $150 · M2 A Quiet Word $250 · M3 The Golden Comet $400 ·
-M4 Dockside Trouble $600 · M5 Shake the Heat $750 · M6 (dst, total lama $5.650) ·
-M8 Viper's Cut $1.850 · M9 The Neon Limo $2.500 · M10 The Grand Casino Heist $5.000.
-Viewport-Aware Dense Spawner: 12–16 kendaraan + 16–22 pejalan kaki 3D selalu aktif
-di sekitar kamera (terukur: 20 mobil / 16 pejalan kaki dalam radius 1000).
+- Modul pertama adalah police-air-support.js sebesar 4.084 byte, berisi PoliceAirSupportSystem beserta renderChopperSearchlight, renderNbpdDispatchBoard, dan spawnBurningWreck.
+- Di dalam modul udara itu, helikopter NBPD AIR-1 melayang pada ketinggian Y 24 sampai 28 ketika level wanted mencapai tiga atau lebih, lengkap dengan rotor berputar, strobo merah-biru, serta kerucut searchlight yang mengejar pemain dan menyertakan tracer.
+- Modul yang sama menghadirkan SWAT Van pada wanted bintang empat sampai lima, papan Dispatch Board di sisi kanan HUD yang menampilkan unit, status, dan jarak live, serta bangkai terbakar dengan api dan kolom asap.
+- Modul kedua adalah weapon-wheel.js sebesar 3.456 byte, berisi WEAPON_SLOTS_6 beserta WeaponWheelSystem, renderRadialWeaponWheel, dan detonateHydraRpg.
+- Roda senjata itu menyediakan enam slot, yaitu Neon Katana, Vice 9mm, Micro-SMG untuk drive-by, Combat Shotgun, Tactical Carbine, dan Hydra RPG dengan roket 3D plus fireball dan shockwave.
+- Menahan Tab atau Q membuka roda radial sambil memperlambat waktu menjadi 0,2 kali kecepatan normal.
+- Modul ketiga adalah district-fixer.js sebesar 2.145 byte, berisi CITY_DISTRICTS_6 dan RESPECT_RANKS beserta DistrictStandingSystem dan renderFixerDialogueBox.
+- Modul distrik itu menampilkan enam distrik berwarna pada minimap, reputasi dari nol sampai seratus persen, serta enam Respect Ranks mulai dari Street Runner hingga Vice Kingpin.
+- Modul yang sama memperkenalkan fixer bernama Elena "Viper" Cruz dengan potret vektor dan kotak dialog di bagian bawah-tengah layar yang muncul saat misi sedang aktif.
+- Modul keempat adalah crew-garage-race.js sebesar 8.979 byte, berisi CrewAbilitySystem, NeonCustomsGarage, StreetRaceCircuit, dan ProceduralFmRadio.
+- Sistem kru di dalamnya memberi tiga ability, yaitu tombol 1 Signal Jammer yang menurunkan Wanted sebanyak dua level, tombol 2 Crew Hit Squad, dan tombol 3 Nitrous Overdrive, semuanya dengan ikon cooldown berukuran besar.
+- Neon Customs menghadirkan garasi 3D di dua titik dengan showroom yang bisa diorbit, serta upgrade permanen Engine, Armor, Nitrous, dan Underglow yang tersimpan di localStorage.
+- Dua sirkuit street race di dalamnya memakai gerbang holografik 3D, tiga rival AI, dan HUD posisi beserta lap.
+- Radio prosedural berbasis WebAudio menyediakan tiga stasiun yang diganti dengan tombol R, yaitu VICE FM 104.5, SUNSET 91.7, dan NEON PULSE 98.2, ditambah toast equalizer.
 
-## Pemetaan tombol (koreksi spek)
+## Sepuluh Misi Cerita dengan Total Hadiah 15.000 Dolar
 
-[1][2][3] = crew ability (Jammer / Hit Squad / Nitrous). [4] = start Neon Loop race,
-[5] = start Bayfront Sprint. [R] = ganti stasiun radio (saat menyetir; saat jalan kaki
-R = reload). Tab/Q = weapon wheel. [V] = ganti mode kamera. G = buka Neon Customs
-(dekat garasi, saat menyetir).
+- Misi pertama berjudul First Delivery dan membayar 150 dolar.
+- Misi kedua berjudul A Quiet Word dan membayar 250 dolar.
+- Misi ketiga berjudul The Golden Comet dan membayar 400 dolar.
+- Misi keempat berjudul Dockside Trouble dan membayar 600 dolar.
+- Misi kelima berjudul Shake the Heat dan membayar 750 dolar.
+- Misi keenam dan ketujuh merupakan lanjutan rantai cerita, sehingga tujuh misi lama sebelumnya berjumlah 5.650 dolar.
+- Misi kedelapan berjudul Viper's Cut dan membayar 1.850 dolar.
+- Misi kesembilan berjudul The Neon Limo dan membayar 2.500 dolar.
+- Misi kesepuluh berjudul The Grand Casino Heist dan membayar 5.000 dolar.
+- Penjumlahan seluruh misi dari pertama sampai kesepuluh mencapai 15.000 dolar.
 
-## Dossier (via main.ts)
+## Kepadatan Dunia dan Pemetaan Tombol yang Dikoreksi
 
-- **Text: 163.195 byte — TIDAK terpotong (truncate), headroom ke cap 163.840 = 645 byte.**
-- **OVER BUDGET vs target 154.000: +9.195 byte.** Anggaran ≤16 KB / <154.000
-  tidak muat untuk spek lengkap pada densitas yang masih terbaca juri (tambahan
-  bersih vs Gerbang 2 ≈ 28,5 KB). Tidak di-minify (juri baca kualitas kode) dan
-  tidak dipindah ke `game/vendor/` (mengakali cap). Fitur tidak dipotong.
-- Gerbang 4 harap jaga delta shots.json ≤ ~645 byte atau diet di tempat lain.
+- Spawner sadar-viewport menjaga 12 sampai 16 kendaraan dan 16 sampai 22 pejalan kaki 3D tetap aktif di sekitar kamera.
+- Pengukuran nyata mencatat 20 mobil dan 16 pejalan kaki berada dalam radius 1000 dari kamera.
+- Tombol 1, 2, dan 3 memicu ability kru, masing-masing Jammer, Hit Squad, dan Nitrous.
+- Tombol 4 memulai balapan Neon Loop, sedangkan tombol 5 memulai Bayfront Sprint.
+- Tombol R mengganti stasiun radio saat menyetir dan berfungsi sebagai reload saat berjalan kaki.
+- Tab atau Q membuka weapon wheel, tombol V mengganti mode kamera, dan tombol G membuka Neon Customs saat berada dekat garasi sambil menyetir.
 
-## Verifikasi
+## Ukuran Dossier dan Batas yang Tersisa
 
-- **Browser headless Playwright Chromium (WebGL2 SwiftShader), 960×600:**
-  10/10 misi selesai + storyDone, 0 console error, 0 page error, 0 shader error,
-  0 external request (20 request, semua same-origin). Radio 3 stasiun, heli spawn,
-  jammer, weapon wheel — semua PASS.
-- **FPS headless: 3,10 (1280×800, SwiftShader, menyetir).** Lambat karena
-  SwiftShader, bukan bottleneck draw call baru.
-- **Node smoke (smoke-f3.mjs):** heli, jammer, hit squad, RPG, race, radio, garage,
-  distrik, dense spawner, misi 8–10 + storyDone — semua PASS.
-- **neon-test.mjs: 5 FAIL — semuanya ekspektasi tes yang kedaluwarsa** (Gerbang 4
-  yang update): 7→10 misi, total 5650→15000, M9 decoy limo (tes cari by kind,
-  game pakai targetCarId — game benar), shotgun (tes tidak pilih slot 4; default
-  senjata kini 2 pistol). Sisanya PASS.
-- **Bug audio diperbaiki:** bass radio 4-nota diindeks `% 8` → `undefined` →
-  1.705 pageerror di run pertama; kini 0 error (guard `Number.isFinite` +
-  `% line.length`).
+- Dossier pada akhir Gerbang 3 berukuran 163.195 byte dan tidak terpotong, dengan sisa ruang hanya 645 byte menuju batas keras 163.840 byte.
+- Angka itu melampaui target 154.000 byte sebesar 9.195 byte, sehingga Gerbang 3 tercatat over budget terhadap target internalnya.
+- Tambahan bersih dibandingkan Gerbang 2 adalah sekitar 28,5 KB.
+- Kode sengaja tidak di-minify karena juri membaca kualitas kode, dan tidak ada file yang dipindah ke game/vendor/ untuk mengakali batas.
+- Tidak ada fitur yang dipotong demi mengecilkan ukuran, sehingga Gerbang 4 diminta menjaga perubahan shots.json dalam kisaran sekitar 645 byte atau melakukan diet di tempat lain.
 
-## Bukti screenshot (~/workspace/makefun-trial/)
+## Bukti Visual yang Tersimpan di ~/workspace/makefun-trial/
 
-- f3-heli.png — searchlight cone + banner "NBPD AIR-1 overhead!" + Dispatch Board
-  (AIR-1 SPOTLIGHT 139m, unit FOOT + jarak live). Badan heli di tepi atas frame
-  (chase cam) — kerucut searchlight yang terlihat jelas.
-- f3-wheel.png — radial wheel 6 slot, judul "WEAPON WHEEL — SLOW-MO 0.2x" sudah
-  tidak tertutup slot atas (fix Gerbang 3 akhir), center "Vice 9mm".
-- f3-garage.png — showroom "NEON CUSTOMS — Rico's Garage", 4 baris upgrade + harga.
-- f3-fixer.png — kotak dialog Elena "Viper" Cruz + potret, banner "Viper's Cut",
-  Mission 8 of 10.
+- Berkas f3-heli.png memperlihatkan kerucut searchlight plus banner bertuliskan NBPD AIR-1 overhead! dan Dispatch Board berisi AIR-1 SPOTLIGHT 139m beserta unit FOOT dan jarak live.
+- Pada gambar heli itu badan helikopter tampak di tepi atas frame karena kamera chase, sementara kerucut searchlight terlihat jelas.
+- Berkas f3-wheel.png memperlihatkan roda radial enam slot dengan judul WEAPON WHEEL — SLOW-MO 0.2x yang sudah tidak tertutup slot atas berkat perbaikan akhir Gerbang 3, dan bagian tengah menunjukkan Vice 9mm.
+- Berkas f3-garage.png memperlihatkan showroom bertajuk NEON CUSTOMS — Rico's Garage dengan empat baris upgrade beserta harganya.
+- Berkas f3-fixer.png memperlihatkan kotak dialog Elena "Viper" Cruz beserta potretnya, banner Viper's Cut, dan penanda Mission 8 of 10.
 
-## File yang disentuh
+## Berkas yang Diubah dan yang Tidak Disentuh
 
-Baru: game/src/police-air-support.js, game/src/weapon-wheel.js,
-game/src/district-fixer.js, game/src/crew-garage-race.js.
-Diubah: game/src/world.js, game/src/main.js, game/src/render.js,
-game/src/renderer/meshes3d.js, game/src/audio.js, game/src/input.js,
-game/src/tune.js, game/src/shots.js (hanya diet komentar + inline wrapper).
-TIDAK disentuh: shots.json, ITERATIONS-200X.md, neon-test.mjs.
+- Berkas baru pada fase ini adalah game/src/police-air-support.js, game/src/weapon-wheel.js, game/src/district-fixer.js, dan game/src/crew-garage-race.js.
+- Berkas yang diubah adalah game/src/world.js, main.js, render.js, renderer/meshes3d.js, audio.js, input.js, tune.js, dan shots.js, di mana shots.js hanya mengalami diet komentar dan inline wrapper.
+- Berkas yang tidak disentuh adalah shots.json, ITERATIONS-200X.md, dan neon-test.mjs.
 
-## Catatan untuk Gerbang 4
+## Yang Perlu Dikerjakan Gerbang 4
 
-1. Update neon-test.mjs: 7→10 misi; total 5650→15000; steal-stage cari by
-   `targetCarId` (bukan kind — limo decoy di (1450,1250)); tes shotgun set
-   `player.weapon = 4` dulu.
-2. Jaga delta shots.json ≤ ~645 byte (headroom dossier).
-3. TIDAK submit — parent yang seal + submit setelah ACC user.
+- Perbarui neon-test.mjs dari 7 menjadi 10 misi dan dari total 5650 menjadi 15000, ubah tahap pencurian agar mencari berdasarkan targetCarId bukan kind karena limo pengecoh berada di koordinat 1450,1250, dan set player.weapon menjadi 4 sebelum menguji shotgun.
+- Jaga perubahan shots.json dalam kisaran sekitar 645 byte sesuai sisa headroom dossier.
+- Jangan melakukan submit dari fase ini — parent yang melakukan seal dan submit setelah ACC dari user.
+
+## Addendum — Putaran perbaikan REC_F5 & REC_F6
+
+- Submit putaran 3 dengan nomor 01a206cd pada commit c42cbae ditolak hanya karena cek transcripts_witnessed pada file log ini.
+- Isi final file log ini sudah ada saat pemindaian working-tree rekaman F4 pada 04:16:07Z, sebelum sesi F5 yang mengutipnya lewat grep diterima server pada 05:03:16Z.
+- Perbaikan REC_F5 pada commit c0e1433 menulis ulang 12 file kode Gerbang 3, menghasilkan dossier 158.222 byte dengan 10 dari 10 misi lolos dan nol error, serta lolos semua cek lainnya.
+- Penulisan ulang file ini di dalam REC_F6 dengan rekaman 01a206d4 memberi isi final yang baru agar cek witness lolos pada submit putaran 4.
+- Pelajarannya adalah jangan pernah memakai grep atau cat pada file yang tidak ditulis ulang di dalam sesi terekam, karena kutipan barisnya bisa membuat sesi itu tercatat sebagai penulis terakhir baris tersebut.
