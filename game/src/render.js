@@ -337,6 +337,19 @@ export function createRenderer(canvas) {
         ctx.fill();
         ctx.fillStyle = '#ffffff';
         text('A', item.x, y + 5, 12, '#ffffff', 'center', true);
+      } else if (item.kind === 'repair') {
+        // A repair wrench: a grey spanner on a green square.
+        ctx.fillStyle = '#2fae5f';
+        ctx.fillRect(item.x - 12, y - 12, 24, 24);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(item.x - 3, y - 3, 5, 0.5, Math.PI * 1.6);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(item.x + 1, y + 1);
+        ctx.lineTo(item.x + 8, y + 8);
+        ctx.stroke();
       } else if (item.kind === 'cash') {
         ctx.fillStyle = '#2fae5f';
         ctx.beginPath();
@@ -592,6 +605,7 @@ export function createRenderer(canvas) {
       else if (item.kind === 'ammo') ctx.fillStyle = '#f2c94c';
       else if (item.kind === 'courier') ctx.fillStyle = '#ffffff';
       else if (item.kind === 'shotgun') ctx.fillStyle = '#ff8c42';
+      else if (item.kind === 'repair') ctx.fillStyle = '#2fae5f';
       else ctx.fillStyle = '#8a6f4d';
       ctx.fillRect(x0 + item.x * sx - 2, y0 + item.y * sy - 2, 4, 4);
     }

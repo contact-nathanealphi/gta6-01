@@ -103,3 +103,7 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 78 | Taxi: tanda TAXI kuning di atas penumpang yang hailing | headless test | KEEP |
 | 79 | updateFare dipanggil dari step() | headless test | KEEP |
 | 80 | Taxi: test headless lengkap (hail→pickup→deliver→bayar) | headless test | KEEP |
+| 81 | Repair: pickup kunci inggris spawn di garasi + dermaga (+50 HP) | headless test | KEEP |
+| 82 | Repair: perbaiki mobil pemain; di jalan kaki pickup tetap di tempat (tanpa bunyi) | headless test | KEEP |
+| 83 | Repair: render kunci inggris + dot hijau minimap | headless test | KEEP |
+| 84 | Repair: test headless + perbaiki bug CARS undefined (max HP mobil = 100) | headless test | KEEP |

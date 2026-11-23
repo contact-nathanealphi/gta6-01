@@ -311,6 +311,9 @@ export function createGame(rng) {
     // Armor vests at the hospital and the garage.
     spawnPickup('armor', 1500, 350, 20);
     spawnPickup('armor', 850, 1600, 20);
+    // Repair wrenches at the garage and the docks.
+    spawnPickup('repair', 800, 1550, 50);
+    spawnPickup('repair', 2450, 2250, 50);
     startMission(0);
   }
 
@@ -1180,6 +1183,8 @@ export function createGame(rng) {
       const item = state.pickups[i];
       item.bob += dt * 3;
       if (Math.hypot(item.x - p.x, item.y - p.y) > 46) continue;
+      // A repair wrench only works while driving — on foot it stays put.
+      if (item.kind === 'repair' && p.onFoot) continue;
       state.pickupSound = true;
       if (item.kind === 'health') {
         if (p.health >= PLAYER.health) continue;
@@ -1195,6 +1200,11 @@ export function createGame(rng) {
       } else if (item.kind === 'armor') {
         p.armor = item.amount;
         showBanner(`Armor vest — half damage for ${item.amount}s`, 2);
+      } else if (item.kind === 'repair') {
+        const car = playerCar();
+        if (!car) continue;
+        car.health = Math.min(100, car.health + item.amount);
+        showBanner(`Car repaired +${item.amount} HP`, 1.5);
       } else if (item.kind === 'cash') {
         state.cash += item.amount;
         state.cashSound = true;
