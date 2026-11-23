@@ -146,7 +146,7 @@ export function createGame(rng) {
   function newPlayer(x, y) {
     return {
       x, y, angle: -Math.PI / 2, speed: 0, onFoot: true, carId: 0, radius: PLAYER.radius,
-      health: PLAYER.health, pistol: false, mag: 0, shotgun: 0, punchCd: 0, shootCd: 0, reloadT: 0, invuln: 0,
+      health: PLAYER.health, pistol: false, mag: 0, shotgun: 0, armor: 0, punchCd: 0, shootCd: 0, reloadT: 0, invuln: 0,
       aimX: x, aimY: y - 100,
     };
   }
@@ -304,6 +304,9 @@ export function createGame(rng) {
     // A shotgun waits at the docks and one by the police HQ.
     spawnPickup('shotgun', 2380, 2240, 6);
     spawnPickup('shotgun', 2150, 1350, 6);
+    // Armor vests at the hospital and the garage.
+    spawnPickup('armor', 1500, 350, 20);
+    spawnPickup('armor', 850, 1600, 20);
     startMission(0);
   }
 
@@ -443,6 +446,7 @@ export function createGame(rng) {
     }
     const p = state.player;
     if (p.invuln > 0) p.invuln -= dt;
+    if (p.armor > 0) p.armor = Math.max(0, p.armor - dt);
     if (p.punchCd > 0) p.punchCd -= dt;
     if (p.shootCd > 0) p.shootCd -= dt;
     if (p.reloadT > 0) {
@@ -908,7 +912,7 @@ export function createGame(rng) {
           pc.health -= COPS.ramDamage * dt;
           pc.speed *= 0.92;
           if (rng.chance(0.02)) {
-            p.health -= 1;
+            p.health -= p.armor > 0 ? 0.5 : 1;
             state.hurtFlash = Math.max(state.hurtFlash, 0.6);
             burst(pc.x, pc.y, '#ffd23d', 4, 160);
           }
@@ -1028,7 +1032,8 @@ export function createGame(rng) {
             }
           }
         } else if (p.invuln <= 0 && hitCircle(p)) {
-          p.health -= b.damage;
+          // Armor halves incoming damage while it lasts.
+          p.health -= p.armor > 0 ? b.damage / 2 : b.damage;
           p.invuln = 0.4;
           state.hurtFlash = 1;
           burst(p.x, p.y, '#c94f43', 6, 160);
@@ -1119,6 +1124,9 @@ export function createGame(rng) {
       } else if (item.kind === 'shotgun') {
         p.shotgun = item.amount;
         showBanner(`Shotgun acquired — ${item.amount} shells`, 2);
+      } else if (item.kind === 'armor') {
+        p.armor = item.amount;
+        showBanner(`Armor vest — half damage for ${item.amount}s`, 2);
       } else if (item.kind === 'cash') {
         state.cash += item.amount;
         state.cashSound = true;

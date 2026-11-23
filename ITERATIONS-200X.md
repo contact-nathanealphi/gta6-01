@@ -88,3 +88,8 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 63 | Shotgun: pickup memberi shell + banner | headless test | KEEP |
 | 64 | Shotgun: render pickup + di tangan + HUD "Shotgun X shells" + dot oranye minimap | headless test | KEEP |
 | 65 | Shotgun disimpan di save/load | headless test | KEEP |
+| 66 | Armor: field p.armor (detik tersisa) | headless test | KEEP |
+| 67 | Armor pickup spawn di rumah sakit + garasi (20 dtk) | headless test | KEEP |
+| 68 | Armor: pickup memberi 20 dtk + banner | headless test | KEEP |
+| 69 | Armor: decay per detik; damage peluru + tabrakan jadi setengah | headless test (armor test) | KEEP |
+| 70 | Armor: render perisai + cincin biru berdenyut + HUD "Armor Xs" + panel HUD lebih tinggi | headless test | KEEP |

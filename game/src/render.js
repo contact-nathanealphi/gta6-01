@@ -323,6 +323,20 @@ export function createRenderer(canvas) {
         ctx.fillRect(item.x - 4, y - 5, 10, 10);
         ctx.fillStyle = PALETTE.gold;
         ctx.fillRect(item.x + 10, y - 3, 4, 6);
+      } else if (item.kind === 'armor') {
+        // An armor vest: a blue shield.
+        ctx.fillStyle = '#2f6fd0';
+        ctx.beginPath();
+        ctx.moveTo(item.x, y - 12);
+        ctx.lineTo(item.x + 11, y - 7);
+        ctx.lineTo(item.x + 11, y + 4);
+        ctx.lineTo(item.x, y + 12);
+        ctx.lineTo(item.x - 11, y + 4);
+        ctx.lineTo(item.x - 11, y - 7);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        text('A', item.x, y + 5, 12, '#ffffff', 'center', true);
       } else if (item.kind === 'cash') {
         ctx.fillStyle = '#2fae5f';
         ctx.beginPath();
@@ -427,6 +441,14 @@ export function createRenderer(canvas) {
     ctx.beginPath();
     ctx.arc(p.x + Math.cos(p.angle) * 5, p.y + Math.sin(p.angle) * 5, 6, 0, Math.PI * 2);
     ctx.fill();
+    // Armor: a pulsing blue ring while it lasts.
+    if (p.armor > 0) {
+      ctx.strokeStyle = `rgba(47,111,208,${0.5 + 0.3 * Math.sin(state.time * 6)})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 20, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     if (p.shotgun > 0) {
       // A shotgun is drawn longer and thicker than the pistol.
       ctx.strokeStyle = '#3a3a3a';
@@ -592,9 +614,10 @@ export function createRenderer(canvas) {
 
   function drawHud(state, ui) {
     const p = state.player;
-    // Cash, health and wanted stars, top-left.
+    // Cash, health and wanted stars, top-left. The panel is tall enough for
+    // the weapon and armor lines below the stars.
     ctx.fillStyle = PALETTE.hudPanel;
-    ctx.fillRect(14, 14, 250, 92);
+    ctx.fillRect(14, 14, 250, 140);
     text(`$${state.cash.toLocaleString('en-US')}`, 28, 46, 28, PALETTE.gold, 'left', true);
     ctx.fillStyle = '#333';
     ctx.fillRect(28, 58, 180, 12);
@@ -611,6 +634,9 @@ export function createRenderer(canvas) {
     } else if (p.pistol) {
       text(`Pistol  ${p.mag}/${PLAYER.magSize}`, 28, 122, 15, PALETTE.hudText, 'left');
       if (p.reloadT > 0) text('Reloading…', 150, 122, 15, PALETTE.gold, 'left');
+    }
+    if (p.armor > 0) {
+      text(`Armor  ${Math.ceil(p.armor)}s`, 28, 140, 15, '#4d8dff', 'left', true);
     }
     // Speedometer when driving: the player's car speed in km/h.
     if (!p.onFoot) {
