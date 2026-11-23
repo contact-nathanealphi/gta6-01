@@ -4,10 +4,8 @@
 
 export const WORLD = { width: 3600, height: 2700 };
 
-/** The simulation's fixed step, in seconds: 60 updates a second whatever the display's rate. */
 export const STEP = 1 / 60;
 
-/** Avenues run north-south, streets run east-west. Road half-width is 60, so a road is 120 wide. */
 export const AVENUES = [300, 900, 1500, 2100, 2700, 3300];
 export const STREETS = [300, 800, 1300, 1800, 2300];
 export const ROAD_HALF = 60;
@@ -37,18 +35,16 @@ export const CAR_KINDS = {
 
 export const TRAFFIC_COUNT = 22;
 export const PED_COUNT = 30;
+export const DENSE = { cars: 14, peds: 18, radius: 1000, carCap: 34, pedCap: 44 };
 
 export const WANTED = {
-  /** Points per crime; level is floor(points / 2), capped at 5. */
   stealOccupied: 2,
   hitPed: 2,
   shoot: 1,
   kill: 3,
   maxPoints: 10,
-  /** Seconds with no crime before the heat starts cooling off. */
   coolDelay: 13,
   coolRate: 0.5,
-  /** A cop must be this close to spot the player and keep the heat on. */
   spotRange: 520,
 };
 
@@ -89,5 +85,4 @@ export const PALETTE = {
 
 export const FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif';
 
-/** Where the save lives between visits (this browser only). */
 export const SAVE_KEY = 'neon-bay.save.v1';

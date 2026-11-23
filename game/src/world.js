@@ -2,6 +2,10 @@
 
 import { AVENUES, CAR_KINDS, COPS, PALETTE, PED_COUNT, PLAYER, RIVAL, STREETS, TRAFFIC_COUNT, WANTED, WORLD } from './tune.js';
 import { buildCity, lineBlocked, randomRoadPoint, randomSidewalkPoint, resolveBuildings } from './city.js';
+import { PoliceAirSupportSystem, spawnBurningWreck } from './police-air-support.js';
+import { WeaponWheelSystem, detonateHydraRpg } from './weapon-wheel.js';
+import { DistrictStandingSystem } from './district-fixer.js';
+import { CrewAbilitySystem, NeonCustomsGarage, StreetRaceCircuit, ProceduralFmRadio } from './crew-garage-race.js';
 
 export const EVENT_BUSTED = 1;
 export const EVENT_WASTED = 2;
@@ -13,7 +17,7 @@ export const MISSIONS = [
     title: 'First Delivery',
     giver: "Mama Rosa",
     brief: ["Rico, welcome back. The docks don't pay like they used to.",
-      'Take this package from my diner to Bayfront Mall. No questions, no stops.'],
+      'Take the package to Bayfront Mall. No stops.'],
     stages: [
       { kind: 'go', x: 870, y: 550, label: "Pick up the package at Mama Rosa's" },
       { kind: 'go', x: 1470, y: 1550, label: 'Deliver the package to Bayfront Mall' },
@@ -25,7 +29,7 @@ export const MISSIONS = [
     title: 'A Quiet Word',
     giver: "Mama Rosa",
     brief: ['The Harbor Boys lean on my suppliers. A word, they said.',
-      'Pick up the pistol at your garage, then have that word with their lookouts by the mall.'],
+      'Grab the pistol, then have that word with their lookouts.'],
     stages: [
       { kind: 'go', x: 870, y: 1550, label: "Pick up the pistol at Rico's Garage" },
       { kind: 'kill', count: 3, at: [{ x: 1300, y: 1450 }, { x: 1380, y: 1620 }, { x: 1240, y: 1680 }], label: 'Deal with the 3 Harbor Boys lookouts' },
@@ -37,7 +41,7 @@ export const MISSIONS = [
     title: 'The Golden Comet',
     giver: 'Mama Rosa',
     brief: ['A Golden Comet sits in the mall lot. Its owner owes me. A lot.',
-      'Take it. Bring it to your garage. Parked cars do not argue.'],
+      'Take it to your garage. Parked cars do not argue.'],
     stages: [
       { kind: 'steal', carKind: 'sports', x: 1350, y: 1650, label: 'Steal the Golden Comet from the mall lot' },
       { kind: 'deliver', x: 870, y: 1550, label: "Bring the Comet to Rico's Garage" },
@@ -49,7 +53,7 @@ export const MISSIONS = [
     title: 'Dockside Trouble',
     giver: 'Mama Rosa',
     brief: ['The Harbor Boys took my shipment at the port. Five of them, armed.',
-      'Go to the docks. Bring my crates back — or make them regret it.'],
+      'Go to the docks. Bring my crates back.'],
     stages: [
       { kind: 'go', x: 2400, y: 2270, label: 'Reach the Port of Neon Bay' },
       { kind: 'kill', count: 5, at: [{ x: 2350, y: 2200 }, { x: 2450, y: 2180 }, { x: 2520, y: 2260 }, { x: 2300, y: 2300 }, { x: 2470, y: 2330 }], label: 'Clear the 5 Harbor Boys at the docks' },
@@ -61,7 +65,7 @@ export const MISSIONS = [
     title: 'Shake the Heat',
     giver: 'Mama Rosa',
     brief: ['The NBPD saw your face at the docks. Three stars, Rico.',
-      'Survive the chase, then come home. Do not lead them here.'],
+      'Survive the chase, then come home.'],
     stages: [
       { kind: 'survive', seconds: 30, label: 'Survive the police chase — 30 seconds' },
       { kind: 'go', x: 870, y: 550, label: "Get back to Mama Rosa's Diner" },
@@ -73,7 +77,7 @@ export const MISSIONS = [
     title: 'The Big Score',
     giver: 'Mama Rosa',
     brief: ['One crate at the port. Rosa gold — enough to buy the docks.',
-      'Grab it and run for the garage. The whole NBPD will be on you.'],
+      'Grab it and run. The whole NBPD will be on you.'],
     stages: [
       { kind: 'go', x: 2400, y: 2270, label: 'Reach the port docks' },
       { kind: 'carry', x: 870, y: 1550, label: "Carry the crate to Rico's Garage" },
@@ -85,13 +89,46 @@ export const MISSIONS = [
     title: 'The Getaway',
     giver: 'Mama Rosa',
     brief: ['The crate is ours — but the NBPD locked the city down. Four stars.',
-      'Shake the chase, then run for the beach. A boat waits at the south shore.'],
+      'Shake the chase, then run for the beach boat.'],
     stages: [
       { kind: 'survive', seconds: 20, label: 'Survive the lockdown chase — 20 seconds' },
       { kind: 'go', x: 1800, y: 2560, label: 'Reach the boat at the south beach' },
     ],
     reward: 1000,
     quip: 'Neon Bay is yours, Rico. Go.',
+  },
+  {
+    title: "Viper's Cut",
+    giver: 'Elena "Viper" Cruz',
+    brief: ["Rico. Viper here. Four Syndicate defectors hide at Lighthouse Point — make them disappear."],
+    stages: [
+      { kind: 'go', x: 3150, y: 2400, label: 'Reach Lighthouse Point' },
+      { kind: 'kill', count: 4, at: [{ x: 3150, y: 2380 }, { x: 3250, y: 2420 }, { x: 3200, y: 2480 }, { x: 3300, y: 2440 }], label: 'Silence the 4 defectors' },
+    ],
+    reward: 1850,
+    quip: 'Clean. The Syndicate notices that.',
+  },
+  {
+    title: 'The Neon Limo',
+    giver: 'Elena "Viper" Cruz',
+    brief: ["The mayor's limo. Tonight it becomes Syndicate property — take it, no scratches."],
+    stages: [
+      { kind: 'steal', carKind: 'limo', x: 1800, y: 1300, label: "Steal the mayor's limo in Downtown Core" },
+      { kind: 'deliver', carKind: 'limo', x: 870, y: 1550, label: "Bring the limo to Rico's Garage" },
+    ],
+    reward: 2500,
+    quip: 'The mayor walks tonight. We ride.',
+  },
+  {
+    title: 'The Grand Casino Heist',
+    giver: 'Elena "Viper" Cruz',
+    brief: ['One vault. Rosa gold. The Neon Casino, tonight — grab it and run.'],
+    stages: [
+      { kind: 'go', x: 3000, y: 760, label: 'Reach the Neon Casino' },
+      { kind: 'carry', x: 870, y: 1550, cx: 3000, cy: 760, carryLabel: 'Grab the casino gold', label: "Carry the casino gold to Rico's Garage" },
+    ],
+    reward: 5000,
+    quip: 'The biggest score in Neon Bay history. We did it, Rico.',
   },
 ];
 
@@ -100,14 +137,26 @@ let nextCarId = 1;
 export function createGame(rng) {
   const city = buildCity(rng);
   function freshState() {
-    return { time: 105.8, cash: 120, wantedPoints: 0, wanted: 0, lastCrime: -999, cars: [], peds: [], cops: [], rivals: [], pickups: [], bullets: [], particles: [], skids: [], missionIndex: 0, stageIndex: 0, missionActive: false, stageTimer: 0, hasCrate: false, targetCarId: 0, rivalsLeft: 0, objective: null, banner: null, bannerTimer: 0, dialogue: [], dialogueTimer: 0, storyDone: false, roadblockCd: 0, nearMissCd: 0, nearMissStreak: 0, nearMissStreakT: 0, courier: null, courierCd: 20, fare: null, fareCd: 15, floaters: [], skidSound: false, skidCd: 0 };
+    return { time: 105.8, cash: 120, wantedPoints: 0, wanted: 0, lastCrime: -999, cars: [], peds: [], cops: [], rivals: [], pickups: [], bullets: [], particles: [], skids: [], missionIndex: 0, stageIndex: 0, missionActive: false, stageTimer: 0, hasCrate: false, targetCarId: 0, rivalsLeft: 0, objective: null, banner: null, bannerTimer: 0, dialogue: [], dialogueTimer: 0, storyDone: false, roadblockCd: 0, nearMissCd: 0, nearMissStreak: 0, nearMissStreakT: 0, courier: null, courierCd: 20, fare: null, fareCd: 15, floaters: [], skidSound: false, skidCd: 0, air: { heli: null, heliT: 0, swat: false }, wrecks: [], rep: {}, crewCd: [0, 0, 0], race: { active: false, circuit: 0, gate: 0, lap: 1, laps: 2, reward: 0 }, nitrousT: 0, radioToast: null, garageOpen: false, garagePoint: null };
   }
   const state = { ...freshState(), player: null, muted: false, shotFired: false, shotSound: false, punchSound: false, pickupSound: false, cashSound: false, crashLoud: false, sirenOn: false, shake: 0, wantedFlash: 0, hurtFlash: 0 };
+  const fx = {
+    burst, fireBullet, showBanner, floatText, addWanted,
+    spawnPoliceCar: spawnPatrolCar, spawnAlly: spawnAllyCar, spawnRaceCar,
+  };
+  const air = new PoliceAirSupportSystem(state, fx);
+  const wheel = new WeaponWheelSystem(state);
+  const district = new DistrictStandingSystem(state);
+  const crew = new CrewAbilitySystem(state, fx);
+  const garage = new NeonCustomsGarage(state);
+  const race = new StreetRaceCircuit(state, fx);
+  const radio = new ProceduralFmRadio(state);
+  state.upgrades = garage.levels;
 
   function newPlayer(x, y) {
     return {
       x, y, angle: -Math.PI / 2, speed: 0, onFoot: true, carId: 0, radius: PLAYER.radius,
-      health: PLAYER.health, pistol: false, mag: 0, shotgun: 0, armor: 0, punchCd: 0, shootCd: 0, reloadT: 0, invuln: 0,
+      health: PLAYER.health, pistol: false, mag: 0, shotgun: 0, weapon: 2, rpg: 3, armor: 0, punchCd: 0, shootCd: 0, reloadT: 0, invuln: 0,
       aimX: x, aimY: y - 100,
     };
   }
@@ -171,11 +220,26 @@ export function createGame(rng) {
     return cop;
   }
 
-  function spawnPatrolCar() {
+  function spawnPatrolCar(kind) {
     const point = randomRoadPoint(rng, state.player, 550);
-    const car = newCar('patrol', point.x, point.y, 0, 'police');
+    const car = newCar(kind || 'patrol', point.x, point.y, 0, 'police');
     car.angle = Math.atan2(state.player.y - point.y, state.player.x - point.x);
     car.targetSpeed = COPS.carChaseSpeed;
+    state.cars.push(car);
+    return car;
+  }
+
+  function spawnAllyCar() {
+    const p = state.player;
+    const car = newCar('muscle', p.x + 120, p.y, p.angle, 'ally');
+    car.targetSpeed = 480; car.allyT = 30; car.hitT = 0;
+    state.cars.push(car);
+    return car;
+  }
+
+  function spawnRaceCar(kind, x, y) {
+    const car = newCar(kind, x, y, Math.PI / 2, 'race');
+    car.targetSpeed = 430; car.raceGate = 0; car.raceLap = 1;
     state.cars.push(car);
     return car;
   }
@@ -282,8 +346,9 @@ export function createGame(rng) {
       state.lastCrime = state.time;
       state.objective = { x: state.player.x, y: state.player.y, label: stage.label };
     } else if (stage.kind === 'carry') {
-      spawnPickup('crate', 2400, 2270, 0);
-      state.objective = { x: 2400, y: 2270, label: 'Grab the crate at the port' };
+      const cx = stage.cx ?? 2400, cy = stage.cy ?? 2270;
+      spawnPickup('crate', cx, cy, 0);
+      state.objective = { x: cx, y: cy, label: stage.carryLabel || 'Grab the crate at the port' };
     } else {
       state.objective = { x: stage.x, y: stage.y, label: stage.label };
     }
@@ -299,11 +364,14 @@ export function createGame(rng) {
     state.stageIndex += 1;
     if (state.missionIndex === 1 && state.stageIndex === 1 && !state.player.pistol) {
       state.player.pistol = true;
+      state.player.weapon = 2;
       state.player.mag = PLAYER.magSize;
       showBanner('Pistol acquired — click to shoot, F to punch', 3);
     }
     if (state.stageIndex >= mission.stages.length) {
       state.cash += mission.reward;
+      const d = district.grant(state.player.x, state.player.y, 12);
+      floatText(state.player.x, state.player.y - 56, d.name + ' +12%', '#ff2e88');
       floatText(state.player.x, state.player.y - 30, `+$${mission.reward}`, PALETTE.gold);
       state.missionActive = false;
       state.objective = null;
@@ -415,6 +483,10 @@ export function createGame(rng) {
     updatePeds(dt);
     events |= updateCops(dt);
     events |= updateRivals(dt);
+    air.update(dt);
+    crew.tick(dt);
+    race.update(dt);
+    updateAllies(dt);
     updateBullets(dt);
     if (state.wastedFlag) {
       state.wastedFlag = false;
@@ -463,7 +535,20 @@ export function createGame(rng) {
       events |= punch();
     }
     if (input.shoot && p.shootCd <= 0 && p.reloadT <= 0) {
-      if (p.shotgun > 0) {
+      const w = p.weapon || 1;
+      if (w === 6 && p.rpg > 0) {
+        p.shootCd = 1.1; p.rpg -= 1;
+        fireBullet(p.x, p.y, p.aimX, p.aimY, 'player', 120, 700, true);
+        state.shotFired = true; state.shotSound = true;
+      } else if (w === 3) {
+        p.shootCd = 0.09;
+        fireBullet(p.x, p.y, p.aimX, p.aimY, 'player', 10, 1000);
+        state.shotFired = true; state.shotSound = true;
+      } else if (w === 5 && p.pistol && p.mag > 0) {
+        p.shootCd = 0.28; p.mag -= 1;
+        fireBullet(p.x, p.y, p.aimX, p.aimY, 'player', 34, 1100);
+        state.shotFired = true; state.shotSound = true;
+      } else if (w === 4 && p.shotgun > 0) {
         p.shootCd = 0.7;
         p.shotgun -= 1;
         for (let i = -2; i <= 2; i += 1) {
@@ -474,7 +559,7 @@ export function createGame(rng) {
         burst(p.x + Math.cos(ma) * 26, p.y + Math.sin(ma) * 26, '#ffe9a3', 7, 180);
         state.shotFired = true;
         state.shotSound = true;
-      } else if (p.pistol && p.mag > 0) {
+      } else if (w === 2 && p.pistol && p.mag > 0) {
         p.shootCd = 0.2;
         p.mag -= 1;
         fireBullet(p.x, p.y, p.aimX, p.aimY, 'player', PLAYER.pistolDamage, 950);
@@ -490,9 +575,11 @@ export function createGame(rng) {
 
   function punch() {
     const p = state.player;
+    const range = p.weapon === 1 ? 70 : PLAYER.punchRange;
+    const dmg = p.weapon === 1 ? 30 : PLAYER.punchDamage;
     const tryHit = (target, damage, isCrime) => {
       const d = Math.hypot(target.x - p.x, target.y - p.y);
-      if (d > PLAYER.punchRange + target.radius) return false;
+      if (d > range + target.radius) return false;
       const ang = Math.atan2(target.y - p.y, target.x - p.x);
       let diff = Math.abs(ang - p.angle);
       if (diff > Math.PI) diff = Math.PI * 2 - diff;
@@ -504,8 +591,8 @@ export function createGame(rng) {
       if (isCrime) addWanted(1);
       return true;
     };
-    for (const rival of state.rivals) tryHit(rival, PLAYER.punchDamage, false);
-    for (const cop of state.cops) tryHit(cop, PLAYER.punchDamage, true);
+    for (const rival of state.rivals) tryHit(rival, dmg, false);
+    for (const cop of state.cops) tryHit(cop, dmg, true);
     for (const ped of state.peds) {
       if (ped.down > 0) continue;
       if (tryHit(ped, 100, true)) {
@@ -517,12 +604,12 @@ export function createGame(rng) {
     return 0;
   }
 
-  function fireBullet(x, y, tx, ty, from, damage, speed) {
+  function fireBullet(x, y, tx, ty, from, damage, speed, rocket) {
     if (state.bullets.length >= 60) return;
     const ang = Math.atan2(ty - y, tx - x);
     const spread = from === 'player' ? 0.015 : 0.12;
     const a = ang + (rng.next() - 0.5) * spread * 2;
-    state.bullets.push({ x: x + Math.cos(a) * 24, y: y + Math.sin(a) * 24, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, life: 0.9, from, damage });
+    state.bullets.push({ x: x + Math.cos(a) * 24, y: y + Math.sin(a) * 24, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, life: 0.9, from, damage, rocket: !!rocket });
   }
 
   function updateDriving(dt, input) {
@@ -533,6 +620,7 @@ export function createGame(rng) {
       return 0;
     }
     const spec = CAR_KINDS[car.kind];
+    const top = spec.topSpeed * (1 + 0.15 * (state.upgrades.engine || 0));
     const throttle = (input.up ? 1 : 0) - (input.down ? 0.65 : 0);
     if (throttle > 0) car.speed += spec.accel * throttle * dt;
     else if (throttle < 0) car.speed += spec.accel * throttle * dt * 1.4;
@@ -548,7 +636,7 @@ export function createGame(rng) {
       state.particles.push({ x: fx, y: fy, vx: 0, vy: -30, life: 0.7, maxLife: 0.7, color: '#666666', size: 4 });
     }
     car.speed -= car.speed * 0.12 * dt;
-    car.speed = Math.max(-spec.topSpeed * 0.4, Math.min(spec.topSpeed, car.speed));
+    car.speed = Math.max(-top * 0.4, Math.min(top, car.speed));
     const steer = (input.left ? -1 : 0) + (input.right ? 1 : 0);
     const grip = Math.min(1, Math.abs(car.speed) / 220);
     car.angle += steer * spec.turn * grip * dt * (car.speed >= 0 ? 1 : -1);
@@ -567,6 +655,20 @@ export function createGame(rng) {
         state.skidSound = true;
         state.skidCd = 0.8;
       }
+    }
+    if (state.nitrousT > 0) {
+      state.nitrousT -= dt;
+      car.speed = Math.min(top * 1.6, car.speed + 900 * dt);
+      const bx = car.x - Math.cos(car.angle) * (spec.length / 2);
+      const by = car.y - Math.sin(car.angle) * (spec.length / 2);
+      state.particles.push({ x: bx, y: by, vx: -Math.cos(car.angle) * 120, vy: -Math.sin(car.angle) * 120, life: 0.4, maxLife: 0.4, color: '#2e7bff', size: 4 });
+    }
+    if (input.shoot && p.weapon === 3 && p.shootCd <= 0) {
+      p.shootCd = 0.12;
+      const tx = input.aimX !== undefined ? input.aimX : p.aimX;
+      const ty = input.aimY !== undefined ? input.aimY : p.aimY;
+      fireBullet(car.x, car.y, tx, ty, 'player', 10, 1000);
+      state.shotSound = true;
     }
     const nx = car.x + Math.cos(car.angle) * car.speed * dt;
     const ny = car.y + Math.sin(car.angle) * car.speed * dt;
@@ -623,6 +725,7 @@ export function createGame(rng) {
     }
     if (car.health <= 0 && !car.smoked) {
       car.smoked = true;
+      spawnBurningWreck(state, car.x, car.y, car.angle);
       car.speed = 0;
       burst(car.x, car.y, '#888888', 16, 260);
       burst(car.x, car.y, '#ffd23d', 10, 300);
@@ -858,6 +961,33 @@ export function createGame(rng) {
     return events;
   }
 
+  function updateAllies(dt) {
+    for (const car of state.cars) {
+      if (car.driver !== 'ally') continue;
+      car.allyT -= dt;
+      if (car.allyT <= 0) { car.driver = 'traffic'; car.targetSpeed = 220; continue; }
+      let target = null, best = 800;
+      for (const cop of state.cops) { const d = Math.hypot(cop.x - car.x, cop.y - car.y); if (d < best) { best = d; target = cop; } }
+      for (const rival of state.rivals) { const d = Math.hypot(rival.x - car.x, rival.y - car.y); if (d < best) { best = d; target = rival; } }
+      if (!target) continue;
+      const want = Math.atan2(target.y - car.y, target.x - car.x);
+      let diff = want - car.angle;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      car.angle += Math.max(-2.6 * dt, Math.min(2.6 * dt, diff));
+      car.speed = Math.min(520, car.speed + 480 * dt);
+      car.x += Math.cos(car.angle) * car.speed * dt;
+      car.y += Math.sin(car.angle) * car.speed * dt;
+      car.hitT -= dt;
+      if (best < 48 && car.hitT <= 0) {
+        car.hitT = 0.6;
+        target.health -= 30;
+        burst(target.x, target.y, '#ffd23d', 8, 200);
+        car.speed *= 0.5;
+      }
+    }
+  }
+
   function bustPlayer() {
     const fine = Math.max(50, Math.floor(state.cash * 0.15));
     state.cash -= fine;
@@ -975,7 +1105,10 @@ export function createGame(rng) {
           }
         }
       }
-      if (dead) state.bullets.splice(i, 1);
+      if (dead) {
+        if (b.rocket) detonateHydraRpg(state, b.x, b.y);
+        state.bullets.splice(i, 1);
+      }
     }
   }
 
@@ -1114,9 +1247,9 @@ export function createGame(rng) {
         p.health = Math.min(PLAYER.health, p.health + item.amount);
         showBanner(`Health +${item.amount}`, 1.5);
       } else if (item.kind === 'ammo') {
-        if (!p.pistol) continue;
         p.mag = PLAYER.magSize;
-        showBanner('Pistol reloaded', 1.5);
+        p.rpg = Math.min(5, p.rpg + 2);
+        showBanner('Ammo restocked — pistol + RPG rockets', 1.5);
       } else if (item.kind === 'shotgun') {
         p.shotgun = item.amount;
         showBanner(`Shotgun acquired — ${item.amount} shells`, 2);
@@ -1202,7 +1335,7 @@ export function createGame(rng) {
       if (p.carId === state.targetCarId) return completeStage();
     } else if (stage.kind === 'deliver') {
       const car = playerCar();
-      if (car && car.kind === 'sports' && Math.hypot(p.x - stage.x, p.y - stage.y) < 75) return completeStage();
+      if (car && car.kind === (stage.carKind || 'sports') && Math.hypot(p.x - stage.x, p.y - stage.y) < 75) return completeStage();
     } else if (stage.kind === 'survive') {
       state.stageTimer -= dt;
       state.objective = { x: p.x, y: p.y, label: `${stage.label} — ${Math.max(0, Math.ceil(state.stageTimer))}s` };
@@ -1225,7 +1358,12 @@ export function createGame(rng) {
 
   function maintainCrowd() {
     const p = state.player;
+    let nearCars = 0, nearPeds = 0;
+    for (const c of state.cars) if (c.driver === 'traffic' && Math.hypot(c.x - p.x, c.y - p.y) < 1000) nearCars += 1;
+    for (const ped of state.peds) if (Math.hypot(ped.x - p.x, ped.y - p.y) < 1000) nearPeds += 1;
+    while (nearCars < 14 && state.cars.length < 34) { spawnTrafficCar(p); nearCars += 1; }
     while (state.cars.filter((c) => c.driver === 'traffic').length < TRAFFIC_COUNT) spawnTrafficCar(p);
+    while (nearPeds < 18 && state.peds.length < 44) { spawnPed(); nearPeds += 1; }
     while (state.peds.length < PED_COUNT) spawnPed();
   }
 
@@ -1248,6 +1386,7 @@ export function createGame(rng) {
     state.cash = save.cash ?? 120;
     state.player.health = save.health ?? PLAYER.health;
     state.player.pistol = !!save.pistol;
+    if (state.player.pistol) state.player.weapon = 2;
     state.player.shotgun = save.shotgun ?? 0;
     if (state.player.pistol) state.player.mag = PLAYER.magSize;
     state.player.x = save.x ?? 870;
@@ -1260,6 +1399,7 @@ export function createGame(rng) {
   reset();
   return {
     state, city, step, reset, startMission, nearestCar, playerCar, enterCar, exitCar, saveGame, loadGame,
+    sys: { air, wheel, district, crew, garage, race, radio },
     setWanted(points) {
       state.wantedPoints = points;
       state.wanted = Math.min(5, Math.floor(points / 2));

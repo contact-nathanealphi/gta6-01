@@ -2,6 +2,7 @@
 
 import { AVENUES, CAR_KINDS, STREETS, WORLD } from '../tune.js';
 import { VICE_FACADE_UV, VICE_ROOF_UV, VICE_WHITE_UV } from './textures3d.js';
+import { StreetRaceCircuit } from '../crew-garage-race.js';
 
 export const VICE_VERT_STRIDE = 12;
 
@@ -203,11 +204,20 @@ export function buildViceDynamicGeometry(state, m) {
     if (car.kind === 'taxi') {
       m.box(car.x, 22, car.y, 14, 4, 8, yaw, [1, 0.82, 0.24], VICE_WHITE_UV, 0.8);
     }
+    if (car.driver === 'player' && state.upgrades && state.upgrades.glow > 0) m.groundQuad(car.x - 26, car.y - 16, car.x + 26, car.y + 16, 0.4, [1, 0.18, 0.55], 0.8);
+    if (car.driver === 'player' && state.nitrousT > 0) m.box(car.x - co * (L / 2 + 6), 6, car.y - si * (L / 2 + 6), 14, 5, 8, yaw, [0.2, 0.6, 1], VICE_WHITE_UV, 1);
   }
   function person(x, y, shirt, angle) {
     const yaw = -angle;
     m.box(x, 9, y, 13, 18, 10, yaw, shirt, VICE_WHITE_UV, 0);
     m.box(x, 21, y, 8, 8, 8, yaw, skin, VICE_WHITE_UV, 0);
+  }
+  function fan(ax, ay, az, rx, ry, rz, r, col, emi) {
+    const top = [ax, ay, az];
+    for (let i = 0; i < 8; i += 1) {
+      const a0 = (i / 8) * Math.PI * 2, a1 = ((i + 1) / 8) * Math.PI * 2;
+      m.tri(top, [rx + Math.cos(a0) * r, ry, rz + Math.sin(a0) * r], [rx + Math.cos(a1) * r, ry, rz + Math.sin(a1) * r], 0, 1, 0, col, VICE_WHITE_UV, emi);
+    }
   }
   for (const ped of state.peds) {
     if (ped.down > 0) continue;
@@ -244,13 +254,31 @@ export function buildViceDynamicGeometry(state, m) {
   const beam = (state.time * 0.9) % (Math.PI * 2);
   const lx = 3335, lz = 2515, ly = 136;
   const bx = lx + Math.cos(beam) * 320, bz = lz + Math.sin(beam) * 320;
-  const up = [lx, ly + 4, lz];
-  for (let i = 0; i < 8; i += 1) {
-    const a0 = (i / 8) * Math.PI * 2, a1 = ((i + 1) / 8) * Math.PI * 2;
-    const r = 34;
-    const p0 = [bx + Math.cos(a0) * r, ly - 20, bz + Math.sin(a0) * r];
-    const p1 = [bx + Math.cos(a1) * r, ly - 20, bz + Math.sin(a1) * r];
-    m.tri(up, p0, p1, 0, 1, 0, [1, 0.9, 0.6], VICE_WHITE_UV, 0.55);
+  fan(lx, ly + 4, lz, bx, ly - 20, bz, 34, [1, 0.9, 0.6], 0.55);
+  const air = state.air;
+  if (air && air.heli) {
+    const h = air.heli;
+    const strobe = Math.floor(state.time * 3) % 2 === 0;
+    m.box(h.x, h.z, h.y, 46, 12, 20, -h.angle, [0.12, 0.29, 0.54], VICE_WHITE_UV, 0.3);
+    m.box(h.x, h.z + 8, h.y, 6, 4, 6, 0, [0.1, 0.1, 0.12], VICE_WHITE_UV, 0);
+    m.box(h.x, h.z + 11, h.y, 56, 1.5, 3, -h.rotor, [0.9, 0.9, 0.9], VICE_WHITE_UV, 0.4);
+    m.box(h.x, h.z + 11, h.y, 56, 1.5, 3, -h.rotor + Math.PI / 2, [0.9, 0.9, 0.9], VICE_WHITE_UV, 0.4);
+    m.box(h.x, h.z + 2, h.y, 6, 3, 6, 0, strobe ? [1, 0.2, 0.2] : [0.2, 0.4, 1], VICE_WHITE_UV, 1);
+    fan(h.x, h.z - 2, h.y, h.spotX, 1, h.spotY, 60, [1, 0.93, 0.6], 0.35);
+    m.groundQuad(h.spotX - 55, h.spotY - 55, h.spotX + 55, h.spotY + 55, 0.3, [1, 0.93, 0.6], 0.35);
+  }
+  for (const w of state.wrecks || []) {
+    m.box(w.x, 7, w.y, 44, 12, 22, -w.angle, [0.1, 0.1, 0.1], VICE_WHITE_UV, 0);
+    const fl = 8 + Math.sin(state.time * 9 + w.x) * 3;
+    m.box(w.x, 14, w.y, 10, fl, 10, 0, [1, 0.48, 0.1], VICE_WHITE_UV, 1);
+    m.box(w.x + 8, 12, w.y, 8, fl * 0.7, 8, 0, [1, 0.82, 0.24], VICE_WHITE_UV, 1);
+  }
+  if (state.race && state.race.active) {
+    const cg = StreetRaceCircuit.CIRCUITS[state.race.circuit].gates;
+    for (let i = 0; i < cg.length; i += 1) {
+      const g = cg[i], col = i === state.race.gate ? [1, 0.18, 0.55] : [0, 0.9, 1];
+      for (const s of [-30, 30]) m.box(g[0] + s, 22, g[1], 6, 44, 6, 0, col, VICE_WHITE_UV, 1);
+    }
   }
   return m.slice();
 }

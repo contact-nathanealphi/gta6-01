@@ -2,6 +2,10 @@
 
 import { AVENUES, CAR_KINDS, FONT, PALETTE, PLAYER, STREETS, WORLD } from './tune.js';
 import { MISSIONS } from './world.js';
+import { renderChopperSearchlight, renderNbpdDispatchBoard } from './police-air-support.js';
+import { renderRadialWeaponWheel } from './weapon-wheel.js';
+import { CITY_DISTRICTS_6, rankFor, renderFixerDialogueBox } from './district-fixer.js';
+import { renderCrewHud, renderGarageShowroom, renderRaceHud, renderRadioToast } from './crew-garage-race.js';
 
 export const SCREEN_TITLE = 'title';
 export const SCREEN_PLAY = 'play';
@@ -39,6 +43,13 @@ export function createRenderer(canvas) {
     ctx.textAlign = align || 'left';
     ctx.fillText(value, x, y);
   }
+
+  const hud = {
+    w: 0, h: 0, text,
+    rect(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); },
+    circ(x, y, r, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); },
+    ring(x, y, r, c) { ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke(); },
+  };
 
   function camera(state) {
     const p = state.player;
@@ -162,7 +173,18 @@ export function createRenderer(canvas) {
         ctx.arc(car.x, car.y, 30, 0, Math.PI * 2);
         ctx.stroke();
       }
+      if (car.driver === 'player' && state.upgrades && state.upgrades.glow > 0) {
+        ctx.fillStyle = 'rgba(255,46,136,0.35)';
+        ctx.beginPath(); ctx.arc(car.x, car.y, 34, 0, Math.PI * 2); ctx.fill();
+      }
     }
+    for (const w of state.wrecks || []) {
+      ctx.save(); ctx.translate(w.x, w.y); ctx.rotate(w.angle);
+      ctx.fillStyle = '#1a1a1a'; ctx.fillRect(-22, -11, 44, 22);
+      ctx.fillStyle = '#ff7a18'; ctx.fillRect(-8, -14, 16, 8);
+      ctx.restore();
+    }
+    renderChopperSearchlight(ctx, state);
     const p = state.player;
     if (p.onFoot && inView(cam, p.x, p.y, 40)) dot(p.x, p.y, 14, PALETTE.player);
     for (const b of state.bullets) {
@@ -200,6 +222,10 @@ export function createRenderer(canvas) {
     ctx.fillRect(x0 - 6, y0 - 6, MINIMAP.w + 12, MINIMAP.h + 12);
     ctx.fillStyle = '#2c4a2c';
     ctx.fillRect(x0, y0, MINIMAP.w, MINIMAP.h);
+    for (const d of CITY_DISTRICTS_6) {
+      ctx.fillStyle = d.color + '22';
+      ctx.fillRect(x0 + d.x * sx, y0 + d.y * sy, d.w * sx, d.h * sy);
+    }
     ctx.strokeStyle = '#555';
     ctx.lineWidth = 2;
     for (const ax of AVENUES) {
@@ -300,7 +326,7 @@ export function createRenderer(canvas) {
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fillRect(72, 158, 160, 9);
         ctx.fillStyle = myCar.health > 50 ? '#57d977' : myCar.health > 25 ? '#f2c94c' : '#ff4d4d';
-        ctx.fillRect(72, 158, 160 * Math.max(0, myCar.health) / 100, 9);
+        ctx.fillRect(72, 158, 160 * Math.min(1, Math.max(0, myCar.health) / 100), 9);
         if (myCar.kind === 'taxi') {
           ctx.fillStyle = PALETTE.gold;
           ctx.fillRect(28, 176, 44, 16);
@@ -310,6 +336,22 @@ export function createRenderer(canvas) {
       }
     }
     drawMinimap(state);
+    hud.w = viewW; hud.h = viewH;
+    const sys = ui.sys;
+    if (sys) {
+      const d = sys.district.current();
+      const rep = sys.district.rep(d.name);
+      hud.rect(14, 212, 250, 48, PALETTE.hudPanel);
+      hud.rect(14, 212, 6, 48, d.color);
+      text(d.name, 30, 232, 15, '#ffffff', 'left', true);
+      text(rankFor(rep).name + '  ·  ' + rep + '%', 30, 252, 13, PALETTE.hudMuted, 'left');
+      if (state.wanted > 0) renderNbpdDispatchBoard(hud, state);
+      renderCrewHud(hud, state);
+      renderRadioToast(hud, state);
+      renderRaceHud(hud, state);
+      if (state.garageOpen) renderGarageShowroom(hud, state, sys.garage);
+      if (ui.wheelOpen) renderRadialWeaponWheel(hud, state, ui.wheelSlot || state.player.weapon || 1);
+    }
     const clock = (8 + state.time / 10) % 24;
     const hours = Math.floor(clock);
     const mins = Math.floor((clock % 1) * 60);
@@ -322,7 +364,10 @@ export function createRenderer(canvas) {
       const dist = Math.round(Math.hypot(state.objective.x - p.x, state.objective.y - p.y));
       text(`${state.objective.label}  ·  ${dist}m`, 28, viewH - 28, 17, PALETTE.hudText, 'left');
     }
-    if (state.dialogue.length > 0) {
+    const m = MISSIONS[state.missionIndex];
+    const fixer = state.missionActive && m && m.giver.includes('Viper');
+    if (fixer && state.dialogue.length > 0) renderFixerDialogueBox(hud, state);
+    else if (state.dialogue.length > 0) {
       const line = state.dialogue[0];
       ctx.font = font(17, false);
       const w = Math.min(720, ctx.measureText(line).width + 40);
@@ -344,6 +389,14 @@ export function createRenderer(canvas) {
       const w = ctx.measureText(label).width + 36;
       ctx.fillRect((viewW - w) / 2, viewH - 190, w, 40);
       text(label, viewW / 2, viewH - 163, 18, PALETTE.gold, 'center', true);
+    }
+    if (sys && !state.garageOpen && sys.garage.near()) {
+      const label = 'G — Neon Customs: upgrade your ride';
+      ctx.font = font(18, true);
+      const w = ctx.measureText(label).width + 36;
+      ctx.fillStyle = PALETTE.hudPanel;
+      ctx.fillRect((viewW - w) / 2, viewH - 240, w, 40);
+      text(label, viewW / 2, viewH - 213, 18, '#ff2e88', 'center', true);
     }
     text('WASD move / drive · E car · F punch · Click shoot · H horn · P save · M mute · Esc pause', viewW - 16, viewH - 16, 13, PALETTE.hudMuted, 'right');
     if (p.onFoot && (p.pistol || p.shotgun > 0) && ui.mouse) {
@@ -460,11 +513,10 @@ export function createRenderer(canvas) {
         : '';
       drawPanel('NEON BAY', [
         'Rico Vega is back in Neon Bay — and Mama Rosa has work for him.',
-        'Seven jobs. One big score. The whole NBPD watching.',
+        'Ten jobs. One big score. The whole NBPD watching.',
         '',
-        'WASD / arrows — move and drive      E — enter / steal a car',
-        'Mouse + click — aim and shoot      F — punch      R — reload',
-        'H — horn      Shift — run      P — save      M — mute      Esc — pause',
+        'WASD move / drive · E car · Click shoot · F punch · R reload',
+        'H horn · Shift run · P save · M mute · Esc pause · Tab weapons',
         ...(saveLine ? ['', saveLine] : []),
       ], ui.hasSave ? 'ENTER — Continue your story    ·    R — Start over' : 'ENTER — Start the story');
       text('A complete open-world crime game · built for make.fun', viewW / 2, viewH - 40, 15, PALETTE.hudMuted, 'center');

@@ -1,21 +1,13 @@
-// Boot and the one loop: input is read every frame, the world advances in fixed
-// 1/60 s steps (several in a slow frame, none in a fast one), and the renderer
-// paints what is there. The game moves between six screens: title, play, paused,
-// busted, wasted and story complete. Progress is saved to localStorage.
-//
-// ?seed=N fixes the city and the traffic. ?shot=start|drive|chase|mission (with
-// &seed=N) stages that scene instead of running the loop, paints it twice and
-// sets window.__shotReady for a screenshot.
+// Boot and the one loop. ?seed=N fixes the city; ?shot= stages a scene for screenshots.
 import { SAVE_KEY, STEP } from './tune.js';
 import { createRng } from './rng.js';
 import { createGame, EVENT_BUSTED, EVENT_MISSION, EVENT_STORY, EVENT_WASTED } from './world.js';
-import { createInput, PRESS_CONFIRM, PRESS_ENTER, PRESS_HORN, PRESS_MUTE, PRESS_PAUSE, PRESS_PUNCH, PRESS_RELOAD, PRESS_SAVE } from './input.js';
+import { createInput, PRESS_CONFIRM, PRESS_ENTER, PRESS_GARAGE, PRESS_HORN, PRESS_MUTE, PRESS_PAUSE, PRESS_PUNCH, PRESS_RELOAD, PRESS_SAVE } from './input.js';
 import { createAudio } from './audio.js';
 import { createRenderer, SCREEN_BUSTED, SCREEN_COMPLETE, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE, SCREEN_WASTED } from './render.js';
 import { createWebGL3DViceDuskRenderer } from './renderer/webgl3d.js';
 import { stageShot } from './shots.js';
 
-/** The longest frame the loop catches up on; a longer stall (a hidden tab) is dropped, not replayed. */
 const MAX_FRAME = 0.25;
 
 const params = new URLSearchParams(window.location.search);
@@ -26,14 +18,12 @@ const seed = Number.isInteger(seedParam) ? seedParam : Math.floor(Math.random() 
 const canvas = document.getElementById('game');
 const status = document.getElementById('status');
 const game = createGame(createRng(seed));
-// ?time=N starts the clock at N seconds (a testing convenience: 130 is night).
+window.__game = game;
 const timeParam = Number.parseInt(params.get('time') ?? '', 10);
 if (Number.isInteger(timeParam) && timeParam >= 0) game.state.time = timeParam;
 const renderer = createRenderer(canvas);
 const audio = createAudio();
-// True 3D Vice-Dusk WebGL2 renderer (null when WebGL2 is unavailable —
-// the game then stays fully 2D). Initialises in the background so a slow
-// shader fetch never blocks the first frame.
+game.sys.radio.attach(audio);
 let gl3d = null;
 const gl3dReady = createWebGL3DViceDuskRenderer(canvas).then((r) => {
   gl3d = r;
@@ -69,16 +59,13 @@ function writeSave() {
 
 async function runShot(name) {
   const scene = stageShot(name, game);
-  // A ?time=N override survives the shot's reset (it only affects the
-  // rendering clock, not the staged scene).
   if (Number.isInteger(timeParam) && timeParam >= 0) game.state.time = timeParam;
-  // Wait for the 3D renderer (max 3 s) so the shot is captured in 3D.
   await Promise.race([gl3dReady, new Promise((res) => setTimeout(res, 3000))]);
   let painted = 0;
   function paint() {
     const nearCar = game.state.player.onFoot ? game.nearestCar(85) : null;
     syncWorld3D(game.state, scene.screen);
-    renderer.draw(game.state, game.city, scene.screen, { hasSave: false, nearCar: nearCar ? `Steal the ${nearCar.kind}` : null, mouse: null });
+    renderer.draw(game.state, game.city, scene.screen, { hasSave: false, nearCar: nearCar ? `Steal the ${nearCar.kind}` : null, mouse: null, sys: game.sys });
     painted += 1;
     if (painted < 2) requestAnimationFrame(paint);
     else window.__shotReady = true;
@@ -92,8 +79,9 @@ function runGame() {
   let save = readSave();
   let accumulator = 0;
   let last = performance.now();
+  let wheelWasOpen = false;
+  let pendingSlot = 0;
 
-  // Screen readers (and anyone watching the page's text) hear the screen changes.
   function announce(message) {
     status.textContent = message;
   }
@@ -145,7 +133,7 @@ function runGame() {
       run: input.run(),
       enter: !!(presses & PRESS_ENTER),
       punch: !!(presses & PRESS_PUNCH),
-      reload: !!(presses & PRESS_RELOAD),
+      reload: !!(presses & PRESS_RELOAD) && state.player.onFoot,
       shoot: input.shooting(),
       aimX: cam.x + mouse.x,
       aimY: cam.y + mouse.y,
@@ -199,9 +187,11 @@ function runGame() {
 
   function frame(now) {
     requestAnimationFrame(frame);
-    accumulator += Math.min((now - last) / 1000, MAX_FRAME);
+    const wheelOpen = input.wheelHeld();
+    accumulator += Math.min((now - last) / 1000, MAX_FRAME) * (wheelOpen ? 0.2 : 1);
     last = now;
     const presses = input.takePresses();
+    if (screen !== SCREEN_PLAY) input.takeDigits();
     if (presses & PRESS_MUTE) {
       audio.setMuted(!audio.isMuted());
       announce(audio.isMuted() ? 'Sound off.' : 'Sound on.');
@@ -215,7 +205,12 @@ function runGame() {
         accumulator -= STEP;
       }
     } else if (screen === SCREEN_PLAY) {
-      if (presses & PRESS_PAUSE) {
+      const digits = input.takeDigits();
+      if (game.state.garageOpen) {
+        accumulator = 0;
+        if (presses & (PRESS_GARAGE | PRESS_PAUSE)) game.state.garageOpen = false;
+        else if (digits) for (let i = 0; i < 4; i += 1) if (digits & (1 << i)) game.sys.garage.buy(i);
+      } else if (presses & PRESS_PAUSE) {
         screen = SCREEN_PAUSED;
         announce('Paused.');
       } else if (presses & PRESS_SAVE) {
@@ -223,6 +218,21 @@ function runGame() {
         else game.state.banner = 'Save failed — storage is off';
         game.state.bannerTimer = 2;
       } else {
+        if (presses & PRESS_GARAGE) {
+          const pt = game.sys.garage.near();
+          if (pt) { game.state.garageOpen = true; game.state.garagePoint = pt; }
+        }
+        if ((presses & PRESS_RELOAD) && !game.state.player.onFoot) game.sys.radio.next();
+        if (wheelOpen) {
+          if (digits) for (let i = 0; i < 6; i += 1) if (digits & (1 << i)) pendingSlot = i + 1;
+        } else if (wheelWasOpen) {
+          if (pendingSlot) game.sys.wheel.select(pendingSlot);
+          pendingSlot = 0;
+        } else if (digits) {
+          for (let i = 0; i < 3; i += 1) if (digits & (1 << i)) game.sys.crew.use(i);
+          if (digits & 8) game.sys.race.start(0);
+          if (digits & 16) game.sys.race.start(1);
+        }
         while (accumulator >= STEP) {
           stepWorld(presses);
           accumulator -= STEP;
@@ -240,6 +250,7 @@ function runGame() {
       accumulator = 0;
       handleOver(presses);
     }
+    wheelWasOpen = wheelOpen;
     const state = game.state;
     const nearCar = state.player.onFoot ? game.nearestCar(85) : null;
     const mouse = input.mouse();
@@ -251,14 +262,15 @@ function runGame() {
       saveStoryDone: save ? !!save.storyDone : false,
       nearCar: nearCar ? `Steal the ${nearCar.kind === 'patrol' ? 'NBPD Interceptor' : nearCar.kind}` : null,
       mouse,
+      sys: game.sys,
+      wheelOpen,
+      wheelSlot: wheelOpen ? pendingSlot : 0,
     });
   }
 
-  // The first gesture unlocks sound; the game itself never waits for it.
   window.addEventListener('pointerdown', () => audio.ensure(), { once: true });
   window.addEventListener('keydown', () => audio.ensure(), { once: true });
 
-  // Leaving the tab pauses a running game rather than letting the city run unseen.
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && screen === SCREEN_PLAY) {
       screen = SCREEN_PAUSED;

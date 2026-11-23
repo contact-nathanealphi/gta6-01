@@ -15,6 +15,7 @@ export function createAudio() {
   const BASSLINE_A = [55, 55, 65.41, 82.41, 55, 49, 82.41, 73.42];
   const BASSLINE_B = [55, 65.41, 82.41, 98, 82.41, 73.42, 65.41, 49];
   const BASS_STEP = 60 / 112 / 2;
+  let radioLine = null, radioStep = BASS_STEP, radioWave = 'sawtooth';
 
   function ensure() {
     if (ctx) {
@@ -74,10 +75,10 @@ export function createAudio() {
   }
 
   function playBassNote(freq, when) {
-    if (!ctx) return;
+    if (!ctx || !Number.isFinite(freq)) return;
     const t = ctx.currentTime + when;
     const osc = ctx.createOscillator();
-    osc.type = 'sawtooth';
+    osc.type = radioWave;
     osc.frequency.value = freq;
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
@@ -85,12 +86,12 @@ export function createAudio() {
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.0001, t);
     gain.gain.linearRampToValueAtTime(0.05, t + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + BASS_STEP * 0.95);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + radioStep * 0.95);
     osc.connect(filter);
     filter.connect(gain);
     gain.connect(master);
     osc.start(t);
-    osc.stop(t + BASS_STEP);
+    osc.stop(t + radioStep);
   }
 
   function startMusic() {
@@ -98,10 +99,10 @@ export function createAudio() {
     musicStep = 0;
     musicTimer = setInterval(() => {
       const loop = Math.floor(musicStep / 8) % 5;
-      const line = loop === 4 ? BASSLINE_B : BASSLINE_A;
-      playBassNote(line[musicStep % 8], 0);
+      const line = radioLine || (loop === 4 ? BASSLINE_B : BASSLINE_A);
+      playBassNote(line[musicStep % line.length], 0);
       musicStep += 1;
-    }, BASS_STEP * 1000);
+    }, radioStep * 1000);
   }
 
   function stopMusic() {
@@ -147,6 +148,10 @@ export function createAudio() {
     setMuted,
     isMuted() { return muted; },
     music(on) { if (on) startMusic(); else stopMusic(); },
+    station(bass, bpm, wave) {
+      radioLine = bass; radioStep = 60 / bpm / 2; radioWave = wave || 'sawtooth';
+      if (ctx && !muted) { stopMusic(); startMusic(); }
+    },
     engine(speed01, driving) {
       if (!ctx) return;
       const target = driving ? 0.05 + speed01 * 0.09 : 0;
