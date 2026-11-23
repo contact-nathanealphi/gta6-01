@@ -1,335 +1,134 @@
-import { AVENUES, CAR_KINDS, STREETS, WORLD } from '../tune.js';
-import { VICE_CASINO_UV, VICE_FACADE_UV, VICE_ROOF_UV, VICE_WHITE_UV as U } from './textures3d.js';
-import { StreetRaceCircuit } from '../crew-garage-race.js';
-export const VICE_VERT_STRIDE = 12;
-export function viceHex(h) {
-  const o = [];
-  for (let i = 1; i < 6; i += 2) o.push(parseInt(h.slice(i, i + 2), 16) / 255);
-  return o;
+import{AVENUES,CAR_KINDS,STREETS,WORLD}from'../tune.js';
+import{VICE_ASPHALT_UV as AV,VICE_CASINO_UV as CV,VICE_FACADE_UV as FV,VICE_GRASS_UV as GV,VICE_ROOF_UV as RV,VICE_SAND_UV as SV,VICE_WALK_UV as WV,VICE_WHITE_UV as U}from'./textures3d.js';
+import{StreetRaceCircuit}from'../crew-garage-race.js';
+export const VICE_VERT_STRIDE=12;
+export function viceHex(h){const o=[];for(let i=1;i<6;i+=2)o.push(parseInt(h.slice(i,i+2),16)/255);return o;}
+export function viceCreateMesh(cap){
+const data=new Float32Array(cap*VICE_VERT_STRIDE);let n=0;
+function v(){const o=n*VICE_VERT_STRIDE;for(let i=0;i<12;i++)data[o+i]=arguments[i];n++;}
+function q(a,b,c,d,nx,ny,nz,col,uv,emi){const P=[a,b,c,a,c,d];for(let i=0;i<6;i++)v(P[i][0],P[i][1],P[i][2],nx,ny,nz,col[0],col[1],col[2],(i===0||i===3||i===5)?uv[0]:uv[2],(i===0||i===1||i===3)?uv[1]:uv[3],emi);}
+function tr(a,b,c,nx,ny,nz,col,uv,emi){v(a[0],a[1],a[2],nx,ny,nz,col[0],col[1],col[2],uv[0],uv[1],emi);v(b[0],b[1],b[2],nx,ny,nz,col[0],col[1],col[2],uv[2],uv[1],emi);v(c[0],c[1],c[2],nx,ny,nz,col[0],col[1],col[2],uv[2],uv[3],emi);}
+function gq(x0,z0,x1,z1,y,col,emi){q([x0,y,z0],[x1,y,z0],[x1,y,z1],[x0,y,z1],0,1,0,col,U,emi);}
+function gt(x0,z0,x1,z1,y,col,t,emi){const uu=x=>t[0]+(((x/140)%1)+1)%1*(t[2]-t[0]),vv=z=>t[1]+(((z/140)%1)+1)%1*(t[3]-t[1]);q([x0,y,z0],[x1,y,z0],[x1,y,z1],[x0,y,z1],0,1,0,col,[uu(x0),vv(z0),uu(x1),vv(z1)],emi);}
+function b(cx,cy,cz,sx,sy,sz,yaw,col,uv,emi,rUv,rEm){const co=Math.cos(yaw),si=Math.sin(yaw),hx=sx/2,hy=sy/2,hz=sz/2,L=[];for(let i=0;i<8;i++)L.push([(i+3)%4<2?hx:-hx,i&4?hy:-hy,i&2?hz:-hz]);const P=L.map(p=>[cx+p[0]*co+p[2]*si,cy+p[1],cz-p[0]*si+p[2]*co]),N=[[0,1,0],[co,0,-si],[-co,0,si],[si,0,co],[-si,0,-co]],u2=rUv||uv,e2=rEm===undefined?emi:rEm;q(P[4],P[5],P[6],P[7],...N[0],col,u2,e2);q(P[1],P[2],P[6],P[5],...N[1],col,uv,emi);q(P[3],P[0],P[4],P[7],...N[2],col,uv,emi);q(P[2],P[3],P[7],P[6],...N[3],col,uv,emi);q(P[0],P[1],P[5],P[4],...N[4],col,uv,emi);}
+function tb(cx,cy,cz,ax,ay,az,r0,r1,len,col,cc,uv,emi,sg){const al=Math.hypot(ax,ay,az)||1;ax/=al;ay/=al;az/=al;const t=Math.abs(ay)<0.9?[0,1,0]:[1,0,0];let ux=ay*t[2]-az*t[1],uy=az*t[0]-ax*t[2],uz=ax*t[1]-ay*t[0];const ul=Math.hypot(ux,uy,uz)||1;ux/=ul;uy/=ul;uz/=ul;const vx=ay*uz-az*uy,vy=az*ux-ax*uz,vz=ax*uy-ay*ux,c0=[cx-ax*len/2,cy-ay*len/2,cz-az*len/2],c1=[cx+ax*len/2,cy+ay*len/2,cz+az*len/2],c2=cc||col;sg=sg||6;for(let i=0;i<sg;i++){const a0=i/sg*Math.PI*2,a1=(i+1)/sg*Math.PI*2,d0=[ux*Math.cos(a0)+vx*Math.sin(a0),uy*Math.cos(a0)+vy*Math.sin(a0),uz*Math.cos(a0)+vz*Math.sin(a0)],d1=[ux*Math.cos(a1)+vx*Math.sin(a1),uy*Math.cos(a1)+vy*Math.sin(a1),uz*Math.cos(a1)+vz*Math.sin(a1)],p00=[c0[0]+d0[0]*r0,c0[1]+d0[1]*r0,c0[2]+d0[2]*r0],p01=[c0[0]+d1[0]*r0,c0[1]+d1[1]*r0,c0[2]+d1[2]*r0],p10=[c1[0]+d0[0]*r1,c1[1]+d0[1]*r1,c1[2]+d0[2]*r1],p11=[c1[0]+d1[0]*r1,c1[1]+d1[1]*r1,c1[2]+d1[2]*r1];q(p00,p10,p11,p01,(d0[0]+d1[0])/2,(d0[1]+d1[1])/2,(d0[2]+d1[2])/2,col,uv,emi);tr(c0,[c0[0]+d1[0]*r0,c0[1]+d1[1]*r0,c0[2]+d1[2]*r0],p00,-ax,-ay,-az,c2,uv,emi);tr(c1,p10,[c1[0]+d1[0]*r1,c1[1]+d1[1]*r1,c1[2]+d1[2]*r1],ax,ay,az,c2,uv,emi);}}
+function ba(cx,cy,cz,rx,ry,rz,col,emi){const T=[cx,cy+ry,cz],B=[cx,cy-ry,cz],E=[[cx+rx,cy,cz],[cx,cy,cz+rz],[cx-rx,cy,cz],[cx,cy,cz-rz]];for(let i=0;i<4;i++){const a=E[i],b2=E[(i+1)%4],mx=(a[0]+b2[0])/2-cx,mz=(a[2]+b2[2])/2-cz;tr(T,a,b2,mx/rx,1,mz/rz,col,U,emi);tr(B,b2,a,mx/rx,-1,mz/rz,col,U,emi);}}
+function pr(pts,hw,cx,cy,cz,yaw,col,uv,emi){const co=Math.cos(yaw),si=Math.sin(yaw),X=(lx,lz)=>[cx+lx*co+lz*si,cz-lx*si+lz*co];for(let i=0;i<pts.length;i++){const p0=pts[i],p1=pts[(i+1)%pts.length],dx=p1[0]-p0[0],dy=p1[1]-p0[1],ln=Math.hypot(dx,dy)||1,nn=[dy/ln,-dx/ln],w0=X(p0[0],-hw),w1=X(p1[0],-hw),w2=X(p1[0],hw),w3=X(p0[0],hw);q([w0[0],cy+p0[1],w0[1]],[w1[0],cy+p1[1],w1[1]],[w2[0],cy+p1[1],w2[1]],[w3[0],cy+p0[1],w3[1]],nn[0]*co,nn[1],-nn[0]*si,col,uv,emi);}let gx=0,gy=0;for(const p of pts){gx+=p[0];gy+=p[1];}gx/=pts.length;gy/=pts.length;const g0=X(gx,hw),g1=X(gx,-hw);for(let i=0;i<pts.length;i++){const p0=pts[i],p1=pts[(i+1)%pts.length],a0=X(p0[0],hw),a1=X(p1[0],hw),b0=X(p0[0],-hw),b1=X(p1[0],-hw);tr([g0[0],cy+gy,g0[1]],[a0[0],cy+p0[1],a0[1]],[a1[0],cy+p1[1],a1[1]],si,0,co,col,uv,emi);tr([g1[0],cy+gy,g1[1]],[b1[0],cy+p1[1],b1[1]],[b0[0],cy+p0[1],b0[1]],-si,0,-co,col,uv,emi);}}
+return{data,get count(){return n;},reset(){n=0;},slice(){return data.subarray(0,n*VICE_VERT_STRIDE);},q,tr,gq,gt,b,tb,ba,pr};}
+export function viceBuildingHeight(b){const h=(((b.x*7+b.y*13)%100)+100)%100/100,cx=b.x+b.w/2,cy=b.y+b.h/2;return(60+h*140)*(cx>1200&&cx<3000&&cy>600&&cy<2000?1.5:1)*(cy>2300?0.6:1);}
+const NT=[[1,0.18,0.47],[0,0.9,1],[1,0.82,0.24],[1,0.48,0.18]];
+export function buildStatic(city){
+const m=viceCreateMesh(64000),wh=[1,1,1],sd=viceHex('#e8cf9a'),as=viceHex('#403f46'),ln=viceHex('#e6d47a');
+m.gt(0,0,WORLD.width,WORLD.height,0,viceHex('#6f9c58'),GV,0);
+m.gt(0,2440,WORLD.width,WORLD.height,0.1,sd,SV,0);
+for(const ax of AVENUES){m.gt(ax-86,0,ax+86,WORLD.height,0.12,viceHex('#b8ab98'),WV,0);m.gt(ax-60,0,ax+60,WORLD.height,0.15,as,AV,0);for(let y=60;y<WORLD.height-30;y+=120){m.gq(ax-6,y,ax-3,y+30,0.18,ln,0);m.gq(ax+3,y,ax+6,y+30,0.18,ln,0);}}
+for(const sy of STREETS){m.gt(0,sy-86,WORLD.width,sy+86,0.12,viceHex('#b8ab98'),WV,0);m.gt(0,sy-60,WORLD.width,sy+60,0.15,as,AV,0);for(let x=60;x<WORLD.width-30;x+=120){m.gq(x,sy-6,x+30,sy-3,0.18,ln,0);m.gq(x,sy+3,x+30,sy+6,0.18,ln,0);}}
+for(const b of city.buildings){
+const cx=b.x+b.w/2,cz=b.y+b.h/2,ti=Math.floor(b.x*3+b.y*5)%4,tm=NT[Math.floor(b.x+b.y)%4];
+if(b.kind==='casino'){const fz=cz-b.h/2;m.gt(cx-260,fz-170,cx+260,fz,0.22,viceHex('#cfc4ae'),WV,0);m.gq(cx-38,fz-64,cx+38,fz,0.26,viceHex('#a31f34'),0);m.b(cx,30,cz,b.w,60,b.h,0,wh,FV[2],0.4,RV,0);m.b(cx,82,cz,b.w*0.7,45,b.h*0.7,0,wh,FV[2],0.5,RV,0);m.b(cx,40,fz-3,b.w*0.42,36,4,0,wh,CV,0.9,U,0);m.b(cx,60,fz-3,b.w*0.42+8,3,5,0,[1,0.82,0.24],U,1);m.b(cx,20,fz-3,b.w*0.42+8,3,5,0,[1,0.82,0.24],U,1);m.b(cx,105,cz,b.w*0.7+4,3,b.h*0.7+4,0,tm,U,1);m.b(cx,14,fz-12,b.w*0.5,3,10,0,[1,0.82,0.24],U,1);continue;}
+if(b.kind==='stadium'){m.b(cx,18,cz,b.w,36,b.h,0,wh,FV[1],0.3,RV,0);continue;}
+if(b.kind==='lighthouse'){m.tb(cx,45,cz,0,1,0,17,17,90,viceHex('#c94f43'),null,U,0.15,8);m.tb(cx,135,cz,0,1,0,15,15,90,wh,null,U,0.3,8);m.ba(cx,185,cz,11,6,11,[1,0.82,0.24],1);continue;}
+const hg=viceBuildingHeight(b);
+m.b(cx,hg/2,cz,b.w,hg,b.h,0,wh,FV[ti],0.35,RV,0);
+m.b(cx,hg-2,cz,b.w+4,4,b.h+4,0,tm,U,1);
+if(hg>150){const th=hg*0.32;m.b(cx,hg+th/2,cz,b.w*0.55,th,b.h*0.55,0,wh,FV[ti],0.4,RV,0);m.b(cx,hg+th-1,cz,b.w*0.55+4,3,b.h*0.55+4,0,tm,U,1);}
 }
-export function viceCreateMesh(capacity) {
-  const data = new Float32Array(capacity * VICE_VERT_STRIDE);
-  let n = 0;
-  function vert() {
-    const o = n * VICE_VERT_STRIDE;
-    for (let i = 0; i < 12; i += 1) data[o + i] = arguments[i];
-    n += 1;
-  }
-  function quad(a, b, c, d, nx, ny, nz, col, uv, emi) {
-    const P = [a, b, c, a, c, d];
-    for (let i = 0; i < 6; i += 1) vert(P[i][0], P[i][1], P[i][2], nx, ny, nz, col[0], col[1], col[2], (i === 0 || i === 3 || i === 5) ? uv[0] : uv[2], (i === 0 || i === 1 || i === 3) ? uv[1] : uv[3], emi);
-  }
-  function tri(a, b, c, nx, ny, nz, col, uv, emi) {
-    vert(a[0], a[1], a[2], nx, ny, nz, col[0], col[1], col[2], uv[0], uv[1], emi);
-    vert(b[0], b[1], b[2], nx, ny, nz, col[0], col[1], col[2], uv[2], uv[1], emi);
-    vert(c[0], c[1], c[2], nx, ny, nz, col[0], col[1], col[2], uv[2], uv[3], emi);
-  }
-  function groundQuad(x0, z0, x1, z1, y, col, emi) {
-    quad([x0, y, z0], [x1, y, z0], [x1, y, z1], [x0, y, z1], 0, 1, 0, col, U, emi);
-  }
-  function box(cx, cy, cz, sx, sy, sz, yaw, col, uv, emi, roofUv, roofEmi) {
-    const co = Math.cos(yaw), si = Math.sin(yaw);
-    const hx = sx / 2, hy = sy / 2, hz = sz / 2;
-    const L = [];
-    for (let i = 0; i < 8; i += 1) L.push([(i + 3) % 4 < 2 ? hx : -hx, i & 4 ? hy : -hy, i & 2 ? hz : -hz]);
-    const P = L.map((p) => [cx + p[0] * co + p[2] * si, cy + p[1], cz - p[0] * si + p[2] * co]);
-    const N = [[0, 1, 0], [co, 0, -si], [-co, 0, si], [si, 0, co], [-si, 0, -co]];
-    const rUv = roofUv || uv;
-    const rEm = roofEmi === undefined ? emi : roofEmi;
-    quad(P[4], P[5], P[6], P[7], ...N[0], col, rUv, rEm);
-    quad(P[1], P[2], P[6], P[5], ...N[1], col, uv, emi);
-    quad(P[3], P[0], P[4], P[7], ...N[2], col, uv, emi);
-    quad(P[2], P[3], P[7], P[6], ...N[3], col, uv, emi);
-    quad(P[0], P[1], P[5], P[4], ...N[4], col, uv, emi);
-  }
-  return { data, get count() { return n; }, reset() { n = 0; }, slice() { return data.subarray(0, n * VICE_VERT_STRIDE); }, vert, quad, tri, groundQuad, box };
+const tr2=viceHex('#6b4a2f'),lf=viceHex('#6b8e3a'),lf2=viceHex('#8aa84a');
+for(const palm of city.palms){
+const lean=((palm.x*7+palm.y*3)%10)/10*0.6-0.3,lx=Math.sin(lean),lz=Math.cos(lean)*0.4;
+m.tb(palm.x+lx*7,13,palm.y+lz*7,lx*0.35,1,lz*0.35,2.4,1.7,27,tr2,null,U,0,6);
+const cxp=palm.x+lx*15,czp=palm.y+lz*15;
+for(let f=0;f<8;f++){const a=f/8*Math.PI*2+lean,ca=Math.cos(a),sa=Math.sin(a),lc=f%2?lf:lf2,px=-sa,pz=ca,x1=cxp+ca*11,z1=czp+sa*11,x2=cxp+ca*21,z2=czp+sa*21;m.q([cxp+px*3,27,czp+pz*3],[x1+px*3,26,z1+pz*3],[x1-px*3,26,z1-pz*3],[cxp-px*3,27,czp-pz*3],0,1,0,lc,U,0);m.q([x1+px*3,26,z1+pz*3],[x2+px*1.5,18,z2+pz*1.5],[x2-px*1.5,18,z2-pz*1.5],[x1-px*3,26,z1-pz*3],0,1,0,lc,U,0);}
 }
-export function viceBuildingHeight(b) {
-  const h = (((b.x * 7 + b.y * 13) % 100) + 100) % 100 / 100;
-  const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
-  return (60 + h * 140) * (cx > 1200 && cx < 3000 && cy > 600 && cy < 2000 ? 1.5 : 1) * (cy > 2300 ? 0.6 : 1);
-}
-const NEON_TRIM = [[1, 0.18, 0.47], [0, 0.9, 1], [1, 0.82, 0.24], [1, 0.48, 0.18]];
-export function buildViceCityStaticGeometry(city) {
-  const m = viceCreateMesh(32000);
-  const white = [1, 1, 1];
-  const grass = viceHex('#5d8a48');
-  const sand = viceHex('#e8cf9a');
-  const sidewalk = viceHex('#b8ab98');
-  const asphalt = viceHex('#403f46');
-  const lane = viceHex('#e6d47a');
-  m.groundQuad(0, 0, WORLD.width, WORLD.height, 0, grass, 0);
-  m.groundQuad(0, 2440, WORLD.width, WORLD.height, 0.1, sand, 0);
-  for (const ax of AVENUES) {
-    m.groundQuad(ax - 86, 0, ax + 86, WORLD.height, 0.12, sidewalk, 0);
-    m.groundQuad(ax - 60, 0, ax + 60, WORLD.height, 0.15, asphalt, 0);
-    for (let y = 60; y < WORLD.height - 30; y += 120) { m.groundQuad(ax - 6, y, ax - 3, y + 30, 0.18, lane, 0); m.groundQuad(ax + 3, y, ax + 6, y + 30, 0.18, lane, 0); m.groundQuad(ax - 44, y + 40, ax - 40, y + 70, 0.18, white, 0); m.groundQuad(ax + 40, y + 40, ax + 44, y + 70, 0.18, white, 0); }
-  }
-  for (const sy of STREETS) {
-    m.groundQuad(0, sy - 86, WORLD.width, sy + 86, 0.12, sidewalk, 0);
-    m.groundQuad(0, sy - 60, WORLD.width, sy + 60, 0.15, asphalt, 0);
-    for (let x = 60; x < WORLD.width - 30; x += 120) { m.groundQuad(x, sy - 6, x + 30, sy - 3, 0.18, lane, 0); m.groundQuad(x, sy + 3, x + 30, sy + 6, 0.18, lane, 0); m.groundQuad(x + 40, sy - 44, x + 70, sy - 40, 0.18, white, 0); m.groundQuad(x + 40, sy + 40, x + 70, sy + 44, 0.18, white, 0); }
-  }
-  for (const [ix, iy] of [[1500, 1300], [900, 800]]) {
-    for (let s = 0; s < 5; s += 1) m.groundQuad(ix - 50 + s * 20, iy - 60, ix - 42 + s * 20, iy + 60, 0.18, white, 0);
-  }
-  for (const b of city.buildings) {
-    const cx = b.x + b.w / 2, cz = b.y + b.h / 2;
-    const ti = Math.floor(b.x * 3 + b.y * 5) % 4;
-    const trim = NEON_TRIM[Math.floor(b.x + b.y) % 4];
-    if (b.kind === 'casino') {
-      const fz = cz - b.h / 2;
-      m.groundQuad(cx - 260, fz - 170, cx + 260, fz, 0.22, viceHex('#cfc4ae'), 0);
-      m.groundQuad(cx - 38, fz - 64, cx + 38, fz, 0.26, viceHex('#a31f34'), 0);
-      m.box(cx, 30, cz, b.w, 60, b.h, 0, white, VICE_FACADE_UV[2], 0.4, VICE_ROOF_UV, 0);
-      m.box(cx, 82, cz, b.w * 0.7, 45, b.h * 0.7, 0, white, VICE_FACADE_UV[2], 0.5, VICE_ROOF_UV, 0);
-      m.box(cx, 40, fz - 3, b.w * 0.42, 36, 4, 0, white, VICE_CASINO_UV, 0.9, U, 0);
-      m.box(cx, 60, fz - 3, b.w * 0.42 + 8, 3, 5, 0, [1, 0.82, 0.24], U, 1);
-      m.box(cx, 20, fz - 3, b.w * 0.42 + 8, 3, 5, 0, [1, 0.82, 0.24], U, 1);
-      m.box(cx, 105, cz, b.w * 0.7 + 4, 3, b.h * 0.7 + 4, 0, trim, U, 1);
-      for (const s of [-1, 1]) m.box(cx + s * (b.w / 2 - 12), 15, fz - 10, 9, 30, 9, 0, s < 0 ? [0, 0.9, 1] : [1, 0.18, 0.47], U, 1);
-      m.box(cx, 14, fz - 12, b.w * 0.5, 3, 10, 0, [1, 0.82, 0.24], U, 1);
-      continue;
-    }
-    if (b.kind === 'stadium') {
-      m.box(cx, 18, cz, b.w, 36, b.h, 0, white, VICE_FACADE_UV[1], 0.3, VICE_ROOF_UV, 0);
-      for (const [ox, oz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-        m.box(cx + ox * (b.w / 2 - 6), 35, cz + oz * (b.h / 2 - 6), 8, 70, 8, 0, [0.2, 0.2, 0.22], U, 0);
-        m.box(cx + ox * (b.w / 2 - 6), 72, cz + oz * (b.h / 2 - 6), 16, 4, 10, 0, [1, 0.95, 0.8], U, 1);
-      }
-      continue;
-    }
-    if (b.kind === 'lighthouse') {
-      m.box(cx, 45, cz, 34, 90, 34, 0, viceHex('#c94f43'), U, 0.15);
-      m.box(cx, 135, cz, 30, 90, 30, 0, white, U, 0.3);
-      m.box(cx, 185, cz, 22, 12, 22, 0, [1, 0.82, 0.24], U, 1);
-      continue;
-    }
-    const hgt = viceBuildingHeight(b);
-    m.box(cx, hgt / 2, cz, b.w, hgt, b.h, 0, white, VICE_FACADE_UV[ti], 0.35, VICE_ROOF_UV, 0);
-    m.box(cx, hgt - 2, cz, b.w + 4, 4, b.h + 4, 0, trim, U, 1);
-    if (hgt > 150) {
-      const th = hgt * 0.32;
-      m.box(cx, hgt + th / 2, cz, b.w * 0.55, th, b.h * 0.55, 0, white, VICE_FACADE_UV[ti], 0.4, VICE_ROOF_UV, 0);
-      m.box(cx, hgt + th - 1, cz, b.w * 0.55 + 4, 3, b.h * 0.55 + 4, 0, trim, U, 1);
-    }
-  }
-  const trunk = viceHex('#6b4a2f'), leaf = viceHex('#6b8e3a'), leaf2 = viceHex('#556f2e');
-  for (const palm of city.palms) {
-    const lean = ((palm.x * 7 + palm.y * 3) % 10) / 10 * 0.6 - 0.3;
-    m.box(palm.x, 7, palm.y, 4, 14, 4, 0, trunk, U, 0);
-    m.box(palm.x + lean * 8, 18, palm.y + lean * 4, 4, 12, 4, 0, trunk, U, 0);
-    const cxp = palm.x + lean * 14, czp = palm.y + lean * 7;
-    for (let f = 0; f < 8; f += 1) {
-      const a = (f / 8) * Math.PI * 2 + lean, ca = Math.cos(a), sa = Math.sin(a), lc = f % 2 ? leaf : leaf2;
-      const px = -sa, pz = ca, x1 = cxp + ca * 11, z1 = czp + sa * 11, x2 = cxp + ca * 21, z2 = czp + sa * 21;
-      m.quad([cxp + px * 3, 27, czp + pz * 3], [x1 + px * 3, 26, z1 + pz * 3], [x1 - px * 3, 26, z1 - pz * 3], [cxp - px * 3, 27, czp - pz * 3], 0, 1, 0, lc, U, 0);
-      m.quad([x1 + px * 3, 26, z1 + pz * 3], [x2 + px * 1.5, 18, z2 + pz * 1.5], [x2 - px * 1.5, 18, z2 - pz * 1.5], [x1 - px * 3, 26, z1 - pz * 3], 0, 1, 0, lc, U, 0);
-    }
-    m.box(cxp, 27, czp, 8, 4, 8, 0, leaf2, U, 0);
-  }
-  let lamp = 0;
-  for (const ax of AVENUES) {
-    for (const sy of STREETS) {
-      lamp += 1;
-      if (lamp % 2 === 0) continue;
-      m.box(ax + 70, 13, sy + 70, 3, 26, 3, 0, [0.15, 0.15, 0.17], U, 0);
-      m.box(ax + 70, 27, sy + 70, 9, 3, 9, 0, [1, 0.85, 0.55], U, 1);
-    }
-  }
-  m.groundQuad(0, 2624, WORLD.width, 2646, 0.25, viceHex('#8a6f4d'), 0);
-  const deck = viceHex('#4a3f35');
-  for (let s = 0; s < 3; s += 1) {
-    const bx = 800 + s * 1000;
-    m.box(bx, 10, 2780, 1000, 4, 26, 0, deck, U, 0);
-    m.box(bx, 12, 2780 - 14, 1000, 2, 2, 0, s % 2 ? [1, 0.18, 0.47] : [0, 0.9, 1], U, 1);
-    m.box(bx, 12, 2780 + 14, 1000, 2, 2, 0, s % 2 ? [0, 0.9, 1] : [1, 0.18, 0.47], U, 1);
-  }
-  for (let x = 500; x < 3300; x += 500) {
-    m.box(x, 4, 2780, 6, 10, 6, 0, viceHex('#3a3f4a'), U, 0);
-    m.box(x, 14, 2780, 4, 4, 4, 0, [1, 0.85, 0.55], U, 1);
-  }
-  for (const [bx, bz, byaw] of [[900, 2720, 0.3], [2400, 2720, -0.2]]) {
-    m.box(bx, 2, bz, 46, 4, 16, byaw, viceHex('#e8e2d4'), U, 0);
-    m.box(bx, 5, bz, 20, 5, 12, byaw, viceHex('#2f6fd0'), U, 0.2);
-    m.box(bx, 12, bz, 2, 12, 2, byaw, viceHex('#5a4632'), U, 0);
-  }
-  return m.slice();
-}
-export function buildViceDynamicGeometry(state, m) {
-  m.reset();
-  const dark = [0.08, 0.08, 0.1];
-  const skin = viceHex('#e8b98a');
-  const glass = viceHex('#0e1a26');
-  const px = state.player.x, pz = state.player.y;
-  for (const car of state.cars) {
-    const dx = car.x - px, dz = car.y - pz;
-    if (dx * dx + dz * dz > 1200 * 1200) continue;
-    const spec = CAR_KINDS[car.kind] || CAR_KINDS.sedan;
-    const yaw = -car.angle;
-    const col = viceHex(car.color || spec.color);
-    const L = spec.length, W = spec.width;
-    const co = Math.cos(car.angle), si = Math.sin(car.angle);
-    const X = (a, b) => car.x + co * a - si * b, Z = (a, b) => car.y + si * a + co * b;
-    const P = (a, y, b) => [X(a, b), y, Z(a, b)];
-    m.box(X(-L * 0.18, 0), 7, Z(-L * 0.18, 0), L * 0.62, 7, W, yaw, col, U, 0);
-    m.box(X(L * 0.32, 0), 6, Z(L * 0.32, 0), L * 0.3, 5, W * 0.94, yaw, col, U, 0);
-    m.box(X(-L * 0.3, 0), 6, Z(-L * 0.3, 0), L * 0.28, 5, W * 0.94, yaw, col, U, 0);
-    m.box(X(-2, 0), 14, Z(-2, 0), L * 0.42, 7, W * 0.8, yaw, glass, U, 0.6);
-    m.quad(P(L * 0.30, 10, W * 0.38), P(L * 0.30, 10, -W * 0.38), P(L * 0.08, 17.5, -W * 0.38), P(L * 0.08, 17.5, W * 0.38), co * 0.7, 0.7, si * 0.7, glass, U, 0.65);
-    m.quad(P(-L * 0.24, 17.5, W * 0.38), P(-L * 0.24, 17.5, -W * 0.38), P(-L * 0.40, 10, -W * 0.38), P(-L * 0.40, 10, W * 0.38), -co * 0.7, 0.7, -si * 0.7, glass, U, 0.65);
-    m.box(X(L / 2 - 1, 0), 5, Z(L / 2 - 1, 0), 4, 4, W * 0.98, yaw, dark, U, 0);
-    m.box(X(-L / 2 + 1, 0), 5, Z(-L / 2 + 1, 0), 4, 4, W * 0.98, yaw, dark, U, 0);
-    if (car.kind === 'muscle' || car.kind === 'sports') m.box(X(-L * 0.44, 0), 12.5, Z(-L * 0.44, 0), 3, 2, W * 0.92, yaw, dark, U, 0.2);
-    for (const [lx, lz] of [[L * 0.32, W / 2], [L * 0.32, -W / 2], [-L * 0.32, W / 2], [-L * 0.32, -W / 2]]) {
-      m.box(X(lx, lz), 4, Z(lx, lz), 10, 8, 3, yaw, dark, U, 0);
-    }
-    const f = L / 2 - 1, w2 = W / 2 - 4;
-    for (const s of [-1, 1]) {
-      m.box(X(f, s * w2), 8, Z(f, s * w2), 3, 3, 5, yaw, [1, 0.9, 0.6], U, 1);
-      m.box(X(-f, s * w2), 8, Z(-f, s * w2), 3, 3, 5, yaw, [1, 0.15, 0.15], U, 1);
-    }
-    if (car.driver === 'police') {
-      const flash = Math.floor(state.time * 3) % 2 === 0;
-      m.box(car.x - Math.cos(car.angle) * 4, 23, car.y - Math.sin(car.angle) * 4, 8, 3, W * 0.6, yaw, flash ? [1, 0.2, 0.2] : [0.2, 0.4, 1], U, 1);
-    }
-    if (car.kind === 'taxi') m.box(car.x, 22, car.y, 14, 4, 8, yaw, [1, 0.82, 0.24], U, 0.8);
-  }
-  function person(x, y, shirt, angle) {
-    const yaw = -angle;
-    m.box(x, 9, y, 13, 18, 10, yaw, shirt, U, 0);
-    m.box(x, 21, y, 8, 8, 8, yaw, skin, U, 0);
-  }
-  for (const ped of state.peds) {
-    if (ped.down > 0) continue;
-    const dx = ped.x - px, dz = ped.y - pz;
-    if (dx * dx + dz * dz > 1200 * 1200) continue;
-    person(ped.x, ped.y, viceHex(ped.shirt || '#e8e2d4'), ped.angle || 0);
-  }
-  for (const cop of state.cops) person(cop.x, cop.y, viceHex('#2f6fd0'), cop.angle || 0);
-  for (const rival of state.rivals) person(rival.x, rival.y, viceHex('#a83232'), rival.angle || 0);
-  const p = state.player;
-  if (p.onFoot) person(p.x, p.y, viceHex('#ff5a3c'), p.angle);
-  for (const b of state.bullets) {
-    m.box(b.x, 2, b.y, 10, 2, 2, -Math.atan2(b.vy, b.vx), [1, 0.9, 0.6], U, 1);
-  }
-  for (const s of state.skids) {
-    const dx = s.x - px, dz = s.y - pz;
-    if (dx * dx + dz * dz > 1200 * 1200) continue;
-    m.groundQuad(s.x - 7, s.y - 2, s.x + 7, s.y + 2, 0.2, [0.08, 0.08, 0.08], 0);
-  }
-  if (state.objective) {
-    const o = state.objective;
-    const bob = 30 + Math.sin(state.time * 3) * 4;
-    m.box(o.x, bob, o.y, 12, 24, 12, state.time * 0.8, [1, 0.82, 0.24], U, 1);
-  }
-  const air = state.air;
-  if (air && air.heli) {
-    const h = air.heli;
-    const strobe = Math.floor(state.time * 3) % 2 === 0;
-    const hx = Math.cos(h.angle), hy = Math.sin(h.angle);
-    m.box(h.x, h.z, h.y, 104, 26, 44, -h.angle, [0.88, 0.88, 0.9], U, 0.45);
-    m.box(h.x, h.z - 2, h.y, 100, 6, 45, -h.angle, [0.1, 0.25, 0.6], U, 0.5);
-    m.box(h.x + hx * 34, h.z + 2, h.y + hy * 34, 34, 18, 34, -h.angle, [0.08, 0.16, 0.3], U, 0.65);
-    m.box(h.x - hx * 62, h.z + 4, h.y - hy * 62, 48, 12, 16, -h.angle, [0.10, 0.24, 0.45], U, 0.3);
-    m.box(h.x - hx * 88, h.z + 8, h.y - hy * 88, 2, 12, 12, -h.angle, [0.7, 0.7, 0.72], U, 0.55);
-    m.box(h.x, h.z + 17, h.y, 14, 8, 14, 0, [0.1, 0.1, 0.12], U, 0);
-    m.box(h.x, h.z + 24, h.y, 140, 2, 6, -h.rotor, [0.75, 0.75, 0.78], U, 0.6);
-    m.box(h.x, h.z + 24, h.y, 140, 2, 6, -h.rotor + Math.PI / 2, [0.75, 0.75, 0.78], U, 0.6);
-    for (const s of [-14, 14]) m.box(h.x - hy * s, h.z - 16, h.y + hx * s, 84, 3, 3, -h.angle, [0.15, 0.15, 0.17], U, 0);
-    m.box(h.x, h.z + 3, h.y, 16, 6, 16, 0, strobe ? [1, 0.2, 0.2] : [0.2, 0.4, 1], U, 1);
-  }
-  for (const w of state.wrecks || []) {
-    m.box(w.x, 7, w.y, 52, 13, 24, -w.angle + 0.22, [0.28, 0.26, 0.26], U, 0);
-    m.box(w.x + 6, 14, w.y + 3, 26, 8, 19, -w.angle + 0.4, [0.32, 0.30, 0.30], U, 0.1);
-    m.box(w.x - 2, 15, w.y - 4, 10, 3, 18, -w.angle + 0.22, [0.85, 0.85, 0.88], U, 0.4);
-  }
-  if (state.race && state.race.active) {
-    const circ = StreetRaceCircuit.CIRCUITS[state.race.circuit];
-    if (!circ) return m.slice();
-    const cg = circ.gates;
-    for (let i = 0; i < cg.length; i += 1) {
-      const g = cg[i], col = i === state.race.gate ? [1, 0.18, 0.55] : [0, 0.9, 1];
-      for (const s of [-30, 30]) m.box(g[0] + s, 22, g[1], 6, 44, 6, 0, col, U, 1);
-      m.box(g[0], 44, g[1], 66, 5, 6, 0, col, U, 1);
-      m.box(g[0], 8, g[1], 66, 3, 6, 0, col, U, 0.9);
-    }
-  }
-  return m.slice();
-}
-export function buildViceAdditiveGeometry(state, m) {
-  m.reset();
-  function beam(a, b, c, d, e, f, r0, r1, col, emi) {
-    const dx = d - a, dy = e - b, dz = f - c, L = Math.hypot(dx, dy, dz) || 1;
-    const px = -dz / L, pz = dx / L;
-    const qx = (dy / L) * pz, qy = (dz / L) * px - (dx / L) * pz, qz = -(dy / L) * px;
-    m.quad([a + px * r0, b, c + pz * r0], [d + px * r1, e, f + pz * r1], [d - px * r1, e, f - pz * r1], [a - px * r0, b, c - pz * r0], 0, 1, 0, col, U, emi);
-    m.quad([a + qx * r0, b + qy * r0, c + qz * r0], [d + qx * r1, e + qy * r1, f + qz * r1], [d - qx * r1, e - qy * r1, f - qz * r1], [a - qx * r0, b - qy * r0, c - qz * r0], 0, 1, 0, col, U, emi);
-  }
-  const p = state.player;
-  for (const car of state.cars) {
-    const dx = car.x - p.x, dz = car.y - p.y;
-    if (dx * dx + dz * dz > 1200 * 1200) continue;
-    const spec = CAR_KINDS[car.kind] || CAR_KINDS.sedan;
-    const L = spec.length, co = Math.cos(car.angle), si = Math.sin(car.angle);
-    const X = (a, b) => car.x + co * a - si * b, Z = (a, b) => car.y + si * a + co * b;
-    m.tri([X(L / 2, 0), 0.5, Z(L / 2, 0)], [X(L / 2 + 48, 16), 0.5, Z(L / 2 + 48, 16)], [X(L / 2 + 48, -16), 0.5, Z(L / 2 + 48, -16)], 0, 1, 0, [1, 0.85, 0.5], U, 0.22);
-    if (car.driver === 'player' && state.upgrades && state.upgrades.glow > 0) { const q = Math.abs(si) > 0.7 ? [16, 26] : [26, 16]; m.groundQuad(car.x - q[0], car.y - q[1], car.x + q[0], car.y + q[1], 0.4, [0, 0.55, 0.6], 0.5); }
-    if (car.driver === 'race') { const q = Math.abs(si) > 0.7 ? [16, 26] : [26, 16]; m.groundQuad(car.x - q[0], car.y - q[1], car.x + q[0], car.y + q[1], 0.4, [0.6, 0.1, 0.32], 0.5); }
-    if (car.driver === 'police') {
-      const fl = Math.floor(state.time * 3) % 2 === 0, fc = fl ? [1, 0.15, 0.15] : [0.15, 0.35, 1], fc2 = fl ? [1, 0.35, 0.35] : [0.35, 0.55, 1];
-      m.groundQuad(car.x - 80, car.y - 60, car.x + 80, car.y + 60, 0.35, fc, 0.7);
-      m.groundQuad(car.x - 40, car.y - 30, car.x + 40, car.y + 30, 0.4, fc2, 0.6);
-    }
-    if (car.driver === 'player' && state.nitrousT > 0) for (const s of [-6, 6]) {
-      const ex = car.x - co * (L / 2 + 2) - si * s, ez = car.y - si * (L / 2 + 2) + co * s;
-      m.groundQuad(ex - co * 30 - 3.5, ez - si * 30 - 3.5, ex + co * 2 + 3.5, ez + si * 2 + 3.5, 1, [0.2, 0.55, 1], 0.45);
-      m.groundQuad(ex - co * 48 - 2.5, ez - si * 48 - 2.5, ex - co * 26 + 2.5, ez - si * 26 + 2.5, 1, [0.15, 0.4, 0.95], 0.35);
-    }
-  }
-  let drawn = 0;
-  for (const pt of state.particles) {
-    if (drawn >= 30) break;
-    const dx = pt.x - p.x, dz = pt.y - p.y;
-    if (dx * dx + dz * dz > 1200 * 1200) continue;
-    const s = pt.size || 3;
-    m.groundQuad(pt.x - s, pt.y - s, pt.x + s, pt.y + s, 1, viceHex(pt.color || '#ffd23d'), 0.6);
-    drawn += 1;
-  }
-  const ba = (state.time * 0.9) % (Math.PI * 2);
-  beam(3335, 194, 2515, 3335 + Math.cos(ba) * 320, 170, 2515 + Math.sin(ba) * 320, 4, 18, [1, 0.9, 0.6], 0.28);
-  if (state.objective) m.box(state.objective.x, 75, state.objective.y, 5, 150, 5, 0, [1, 0.82, 0.24], U, 0.35);
-  const air = state.air;
-  if (air && air.heli) {
-    const h = air.heli;
-    beam(h.x, h.z - 2, h.y, h.spotX, 1, h.spotY, 5, 32, [1, 0.88, 0.5], 0.3);
-    m.groundQuad(h.spotX - 40, h.spotY - 40, h.spotX + 40, h.spotY + 40, 0.3, [1, 0.9, 0.6], 0.45);
-    m.groundQuad(h.x - 70, h.y - 70, h.x + 70, h.y + 70, h.z + 24, [1, 1, 1], 0.16);
-  }
-  for (const w of state.wrecks || []) {
-    const fl = 1 + Math.sin(state.time * 9 + w.x) * 0.15;
-    for (let k = 0; k < 3; k += 1) {
-      const fx = w.x + (k - 1) * 8, fw = (14 - k * 2) * fl, fh = (24 - k * 3) * fl, fc = k === 0 ? [1, 0.4, 0.05] : k === 1 ? [1, 0.62, 0.12] : [1, 0.85, 0.3];
-      m.quad([fx - fw, 10, w.y], [fx + fw, 10, w.y], [fx + fw, 10 + fh, w.y], [fx - fw, 10 + fh, w.y], 0, 0, 1, fc, U, 0.85);
-      m.quad([fx, 10, w.y - fw], [fx, 10, w.y + fw], [fx, 10 + fh, w.y + fw], [fx, 10 + fh, w.y - fw], 1, 0, 0, fc, U, 0.85);
-    }
-  }
-  return m.slice();
-}
-export function buildViceSmokeGeometry(state, m) {
-  m.reset();
-  const p = state.player;
-  for (const w of state.wrecks || []) {
-    const dx = w.x - p.x, dz = w.y - p.y;
-    if (dx * dx + dz * dz > 1200 * 1200) continue;
-    const drift = Math.sin(state.time * 0.7 + w.x) * 6;
-    for (let k = 0; k < 5; k += 1) {
-      const sy = 22 + k * 20, sr = 12 + k * 6, sa = 0.65 - k * 0.07;
-      const sx = w.x - 10 - k * 4 + drift, sz = w.y - 2 + k * 2;
-      const g2 = 0.08 + k * 0.02, sc = [g2, g2, g2 + 0.02];
-      m.quad([sx - sr, sy, sz], [sx + sr, sy, sz], [sx + sr, sy + sr * 1.6, sz], [sx - sr, sy + sr * 1.6, sz], 0, 0, 1, sc, U, sa);
-      m.quad([sx, sy, sz - sr], [sx, sy, sz + sr], [sx, sy + sr * 1.6, sz + sr], [sx, sy + sr * 1.6, sz - sr], 1, 0, 0, sc, U, sa);
-    }
-  }
-  return m.slice();
-}
+let lamp=0;
+for(const ax of AVENUES)for(const sy of STREETS){lamp++;if(lamp%2===0)continue;m.tb(ax+70,13,sy+70,0,1,0,1.6,1.2,26,[0.15,0.15,0.17],null,U,0,6);m.tb(ax+66,26,sy+70,-0.7,0.25,0,1,1,11,[0.15,0.15,0.17],null,U,0,5);m.ba(ax+62,27,sy+70,3.5,2.5,3.5,[1,0.85,0.55],1);}
+m.gq(0,2624,WORLD.width,2646,0.25,viceHex('#8a6f4d'),0);
+const dk=viceHex('#4a3f35');
+for(let s=0;s<3;s++){const bx=800+s*1000;m.b(bx,10,2780,1000,4,26,0,dk,U,0);}
+for(const[bx,bz,by]of[[900,2720,0.3],[2400,2720,-0.2]]){m.pr([[-20,0],[18,0],[23,3],[10,5],[-16,5],[-20,2]],8,bx,0,bz,by,viceHex('#e8e2d4'),U,0.1);m.pr([[-8,5],[6,5],[8,10],[-6,10]],5,bx,0,bz,by,viceHex('#2f6fd0'),U,0.2);}
+return m.slice();}
+function carBody(m,x,z,angle,L,W,col,kind,wheels){
+const yaw=-angle,co=Math.cos(angle),si=Math.sin(angle),hL=L/2,hw=W/2-1;
+const P=(a,y,b)=>[x+co*a-si*b,y,z+si*a+co*b];
+const pts=[[hL,1.5],[hL,6],[L*0.42,7.5],[L*0.30,8],[L*0.10,9.5],[-L*0.10,16.5],[-L*0.30,16.5],[-L*0.44,9.5],[-hL,7],[-hL,1.5]];
+m.pr(pts,hw,x,0,z,yaw,col,U,0);
+const gl2=viceHex('#0e1a26');
+const gN=(ax,ay)=>{const l=Math.hypot(ax,ay);return[ax/l*co,ay/l,-ax/l*si];};
+const g1=gN(7,L*0.2),g2=gN(-7,L*0.14);
+const off=(a,y,b,nn)=>{const qq=P(a,y,b);return[qq[0]+nn[0]*0.8,qq[1]+nn[1]*0.8,qq[2]+nn[2]*0.8];};
+m.q(off(L*0.10,9.5,-(hw-1),g1),off(L*0.10,9.5,hw-1,g1),off(-L*0.10,16.5,hw-1,g1),off(-L*0.10,16.5,-(hw-1),g1),g1[0],g1[1],g1[2],gl2,U,0.65);
+m.q(off(-L*0.30,16.5,-(hw-1),g2),off(-L*0.30,16.5,hw-1,g2),off(-L*0.44,9.5,hw-1,g2),off(-L*0.44,9.5,-(hw-1),g2),g2[0],g2[1],g2[2],gl2,U,0.65);
+for(const s of[-1,1])m.q(P(-L*0.28,10.5,s*(hw+0.4)),P(L*0.06,10.5,s*(hw+0.4)),P(L*0.06,15.5,s*(hw+0.4)),P(-L*0.28,15.5,s*(hw+0.4)),-si*s,0,co*s,gl2,U,0.6);
+if(wheels)for(const[lx,lz]of[[L*0.32,hw+0.5],[L*0.32,-(hw+0.5)],[-L*0.32,hw+0.5],[-L*0.32,-(hw+0.5)]]){const w2=P(lx,4.5,lz);m.tb(w2[0],4.5,w2[2],-si,0,co,4.5,4.5,3,[0.08,0.08,0.1],[0.75,0.75,0.78],U,0,6);}
+m.q(P(hL+0.2,5,-(hw-3)),P(hL+0.2,5,hw-3),P(hL+0.2,9,hw-3),P(hL+0.2,9,-(hw-3)),co,0,si,[1,0.9,0.6],U,1);
+m.q(P(-hL-0.2,5,hw-3),P(-hL-0.2,5,-(hw-3)),P(-hL-0.2,9,-(hw-3)),P(-hL-0.2,9,hw-3),-co,0,-si,[1,0.15,0.15],U,1);
+if(kind==='muscle'||kind==='sports'){const s2=P(-L*0.46,12.5,0);m.b(s2[0],12.5,s2[2],3,1.5,W*0.92,yaw,[0.08,0.08,0.1],U,0.2);}}
+export function buildDyn(state,m){
+m.reset();
+const skin=viceHex('#e8b98a'),px=state.player.x,pz=state.player.y;
+for(const car of state.cars){
+const dx=car.x-px,dz=car.y-pz;
+if(dx*dx+dz*dz>1200*1200)continue;
+const spec=CAR_KINDS[car.kind]||CAR_KINDS.sedan,col=viceHex(car.color||spec.color),L=spec.length,W=spec.width;
+carBody(m,car.x,car.y,car.angle,L,W,col,car.kind,true);
+if(car.driver==='police'){const fl=Math.floor(state.time*3)%2===0,co=Math.cos(car.angle),si=Math.sin(car.angle);m.ba(car.x-co*4-si*6,19.5,car.y-si*4+co*6,4,2.5,3,fl?[1,0.2,0.2]:[0.2,0.4,1],1);m.ba(car.x-co*4+si*6,19.5,car.y-si*4-co*6,4,2.5,3,fl?[0.2,0.4,1]:[1,0.2,0.2],1);}
+if(car.kind==='taxi')m.b(car.x,22,car.y,14,4,8,-car.angle,[1,0.82,0.24],U,0.8);}
+function person(x,y,shirt,angle,phase){
+const yaw=-angle,fx=Math.cos(angle),fz=Math.sin(angle),sw=Math.sin(state.time*6+(phase||0))*4,pn=[0.15,0.15,0.18];
+m.b(x+fx*sw,4.5,y+fz*sw,5,9,5,yaw,pn,U,0);
+m.b(x-fx*sw,4.5,y-fz*sw,5,9,5,yaw,pn,U,0);
+m.b(x,17,y,13,16,10,yaw,shirt,U,0);
+m.b(x+fx*-sw*0.7-fz*8,17,y+fz*-sw*0.7+fx*8,4,14,4,yaw,shirt,U,0);
+m.b(x+fx*-sw*0.7+fz*8,17,y+fz*-sw*0.7-fx*8,4,14,4,yaw,shirt,U,0);
+m.ba(x,29,y,4.5,4.5,4.5,skin,0);}
+for(const ped of state.peds){if(ped.down>0)continue;const dx=ped.x-px,dz=ped.y-pz;if(dx*dx+dz*dz>1200*1200)continue;person(ped.x,ped.y,viceHex(ped.shirt||'#e8e2d4'),ped.angle||0,ped.x*0.7);}
+for(const cop of state.cops)person(cop.x,cop.y,viceHex('#2f6fd0'),cop.angle||0,cop.x*0.7);
+for(const rival of state.rivals)person(rival.x,rival.y,viceHex('#a83232'),rival.angle||0,rival.x*0.7);
+const p=state.player;
+if(p.onFoot)person(p.x,p.y,viceHex('#ff5a3c'),p.angle,0);
+for(const b of state.bullets)m.b(b.x,2,b.y,10,2,2,-Math.atan2(b.vy,b.vx),[1,0.9,0.6],U,1);
+for(const s of state.skids){const dx=s.x-px,dz=s.y-pz;if(dx*dx+dz*dz>1200*1200)continue;m.gq(s.x-7,s.y-2,s.x+7,s.y+2,0.2,[0.08,0.08,0.08],0);}
+if(state.objective){const o=state.objective,bob=30+Math.sin(state.time*3)*4,gd=[1,0.82,0.24];m.q([o.x,bob+14,o.y],[o.x+10,bob,o.y],[o.x,bob-14,o.y],[o.x-10,bob,o.y],0,0,1,gd,U,1);m.q([o.x,bob+14,o.y],[o.x,bob,o.y+10],[o.x,bob-14,o.y],[o.x,bob,o.y-10],1,0,0,gd,U,1);}
+const air=state.air;
+if(air&&air.heli){const h=air.heli,st=Math.floor(state.time*3)%2===0,fx=Math.cos(h.angle),fz=Math.sin(h.angle),lx=-fz,lz=fx,nv=[0.16,0.19,0.32];
+m.ba(h.x,h.z,h.y,52,13,22,nv,0.15);
+m.ba(h.x,h.z+2,h.y,44,2.5,22.5,[0.88,0.88,0.9],0.3);
+m.ba(h.x+fx*34,h.z+3,h.y+fz*34,20,9,17,viceHex('#0e1a26'),0.65);
+m.tb(h.x-fx*55,h.z+6,h.y-fz*55,-fx,0.08,-fz,7,2.5,64,nv,null,U,0.2,6);
+const tx=h.x-fx*86,tz=h.y-fz*86;
+m.tr([tx,h.z+4,tz],[tx-fx*12,h.z+4,tz-fz*12],[tx-fx*6,h.z+18,tz-fz*6],lx,0,lz,nv,U,0.2);
+m.tr([tx,h.z+4,tz],[tx-fx*6,h.z+18,tz-fz*6],[tx-fx*12,h.z+4,tz-fz*12],-lx,0,-lz,nv,U,0.2);
+m.tb(h.x,h.z+15,h.y,0,1,0,3,3,8,[0.1,0.1,0.12],null,U,0,5);
+for(let k=0;k<2;k++){const ra=h.rotor+k*Math.PI/2,bx=Math.cos(ra),bz=Math.sin(ra),px2=-bz,pz2=bx;m.q([h.x+bx*70+px2*2.5,h.z+20.5,h.y+bz*70+pz2*2.5],[h.x-bx*70+px2*2.5,h.z+20.5,h.y-bz*70+pz2*2.5],[h.x-bx*70-px2*2.5,h.z+20.5,h.y-bz*70-pz2*2.5],[h.x+bx*70-px2*2.5,h.z+20.5,h.y+bz*70-pz2*2.5],0,1,0,[0.6,0.6,0.64],U,0.5);}
+for(const s of[-14,14]){m.tb(h.x+lx*s,h.z-15,h.y+lz*s,fx,0,fz,1.5,1.5,84,[0.15,0.15,0.17],null,U,0,5);m.tb(h.x+lx*s,h.z-8,h.y+lz*s,0,1,0,1.2,1.2,14,[0.15,0.15,0.17],null,U,0,5);}
+m.ba(h.x+fx*40,h.z-10,h.y+fz*40,4,3,4,[1,0.95,0.8],1);
+m.ba(tx,h.z+10,tz,3,3,3,st?[1,0.2,0.2]:[0.2,0.4,1],1);}
+for(const w of state.wrecks||[])carBody(m,w.x,w.y,w.angle-0.22,52,24,[0.28,0.26,0.26],'sedan',false);
+if(state.race&&state.race.active){const circ=StreetRaceCircuit.CIRCUITS[state.race.circuit];if(!circ)return m.slice();const cg=circ.gates;for(let i=0;i<cg.length;i++){const g=cg[i],col=i===state.race.gate?[1,0.18,0.55]:[0,0.9,1];for(const s of[-30,30])m.tb(g[0]+s,22,g[1],0,1,0,3,2,44,col,null,U,1,6);m.tb(g[0],44,g[1],1,0,0,2.5,2.5,66,col,null,U,1,5);m.gq(g[0]-33,g[1]-4,g[0]+33,g[1]+4,0.3,col,0.9);}}
+return m.slice();}
+export function buildAdd(state,m){
+m.reset();
+function bm(a,b,c,d,e,f,r0,r1,col,emi){const dx=d-a,dy=e-b,dz=f-c,L=Math.hypot(dx,dy,dz)||1,px=-dz/L,pz=dx/L,qx=dy/L*pz,qy=dz/L*px-dx/L*pz,qz=-dy/L*px;m.q([a+px*r0,b,c+pz*r0],[d+px*r1,e,f+pz*r1],[d-px*r1,e,f-pz*r1],[a-px*r0,b,c-pz*r0],0,1,0,col,U,emi);m.q([a+qx*r0,b+qy*r0,c+qz*r0],[d+qx*r1,e+qy*r1,f+qz*r1],[d-qx*r1,e-qy*r1,f-qz*r1],[a-qx*r0,b-qy*r0,c-qz*r0],0,1,0,col,U,emi);}
+function vb(x,y,h,w,col,emi){m.q([x-w,0,y],[x+w,0,y],[x+w,h,y],[x-w,h,y],0,0,1,col,U,emi);m.q([x,0,y-w],[x,0,y+w],[x,h,y+w],[x,h,y-w],1,0,0,col,U,emi);}
+const p=state.player;
+for(const car of state.cars){
+const dx=car.x-p.x,dz=car.y-p.y;
+if(dx*dx+dz*dz>1200*1200)continue;
+const spec=CAR_KINDS[car.kind]||CAR_KINDS.sedan,L=spec.length,co=Math.cos(car.angle),si=Math.sin(car.angle),X=(a,b)=>car.x+co*a-si*b,Z=(a,b)=>car.y+si*a+co*b;
+m.tr([X(L/2,0),0.5,Z(L/2,0)],[X(L/2+48,16),0.5,Z(L/2+48,16)],[X(L/2+48,-16),0.5,Z(L/2+48,-16)],0,1,0,[1,0.85,0.5],U,0.22);
+if(car.driver==='player'&&state.upgrades&&state.upgrades.glow>0)m.gq(car.x-22,car.y-16,car.x+22,car.y+16,0.4,[0,0.55,0.6],0.35);
+if(car.driver==='race')m.gq(car.x-22,car.y-16,car.x+22,car.y+16,0.4,[0.6,0.1,0.32],0.35);
+if(car.driver==='police'){const fl=Math.floor(state.time*3)%2===0,fc=fl?[1,0.15,0.15]:[0.15,0.35,1],fc2=fl?[1,0.35,0.35]:[0.35,0.55,1];m.gq(car.x-60,car.y-45,car.x+60,car.y+45,0.35,fc,0.5);m.gq(car.x-30,car.y-22,car.x+30,car.y+22,0.4,fc2,0.45);}
+if(car.driver==='player'&&state.nitrousT>0)for(const s of[-6,6]){const ex=car.x-co*(L/2+2)-si*s,ez=car.y-si*(L/2+2)+co*s;bm(ex,3,ez,ex-co*42,3,ez-si*42,2,5,[0.2,0.55,1],0.5);bm(ex,3,ez,ex-co*26,3,ez-si*26,1.2,3,[0.5,0.85,1],0.6);}}
+let dn=0;
+for(const pt of state.particles){if(dn>=30)break;const dx=pt.x-p.x,dz=pt.y-p.y;if(dx*dx+dz*dz>1200*1200)continue;const s=pt.size||3;m.gq(pt.x-s,pt.y-s,pt.x+s,pt.y+s,1,viceHex(pt.color||'#ffd23d'),0.6);dn++;}
+if(state.objective)vb(state.objective.x,state.objective.y,150,5,[1,0.82,0.24],0.3);
+const air=state.air;
+if(air&&air.heli){const h=air.heli;bm(h.x,h.z-2,h.y,h.spotX,1,h.spotY,5,32,[1,0.88,0.5],0.3);m.gq(h.spotX-40,h.spotY-40,h.spotX+40,h.spotY+40,0.3,[1,0.9,0.6],0.45);}
+for(const w of state.wrecks||[]){const fl=1+Math.sin(state.time*9+w.x)*0.15;for(let k=0;k<3;k++){const fx=w.x+(k-1)*8,fw=(14-k*2)*fl,fh=(26-k*3)*fl,fc=k===0?[1,0.4,0.05]:k===1?[1,0.62,0.12]:[1,0.85,0.3];m.q([fx-fw,10,w.y],[fx+fw,10,w.y],[fx+fw,10+fh,w.y],[fx-fw,10+fh,w.y],0,0,1,fc,U,0.85);m.q([fx,10,w.y-fw],[fx,10,w.y+fw],[fx,10+fh,w.y+fw],[fx,10+fh,w.y-fw],1,0,0,fc,U,0.85);}}
+return m.slice();}
+export function buildSmk(state,m){
+m.reset();
+const p=state.player;
+for(const w of state.wrecks||[]){const dx=w.x-p.x,dz=w.y-p.y;if(dx*dx+dz*dz>1200*1200)continue;const dr=Math.sin(state.time*0.7+w.x)*6;for(let k=0;k<5;k++){const sy=22+k*20,sr=16+k*8,sa=0.5-k*0.06,sx=w.x-10-k*4+dr,sz=w.y-2+k*2,g2=0.08+k*0.02,sc=[g2,g2,g2+0.02];m.q([sx-sr,sy,sz],[sx+sr,sy,sz],[sx+sr,sy+sr*1.6,sz],[sx-sr,sy+sr*1.6,sz],0,0,1,sc,U,sa);m.q([sx,sy,sz-sr],[sx,sy,sz+sr],[sx,sy+sr*1.6,sz+sr],[sx,sy+sr*1.6,sz-sr],1,0,0,sc,U,sa);}}
+return m.slice();}
