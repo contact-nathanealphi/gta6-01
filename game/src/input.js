@@ -10,6 +10,7 @@ export const PRESS_PUNCH = 8;
 export const PRESS_RELOAD = 16;
 export const PRESS_SAVE = 32;
 export const PRESS_MUTE = 64;
+export const PRESS_HORN = 128;
 
 const UP = new Set(['ArrowUp', 'KeyW']);
 const DOWN = new Set(['ArrowDown', 'KeyS']);
@@ -23,6 +24,7 @@ const PUNCH = new Set(['KeyF']);
 const RELOAD = new Set(['KeyR']);
 const SAVE = new Set(['KeyP']);
 const MUTE = new Set(['KeyM']);
+const HORN = new Set(['KeyH']);
 
 export function createInput(target) {
   const held = new Set();
@@ -46,6 +48,8 @@ export function createInput(target) {
       if (!event.repeat) presses |= PRESS_SAVE;
     } else if (MUTE.has(event.code)) {
       if (!event.repeat) presses |= PRESS_MUTE;
+    } else if (HORN.has(event.code)) {
+      if (!event.repeat) presses |= PRESS_HORN;
     } else {
       return;
     }

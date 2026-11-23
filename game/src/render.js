@@ -555,7 +555,7 @@ export function createRenderer(canvas) {
       text(label, viewW / 2, viewH - 163, 18, PALETTE.gold, 'center', true);
     }
     // Controls hint, bottom-right.
-    text('WASD move / drive · E car · F punch · Click shoot · P save · M mute · Esc pause', viewW - 16, viewH - 16, 13, PALETTE.hudMuted, 'right');
+    text('WASD move / drive · E car · F punch · Click shoot · H horn · P save · M mute · Esc pause', viewW - 16, viewH - 16, 13, PALETTE.hudMuted, 'right');
     // Crosshair when the pistol is out on foot.
     if (p.onFoot && p.pistol && ui.mouse) {
       const mx = ui.mouse.x;
@@ -636,7 +636,7 @@ export function createRenderer(canvas) {
         '',
         'WASD / arrows — move and drive      E — enter / steal a car',
         'Mouse + click — aim and shoot      F — punch      R — reload',
-        'Shift — run      P — save      M — mute      Esc — pause',
+        'H — horn      Shift — run      P — save      M — mute      Esc — pause',
       ], ui.hasSave ? 'ENTER — Continue your story    ·    R — Start over' : 'ENTER — Start the story');
       text('A complete open-world crime game · built for make.fun', viewW / 2, viewH - 40, 15, PALETTE.hudMuted, 'center');
       return;

@@ -13,6 +13,11 @@ export function createAudio() {
   let sirenLfo = null;
   let sirenGain = null;
   let muted = false;
+  let musicTimer = null;
+  let musicStep = 0;
+  // A slow synthwave bass line (A minor), one note per eighth at ~112 BPM.
+  const BASSLINE = [55, 55, 65.41, 82.41, 55, 49, 82.41, 73.42];
+  const BASS_STEP = 60 / 112 / 2;
 
   function ensure() {
     if (ctx) {
@@ -59,6 +64,7 @@ export function createAudio() {
       sirenGain.connect(master);
       sirenOsc.start();
       sirenLfo.start();
+      startMusic();
       return true;
     } catch {
       return false;
@@ -68,6 +74,41 @@ export function createAudio() {
   function setMuted(value) {
     muted = value;
     if (master) master.gain.value = muted ? 0 : 0.5;
+    if (muted) stopMusic();
+    else if (ctx) startMusic();
+  }
+
+  function playBassNote(freq, when) {
+    if (!ctx) return;
+    const t = ctx.currentTime + when;
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.value = freq;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 300;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.linearRampToValueAtTime(0.05, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + BASS_STEP * 0.95);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(master);
+    osc.start(t);
+    osc.stop(t + BASS_STEP);
+  }
+
+  function startMusic() {
+    if (!ctx || musicTimer || muted) return;
+    musicStep = 0;
+    musicTimer = setInterval(() => {
+      playBassNote(BASSLINE[musicStep % BASSLINE.length], 0);
+      musicStep += 1;
+    }, BASS_STEP * 1000);
+  }
+
+  function stopMusic() {
+    if (musicTimer) { clearInterval(musicTimer); musicTimer = null; }
   }
 
   function blip(freq, seconds, type, volume, when) {
@@ -107,6 +148,7 @@ export function createAudio() {
     ensure,
     setMuted,
     isMuted() { return muted; },
+    music(on) { if (on) startMusic(); else stopMusic(); },
     /** speed01 is 0..1 (car speed over its top speed); 0 silences the engine. */
     engine(speed01, driving) {
       if (!ctx) return;
@@ -126,6 +168,13 @@ export function createAudio() {
       const notes = [523, 659, 784, 1047];
       notes.forEach((freq, i) => blip(freq, 0.16, 'triangle', 0.2, i * 0.11));
     },
+    /** A two-tone car horn. */
+    horn() {
+      blip(370, 0.18, 'square', 0.12);
+      blip(466, 0.18, 'square', 0.12);
+    },
+    /** A cash cha-ching: two bright blips. */
+    cash() { blip(1320, 0.07, 'sine', 0.18); blip(1760, 0.12, 'sine', 0.18, 0.07); },
     busted() { blip(220, 0.3, 'sawtooth', 0.2); blip(165, 0.4, 'sawtooth', 0.2, 0.25); },
     click() { blip(660, 0.06, 'square', 0.12); },
   };

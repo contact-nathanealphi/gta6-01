@@ -131,6 +131,7 @@ export function createGame(rng) {
     shotSound: false,
     punchSound: false,
     pickupSound: false,
+    cashSound: false,
     crashLoud: false,
     sirenOn: false,
     shake: 0,
@@ -1046,6 +1047,8 @@ export function createGame(rng) {
         showBanner('Pistol reloaded', 1.5);
       } else if (item.kind === 'cash') {
         state.cash += item.amount;
+        state.cashSound = true;
+        state.pickupSound = false;
         showBanner(`+$${item.amount}`, 1.2);
         const spot = randomSidewalkPoint(rng);
         spawnPickup('cash', spot.x, spot.y, rng.int(30, 90));

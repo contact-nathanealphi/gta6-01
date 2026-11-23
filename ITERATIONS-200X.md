@@ -62,3 +62,10 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 37 | Jendela gedung menyala (pola tetap per gedung, tidak berkedip) | headless test + screenshot | KEEP |
 | 38 | Title screen "Six jobs" → "Seven jobs" (konsisten dengan misi ke-7) | screenshot 1-start | KEEP |
 | 39 | shots.js mag hardcode 12 → PLAYER.magSize (14) | headless test + screenshot | KEEP |
+| 40 | Klakson: input PRESS_HORN (tombol H) | headless test | KEEP |
+| 41 | Suara klakson dua nada (audio.horn) | headless test | KEEP |
+| 42 | Suara cha-ching untuk uang (audio.cash) | headless test | KEEP |
+| 43 | Flag cashSound — uang mainkan cha-ching, bukan pickup biasa | headless test | KEEP |
+| 44 | Musik latar: bassline synthwave A minor (8 not, 112 BPM) via setInterval | headless test | KEEP |
+| 45 | Musik mulai saat audio context dibuat; music(on) diekspos; mute menghentikan musik | headless test | KEEP |
+| 46 | Hint kontrol + title screen sebutkan H (klakson) | headless test | KEEP |

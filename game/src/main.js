@@ -9,7 +9,7 @@
 import { SAVE_KEY, STEP } from './tune.js';
 import { createRng } from './rng.js';
 import { createGame, EVENT_BUSTED, EVENT_MISSION, EVENT_STORY, EVENT_WASTED } from './world.js';
-import { createInput, PRESS_CONFIRM, PRESS_ENTER, PRESS_MUTE, PRESS_PAUSE, PRESS_PUNCH, PRESS_RELOAD, PRESS_SAVE } from './input.js';
+import { createInput, PRESS_CONFIRM, PRESS_ENTER, PRESS_HORN, PRESS_MUTE, PRESS_PAUSE, PRESS_PUNCH, PRESS_RELOAD, PRESS_SAVE } from './input.js';
 import { createAudio } from './audio.js';
 import { createRenderer, SCREEN_BUSTED, SCREEN_COMPLETE, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE, SCREEN_WASTED } from './render.js';
 import { stageShot } from './shots.js';
@@ -153,6 +153,10 @@ function runGame() {
       state.pickupSound = false;
       audio.pickup();
     }
+    if (state.cashSound) {
+      state.cashSound = false;
+      audio.cash();
+    }
     if (state.crashLoud) {
       state.crashLoud = false;
       audio.crash();
@@ -171,6 +175,7 @@ function runGame() {
       audio.setMuted(!audio.isMuted());
       announce(audio.isMuted() ? 'Sound off.' : 'Sound on.');
     }
+    if (presses & PRESS_HORN) audio.horn();
     if (screen === SCREEN_TITLE) {
       handleTitle(presses);
       // The city lives behind the title: traffic and pedestrians keep moving.
