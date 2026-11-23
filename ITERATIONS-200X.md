@@ -157,3 +157,9 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 132 | Skid: suara screech (noise bandpass 900Hz) di audio.js | headless test | KEEP |
 | 133 | Skid: main.js mainkan screech + skidCd dihitung mundur | headless test | KEEP |
 | 134 | Skid batch terverifikasi | headless test ALL PASS | KEEP |
+| 135 | Landmark: mercusuar Neon Bay di ujung timur pantai | headless test | KEEP |
+| 136 | Mercusuar: garis merah-putih + lampu + sinar berputar (pakai state.time) | headless test | KEEP |
+| 137 | drawBuildings terima state agar sinar mercusuar bisa berputar | headless test | KEEP |
+| 138 | Bark: pejalan kaki yang dipukul berteriak ("Hey!", "Watch it!", "Help!") | headless test | KEEP |
+| 139 | Bark: pejalan kaki yang tertabrak berteriak ("Ouch!", "My leg!", "Call the cops!") | headless test | KEEP |
+| 140 | Bark batch terverifikasi | headless test ALL PASS | KEEP |

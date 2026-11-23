@@ -184,15 +184,36 @@ export function createRenderer(canvas) {
     ctx.globalAlpha = 1;
   }
 
-  function drawBuildings(city, cam) {
+  function drawBuildings(state, city, cam) {
     for (const b of city.buildings) {
       if (!inView(cam, b.x + b.w / 2, b.y + b.h / 2, Math.max(b.w, b.h))) continue;
       ctx.fillStyle = 'rgba(0,0,0,0.25)';
       ctx.fillRect(b.x + 8, b.y + 10, b.w, b.h);
       ctx.fillStyle = b.color;
       ctx.fillRect(b.x, b.y, b.w, b.h);
-      ctx.fillStyle = b.glass;
-      ctx.fillRect(b.x + 8, b.y + 8, b.w - 16, 14);
+      if (b.kind === 'lighthouse') {
+        // A lighthouse: red-white stripes and a rotating beam of light.
+        ctx.fillStyle = '#c94f43';
+        ctx.fillRect(b.x, b.y + 18, b.w, 12);
+        ctx.fillRect(b.x, b.y + 44, b.w, 12);
+        ctx.fillStyle = '#ffd23d';
+        ctx.beginPath();
+        ctx.arc(b.x + b.w / 2, b.y + 4, 8, 0, Math.PI * 2);
+        ctx.fill();
+        const beam = (state.time * 0.9) % (Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 233, 163, 0.18)';
+        ctx.beginPath();
+        ctx.moveTo(b.x + b.w / 2, b.y + 4);
+        ctx.lineTo(b.x + b.w / 2 + Math.cos(beam) * 260, b.y + 4 + Math.sin(beam) * 260);
+        ctx.lineTo(b.x + b.w / 2 + Math.cos(beam + 0.35) * 260, b.y + 4 + Math.sin(beam + 0.35) * 260);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = b.glass;
+        ctx.fillRect(b.x + 8, b.y + 8, b.w - 16, 14);
+      } else {
+        ctx.fillStyle = b.glass;
+        ctx.fillRect(b.x + 8, b.y + 8, b.w - 16, 14);
+      }
       // Lit windows: a fixed pattern per building (from its position, so it
       // never flickers), a few warm dots on the roof face.
       ctx.fillStyle = 'rgba(255, 220, 130, 0.75)';
@@ -834,7 +855,7 @@ export function createRenderer(canvas) {
     ctx.translate(-cam.x + shX, -cam.y + shY);
     drawGround(cam);
     drawSkids(state, cam);
-    drawBuildings(city, cam);
+    drawBuildings(state, city, cam);
     drawPickups(state, cam);
     drawPeople(state, cam);
     for (const car of state.cars) {

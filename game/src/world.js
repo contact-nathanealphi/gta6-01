@@ -610,6 +610,7 @@ export function createGame(rng) {
       if (tryHit(ped, 100, true)) {
         ped.down = 2;
         ped.scared = 3;
+        floatText(ped.x, ped.y - 24, rng.pick(['Hey!', 'Watch it!', 'Help!', 'My car!']), '#ffffff');
         hit = true;
       }
     }
@@ -722,6 +723,7 @@ export function createGame(rng) {
         car.speed *= 0.85;
         addWanted(WANTED.hitPed);
         burst(ped.x, ped.y, '#c94f43', 8, 160);
+        floatText(ped.x, ped.y - 24, rng.pick(['Ouch!', 'My leg!', 'Call the cops!']), '#ffffff');
       }
     }
     if (car.health <= 0 && !car.smoked) {

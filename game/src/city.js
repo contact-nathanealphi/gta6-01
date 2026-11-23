@@ -59,6 +59,12 @@ export function buildCity(rng) {
     palms.push({ x: x + rng.range(-30, 30), y: rng.range(2470, 2620) });
   }
 
+  // A lighthouse at the far east end of the beach, by the water.
+  buildings.push({
+    x: 3300, y: 2480, w: 70, h: 70,
+    color: '#e8e2d4', glass: '#ffd23d', name: 'Neon Bay Lighthouse', kind: 'lighthouse',
+  });
+
   return { buildings, palms, landmarks: LANDMARKS };
 }
 
