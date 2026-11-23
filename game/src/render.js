@@ -649,6 +649,11 @@ export function createRenderer(canvas) {
       }
     }
     drawMinimap(state);
+    // In-game clock: the 4-minute day cycle reads as a 24-hour clock, starting at 08:00.
+    const hours = Math.floor((8 + state.time / 10) % 24);
+    const mins = Math.floor((((8 + state.time / 10) % 24) % 1) * 60);
+    const night = hours < 6 || hours >= 18;
+    text(`${night ? '☾' : '☀'} ${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`, viewW - 14, 14 + MINIMAP.h + 28, 15, PALETTE.hudText, 'right', true);
     // Objective, bottom-left.
     if (state.objective) {
       ctx.fillStyle = PALETTE.hudPanel;
@@ -782,8 +787,18 @@ export function createRenderer(canvas) {
         }
       }
     }
-    // A warm sunset wash over everything.
-    ctx.fillStyle = 'rgba(255,150,60,0.06)';
+    // A slow day cycle (4 minutes = 24 in-game hours, starting at 08:00):
+    // the wash over the city shifts from clear noon to a warm sunset,
+    // then a dark blue night, and back to a pale dawn.
+    const hour = (8 + state.time / 10) % 24;
+    const dayness = Math.sin(((hour - 6) / 12) * Math.PI);
+    if (dayness > 0.35) {
+      ctx.fillStyle = 'rgba(255,150,60,0.03)';
+    } else if (dayness > -0.25) {
+      ctx.fillStyle = `rgba(255,120,50,${(0.08 * (0.35 - dayness) / 0.6).toFixed(3)})`;
+    } else {
+      ctx.fillStyle = `rgba(10,12,40,${(0.26 * Math.min(1, (-dayness - 0.25) / 0.75)).toFixed(3)})`;
+    }
     ctx.fillRect(0, 0, viewW, viewH);
     if (screen === SCREEN_TITLE) {
       drawPanel('NEON BAY', [

@@ -93,3 +93,6 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 68 | Armor: pickup memberi 20 dtk + banner | headless test | KEEP |
 | 69 | Armor: decay per detik; damage peluru + tabrakan jadi setengah | headless test (armor test) | KEEP |
 | 70 | Armor: render perisai + cincin biru berdenyut + HUD "Armor Xs" + panel HUD lebih tinggi | headless test | KEEP |
+| 71 | Siklus siang/malam: overlay berubah selama 4 menit (siang→senja→malam→fajar) | headless test + screenshot | KEEP |
+| 72 | Jam in-game di HUD (ikon ☀/☾ + HH:MM) | screenshot | KEEP |
+| 73 | Perbaiki fase siklus: mulai 08:00 pagi (bukan tengah malam yang gelap) + jam cocok | screenshot 2-drive | KEEP |
