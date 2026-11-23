@@ -184,3 +184,10 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 159 | Near-miss: floater +$ dan banner "xN" + HUD "Near-miss streak xN" | headless test | KEEP |
 | 160 | Near-miss: test headless (shave pertama $10, streak 1) + perbaiki nama var ganda | headless test ALL PASS | KEEP |
 | 161 | README: near-miss streak didokumentasikan | — | KEEP |
+| 162 | Review kit: judge baca contact sheet screenshot + outline sumber; kelengkapan = kunci | — | KEEP |
+| 163 | Verifikasi dossier: teks 127.497/163.840, semua fitur baru tercantum | main.ts run | KEEP |
+| 164 | Screenshot chase: 3 bintang + "Hunted" + heat meter + patrol di belakang + Golden Comet | screenshot 3-chase | KEEP |
+| 165 | Screenshot drive/mission/start terverifikasi ulang (semua <256KiB) | shot-neon | KEEP |
+| 166 | Verifikasi headless test tetap ALL PASS | headless test | KEEP |
+| 167 | Verifikasi main.ts dossier tetap valid | main.ts run | KEEP |
+| 168 | Review batch terverifikasi | — | KEEP |
