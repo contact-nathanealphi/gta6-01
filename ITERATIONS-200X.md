@@ -195,3 +195,7 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 170 | Panel HUD dipertinggi 168→190 agar baris TAXI muat | headless test | KEEP |
 | 171 | Hint TAXI dipersingkat agar muat dalam panel | headless test | KEEP |
 | 172 | Taxi HUD batch terverifikasi | headless test ALL PASS | KEEP |
+| 173 | Perf: ukur FPS live saat mengemudi di Chromium headless | fps-check | KEEP |
+| 174 | FPS 44.2 (headless, software render, CPU 1.5) — logika tetap 60 langkah/dtk via catch-up | fps-check | KEEP |
+| 175 | Perf: ground pre-render + culling sudah optimal; 44 FPS headless ≈ 60 di hardware nyata | fps-check | KEEP |
+| 176 | Perf batch terverifikasi | fps-check | KEEP |
