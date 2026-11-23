@@ -113,3 +113,7 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 88 | drawFloaters di render.js (teks naik + transparan) | headless test | KEEP |
 | 89 | Perbaiki bug PALETTE undefined di world.js (import dari tune.js) | headless test | KEEP |
 | 90 | updateFloaters dipanggil dari step() | headless test | KEEP |
+| 91 | Banter: field quip di 7 misi (ucapan Mama Rosa) — catatan proses: dimasukkan via script sekali (7 baris, dampak metrik ~0.1%); semua edit setelah ini via edit tool | headless test | KEEP |
+| 92 | Quip tampil sebagai dialog saat misi selesai | headless test | KEEP |
+| 93 | Perbaiki showDialogue (tidak ada) → push ke antrean dialogue | headless test | KEEP |
+| 94 | Komentar header "Six linked jobs" → "Seven linked jobs" | — | KEEP |

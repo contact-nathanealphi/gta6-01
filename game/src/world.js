@@ -13,7 +13,7 @@ export const EVENT_MISSION = 4;
 export const EVENT_STORY = 8;
 export const EVENT_CRIME = 16;
 
-/** Six linked jobs. Each stage is one objective; the last stage pays the reward. */
+/** Seven linked jobs. Each stage is one objective; the last stage pays the reward. */
 export const MISSIONS = [
   {
     title: 'First Delivery',
@@ -25,6 +25,7 @@ export const MISSIONS = [
       { kind: 'go', x: 1470, y: 1550, label: 'Deliver the package to Bayfront Mall' },
     ],
     reward: 150,
+    quip: 'You drive like my grandson. Fast, but you made it. Good.',
   },
   {
     title: 'A Quiet Word',
@@ -36,6 +37,7 @@ export const MISSIONS = [
       { kind: 'kill', count: 3, at: [{ x: 1300, y: 1450 }, { x: 1380, y: 1620 }, { x: 1240, y: 1680 }], label: 'Deal with the 3 Harbor Boys lookouts' },
     ],
     reward: 250,
+    quip: 'Three lookouts, one word. You always did talk with your fists.',
   },
   {
     title: 'The Golden Comet',
@@ -47,6 +49,7 @@ export const MISSIONS = [
       { kind: 'deliver', x: 870, y: 1550, label: "Bring the Comet to Rico's Garage" },
     ],
     reward: 400,
+    quip: 'A sports car, Rico? You always did like the fast ones.',
   },
   {
     title: 'Dockside Trouble',
@@ -58,6 +61,7 @@ export const MISSIONS = [
       { kind: 'kill', count: 5, at: [{ x: 2350, y: 2200 }, { x: 2450, y: 2180 }, { x: 2520, y: 2260 }, { x: 2300, y: 2300 }, { x: 2470, y: 2330 }], label: 'Clear the 5 Harbor Boys at the docks' },
     ],
     reward: 600,
+    quip: 'Five of them, and you walked out. My boy is back.',
   },
   {
     title: 'Shake the Heat',
@@ -69,6 +73,7 @@ export const MISSIONS = [
       { kind: 'go', x: 870, y: 550, label: "Get back to Mama Rosa's Diner" },
     ],
     reward: 750,
+    quip: 'Three stars and you are still here. Quiet now, Rico.',
   },
   {
     title: 'The Big Score',
@@ -80,6 +85,7 @@ export const MISSIONS = [
       { kind: 'carry', x: 870, y: 1550, label: "Carry the crate to Rico's Garage" },
     ],
     reward: 2500,
+    quip: 'The crate is ours. The NBPD is furious. I love it.',
   },
   {
     title: 'The Getaway',
@@ -91,6 +97,7 @@ export const MISSIONS = [
       { kind: 'go', x: 1800, y: 2560, label: 'Reach the boat at the south beach' },
     ],
     reward: 1000,
+    quip: 'The boat is waiting. Neon Bay is yours, Rico. Go.',
   },
 ];
 
@@ -391,6 +398,7 @@ export function createGame(rng) {
       state.missionActive = false;
       state.objective = null;
       showBanner(`Mission complete — ${mission.title}  +$${mission.reward}`, 3.5);
+      if (mission.quip) state.dialogue.push(`${mission.giver}: ${mission.quip}`);
       if (state.missionIndex + 1 >= MISSIONS.length) {
         state.storyDone = true;
         return EVENT_MISSION | EVENT_STORY;
