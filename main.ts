@@ -7,7 +7,7 @@
 //
 // The game itself is a complete 2D top-down open-world crime game: a city to
 // explore on foot and by car, traffic and pedestrians, cars to steal, a wanted
-// system with police who chase on foot and in patrol cars, six linked missions
+// system with police who chase on foot and in patrol cars, seven linked missions
 // with a story, combat, a HUD with a minimap, a start screen and saves.
 //
 // Serve it locally with `node serve.ts`, then open http://localhost:8080.

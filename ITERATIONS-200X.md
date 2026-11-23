@@ -140,3 +140,8 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 115 | Robustness: tanda TAXI dihapus saat penumpang pingsan / fare kedaluwarsa | headless test | KEEP |
 | 116 | Robustness: quip misi TIDAK lagi tertimpa brief misi berikutnya (brief di-append ke antrean dialog) | headless test | KEEP |
 | 117 | Robustness batch terverifikasi | headless test ALL PASS | KEEP |
+| 118 | README: dokumentasikan shotgun, armor, repair, courier, taxi, siklus siang, headlight, musik, klakson, floating text | — | KEEP |
+| 119 | README: near-miss $5→$10, kontrol H klakson, daftar mobil lengkap, ITERATIONS-200X + neon-test | — | KEEP |
+| 120 | main.ts: komentar "six linked missions" → "seven linked missions" | main.ts run | KEEP |
+| 121 | Verifikasi main.ts: dossier.json valid (teks 122.055/163.840, 4 gambar <256KiB, game 136K) | main.ts run | KEEP |
+| 122 | Verifikasi headless test tetap ALL PASS setelah update README | headless test | KEEP |
