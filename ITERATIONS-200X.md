@@ -191,3 +191,7 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 166 | Verifikasi headless test tetap ALL PASS | headless test | KEEP |
 | 167 | Verifikasi main.ts dossier tetap valid | main.ts run | KEEP |
 | 168 | Review batch terverifikasi | — | KEEP |
+| 169 | HUD: tanda TAXI + hint "fares pay" saat mengemudi taksi | headless test | KEEP |
+| 170 | Panel HUD dipertinggi 168→190 agar baris TAXI muat | headless test | KEEP |
+| 171 | Hint TAXI dipersingkat agar muat dalam panel | headless test | KEEP |
+| 172 | Taxi HUD batch terverifikasi | headless test ALL PASS | KEEP |

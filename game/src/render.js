@@ -690,9 +690,9 @@ export function createRenderer(canvas) {
   function drawHud(state, ui, cam) {
     const p = state.player;
     // Cash, health and wanted stars, top-left. The panel is tall enough for
-    // the weapon, armor and car-health lines below the stars.
+    // the weapon, armor, car-health and taxi lines below the stars.
     ctx.fillStyle = PALETTE.hudPanel;
-    ctx.fillRect(14, 14, 250, 168);
+    ctx.fillRect(14, 14, 250, 190);
     text(`$${state.cash.toLocaleString('en-US')}`, 28, 46, 28, PALETTE.gold, 'left', true);
     ctx.fillStyle = '#333';
     ctx.fillRect(28, 58, 180, 12);
@@ -744,6 +744,13 @@ export function createRenderer(canvas) {
         ctx.fillRect(72, 158, 160, 9);
         ctx.fillStyle = myCar.health > 50 ? '#57d977' : myCar.health > 25 ? '#f2c94c' : '#ff4d4d';
         ctx.fillRect(72, 158, 160 * Math.max(0, myCar.health) / 100, 9);
+        // A taxi sign reminds the player fares are available in a cab.
+        if (myCar.kind === 'taxi') {
+          ctx.fillStyle = PALETTE.gold;
+          ctx.fillRect(28, 176, 44, 16);
+          text('TAXI', 50, 188, 11, '#222', 'center', true);
+          text('fares pay — watch for hails', 80, 188, 13, PALETTE.hudMuted, 'left');
+        }
       }
     }
     drawMinimap(state);
