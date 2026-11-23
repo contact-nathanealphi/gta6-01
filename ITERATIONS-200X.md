@@ -207,3 +207,9 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 182 | Verifikasi akhir: game/ 10 file 144K, repo 30+ commit, semua push | git | KEEP |
 | 183 | Verifikasi akhir: tidak ada error console/page di live play | Playwright live | KEEP |
 | 184 | Verifikasi akhir batch selesai | — | KEEP |
+| 185 | Audio: fanfare story-complete (8 not naik) di audio.js | headless test | KEEP |
+| 186 | Audio: EVENT_STORY mainkan fanfare, bukan jingle misi biasa | headless test | KEEP |
+| 187 | Fanfare batch terverifikasi | headless test ALL PASS | KEEP |
+| 188 | README: instruksi test (neon-test, shot-neon, live-play) didokumentasikan | — | KEEP |
+| 189 | Verifikasi akhir: node --check + headless test ALL PASS | headless test | KEEP |
+| 190 | Verifikasi akhir: semua file JS lolos | node --check | KEEP |

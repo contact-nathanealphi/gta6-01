@@ -140,7 +140,7 @@ function runGame() {
       announce('Wasted. You wake up at Neon Bay General.');
     } else if (events & EVENT_STORY) {
       screen = SCREEN_COMPLETE;
-      audio.mission();
+      audio.story();
       writeSave();
       announce('Story complete. The big score is yours.');
     } else if (events & EVENT_MISSION) {

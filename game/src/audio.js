@@ -173,6 +173,11 @@ export function createAudio() {
       const notes = [523, 659, 784, 1047];
       notes.forEach((freq, i) => blip(freq, 0.16, 'triangle', 0.2, i * 0.11));
     },
+    /** The story-complete fanfare: a longer rising arpeggio. */
+    story() {
+      const notes = [523, 659, 784, 1047, 784, 1047, 1319, 1568];
+      notes.forEach((freq, i) => blip(freq, 0.22, 'triangle', 0.22, i * 0.13));
+    },
     /** A two-tone car horn. */
     horn() {
       blip(370, 0.18, 'square', 0.12);

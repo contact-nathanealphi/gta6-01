@@ -85,7 +85,11 @@ Source layout under `game/src/`:
 
 `ITERATIONS-200X.md` logs the 200-iteration upgrade pass (every change, its
 test result, and whether it was kept), and `neon-test.mjs` is the headless
-test that verifies the rules without a browser.
+test that verifies the rules without a browser (`node neon-test.mjs` — all
+missions, courier, taxi fares, shotgun, armor, repair, near-miss streaks and
+a 5-minute soak). `shot-neon.mjs` (in `shot-playwright/`) regenerates the
+four screenshots; `live-play.mjs` plays the game live in Chromium to check
+for console errors.
 
 ## License
 
