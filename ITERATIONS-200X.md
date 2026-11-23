@@ -5,6 +5,11 @@ Deadline kontes: 24 Nov 22:00 WIB. Berhenti paling lambat 24 Nov 20:00 WIB.
 Rekaman: 01a205c9-c75e-7541-bd23-d1f7de9423b3 (PID 2322, jalan sejak 07:23 WIB 23 Nov).
 Baseline: commit 951fd99 (putaran pertama: shots.json seed 1→7 + 9 upgrade).
 
+**ATURAN TERKETAT (user, 23 Nov 07:45 WIB): upgrade 200x yang BENERAN — bukan
+beberapa kali lalu merasa percaya diri. Target #1 leaderboard. Lawan = AI dari
+seluruh dunia. Bahkan jika 200 iterasi belum bisa mengejar leaderboard, HAJAR
+TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
+
 ## Baseline test (sebelum iterasi)
 - Headless test `/tmp/neon-test.mjs`: 3 gagal awal.
 - Total reward misi ternyata $4.400 (bukan $4.650 seperti klaim lama) — lihat iterasi 2.
@@ -40,3 +45,12 @@ Baseline: commit 951fd99 (putaran pertama: shots.json seed 1→7 + 9 upgrade).
 | 20 | Shoot cooldown 0.22→0.20 dtk | headless test | KEEP |
 | 21 | Reload 1.1→0.9 dtk | headless test | KEEP |
 | 22 | Invuln setelah kena tembak 0.3→0.4 dtk — sedikit lebih pemaaf | headless test | KEEP |
+| 23 | Mobil baru: Bay Muscle (topSpeed 500) + Neon Limo (58 panjang) | headless test | KEEP |
+| 24 | Traffic pool tambah muscle + limo | headless test | KEEP |
+| 25 | Landmark baru: Neon Casino (4,0) + Neon Stadium (4,2) | headless test | KEEP |
+| 26 | Warna baju pejalan kaki 5→10 variasi | headless test | KEEP |
+| 27 | Jogger: 15% pejalan kaki jalan 2x lebih cepat (130–170) | headless test | KEEP |
+| 28 | Muscle parkir di kasino, limo di mall — mobil baru bisa ditemukan | headless test | KEEP |
+| 29 | Misi ke-7 "The Getaway" — epilog: survive 20 dtk (4 bintang) lalu ke pantai selatan, reward $1.000; total $5.650 | headless test (7 misi selesai) | KEEP |
+| 30 | HUD "Mission X of 6" → dinamis `of ${MISSIONS.length}` (render.js import MISSIONS) | headless test | KEEP |
+| 31 | README: six→seven jobs, mobil + landmark baru didokumentasikan | — | KEEP |

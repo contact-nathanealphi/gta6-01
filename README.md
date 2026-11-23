@@ -21,16 +21,17 @@ up for Mama Rosa while the Neon Bay Police Department watches every move.
 - A **wanted system with police**: commit crimes, earn stars, and the NBPD
   chases you on foot and in patrol cars. Get busted or wasted and you wake up
   at the station or the hospital, lighter in the wallet.
-- **Missions and a story**: six linked jobs, from a first delivery to the big
-  score at the port, with dialogue, markers and cash rewards.
+- **Missions and a story**: seven linked jobs, from a first delivery to the big
+  score at the port — and the getaway that follows — with dialogue, markers and cash rewards.
 - **Combat**: fists and a pistol, health and ammo pickups, and rival crews who
   shoot back.
 - **Police escalation**: at four stars and up the NBPD sets roadblocks ahead
   of you — smash through or swerve around them.
 - **Near-miss bonuses**: thread past traffic at speed without touching it and
   earn $5 a shave.
-- **A living city**: 22 traffic cars (sedans, taxis, vans and the new Dune
-  Runner pickup) and 30 pedestrians going about their day.
+- **A living city**: 22 traffic cars (sedans, taxis, vans, the Dune Runner pickup,
+  the Bay Muscle and the Neon Limo) and 30 pedestrians — walkers and joggers —
+  going about their day. Two new landmarks: the Neon Casino and the Neon Stadium.
 - A **HUD with a minimap and a speedometer**, a start screen, and **saves**
   (your progress, cash and mission state are kept in the browser).
 - **Feel**: screen shake on hard crashes, skid marks on hard cornering, and

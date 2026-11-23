@@ -81,6 +81,17 @@ export const MISSIONS = [
     ],
     reward: 2500,
   },
+  {
+    title: 'The Getaway',
+    giver: 'Mama Rosa',
+    brief: ['The crate is ours — but the NBPD locked the city down. Four stars, Rico.',
+      'Shake the chase, then run for the beach. A boat is waiting at the south shore.'],
+    stages: [
+      { kind: 'survive', seconds: 20, label: 'Survive the lockdown chase — 20 seconds' },
+      { kind: 'go', x: 1800, y: 2560, label: 'Reach the boat at the south beach' },
+    ],
+    reward: 1000,
+  },
 ];
 
 let nextCarId = 1;
@@ -149,7 +160,7 @@ export function createGame(rng) {
   function spawnTrafficCar(near) {
     const point = randomRoadPoint(rng, near, 500);
     const vertical = Math.abs(point.x - AVENUES[0]) < 40 || rng.chance(0.5);
-    const car = newCar(rng.pick(['sedan', 'sedan', 'taxi', 'van', 'pickup']), point.x, point.y, 0, 'traffic');
+    const car = newCar(rng.pick(['sedan', 'sedan', 'taxi', 'van', 'pickup', 'muscle', 'limo']), point.x, point.y, 0, 'traffic');
     if (vertical) {
       car.road = 'v';
       car.line = AVENUES.reduce((best, ax) => (Math.abs(ax - point.x) < Math.abs(best - point.x) ? ax : best), AVENUES[0]);
@@ -178,10 +189,13 @@ export function createGame(rng) {
   function spawnPed() {
     const point = randomSidewalkPoint(rng);
     const ped = {
-      x: point.x, y: point.y, angle: rng.range(0, Math.PI * 2), speed: rng.range(55, 95),
+      x: point.x, y: point.y, angle: rng.range(0, Math.PI * 2), speed: 0,
       target: randomSidewalkPoint(rng), down: 0, scared: 0, fleeX: 0, fleeY: 0, radius: 12,
-      shirt: rng.pick(['#e8e2d4', '#7fb3d5', '#d4693c', '#9cc3d8', '#c2a06a']),
+      shirt: rng.pick(['#e8e2d4', '#7fb3d5', '#d4693c', '#9cc3d8', '#c2a06a', '#8a4d9e', '#4d7d5a', '#e8b4b8', '#5a6b7d', '#f2c94c']),
+      jogger: rng.chance(0.15),
     };
+    // Joggers move about twice as fast as walkers.
+    ped.speed = ped.jogger ? rng.range(130, 170) : rng.range(55, 95);
     state.peds.push(ped);
     return ped;
   }
@@ -261,6 +275,10 @@ export function createGame(rng) {
     // The street outside the diner, ready to roll.
     spawnParkedCar('sedan', 830, 700, Math.PI / 2);
     spawnParkedCar('taxi', 950, 700, Math.PI / 2);
+    // The new rides, parked where they belong: a muscle car by the casino,
+    // a limo by the mall.
+    spawnParkedCar('muscle', 3250, 350, 0);
+    spawnParkedCar('limo', 1450, 1250, Math.PI);
     for (let i = 0; i < TRAFFIC_COUNT; i += 1) spawnTrafficCar(state.player);
     for (let i = 0; i < PED_COUNT; i += 1) spawnPed();
     for (let i = 0; i < 6; i += 1) {

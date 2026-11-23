@@ -31,6 +31,8 @@ export const CAR_KINDS = {
   van: { label: 'Harbor Van', topSpeed: 350, accel: 380, turn: 2.2, color: '#7d8aa0', length: 52, width: 24 },
   pickup: { label: 'Dune Runner', topSpeed: 460, accel: 520, turn: 2.5, color: '#5a7d4a', length: 48, width: 23 },
   patrol: { label: 'NBPD Interceptor', topSpeed: 520, accel: 620, turn: 3.0, color: '#2f6fd0', length: 46, width: 22 },
+  muscle: { label: 'Bay Muscle', topSpeed: 500, accel: 620, turn: 2.4, color: '#d4693c', length: 48, width: 23 },
+  limo: { label: 'Neon Limo', topSpeed: 380, accel: 400, turn: 2.0, color: '#3a3a4a', length: 58, width: 24 },
 };
 
 export const TRAFFIC_COUNT = 22;

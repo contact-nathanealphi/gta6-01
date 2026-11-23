@@ -4,6 +4,7 @@
 // and canvas text — no images, no assets.
 
 import { AVENUES, CAR_KINDS, FONT, PALETTE, PLAYER, STREETS, WORLD } from './tune.js';
+import { MISSIONS } from './world.js';
 
 export const SCREEN_TITLE = 'title';
 export const SCREEN_PLAY = 'play';
@@ -501,7 +502,7 @@ export function createRenderer(canvas) {
     if (state.objective) {
       ctx.fillStyle = PALETTE.hudPanel;
       ctx.fillRect(14, viewH - 76, 430, 62);
-      text(state.missionActive ? `Mission ${state.missionIndex + 1} of 6` : 'Free roam', 28, viewH - 52, 14, PALETTE.hudMuted, 'left', true);
+      text(state.missionActive ? `Mission ${state.missionIndex + 1} of ${MISSIONS.length}` : 'Free roam', 28, viewH - 52, 14, PALETTE.hudMuted, 'left', true);
       const dist = Math.round(Math.hypot(state.objective.x - p.x, state.objective.y - p.y));
       text(`${state.objective.label}  ·  ${dist}m`, 28, viewH - 28, 17, PALETTE.hudText, 'left');
     }

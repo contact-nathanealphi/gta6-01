@@ -15,6 +15,8 @@ const LANDMARKS = [
   { col: 1, row: 2, name: 'Bayfront Mall', kind: 'mall', color: '#c9a86a' },
   { col: 0, row: 2, name: "Rico's Garage", kind: 'garage', color: '#5a6b7d' },
   { col: 3, row: 3, name: 'Port of Neon Bay', kind: 'port', color: '#7d8aa0' },
+  { col: 4, row: 0, name: 'Neon Casino', kind: 'casino', color: '#8a4d9e' },
+  { col: 4, row: 2, name: 'Neon Stadium', kind: 'stadium', color: '#4d7d5a' },
 ];
 
 export function buildCity(rng) {
