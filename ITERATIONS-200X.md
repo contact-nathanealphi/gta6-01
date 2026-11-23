@@ -163,3 +163,9 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 138 | Bark: pejalan kaki yang dipukul berteriak ("Hey!", "Watch it!", "Help!") | headless test | KEEP |
 | 139 | Bark: pejalan kaki yang tertabrak berteriak ("Ouch!", "My leg!", "Call the cops!") | headless test | KEEP |
 | 140 | Bark batch terverifikasi | headless test ALL PASS | KEEP |
+| 141 | HUD: nama level wanted ("Spotted", "Chased", "Hunted", "Lockdown", "Citywide manhunt") | headless test | KEEP |
+| 142 | Param ?time=N untuk uji (atur jam awal; 130 = malam) | screenshot malam | KEEP |
+| 143 | Perbaiki TDZ: ?time diterapkan SETELAH game dibuat | headless test | KEEP |
+| 144 | Perbaiki: ?time diterapkan ulang setelah reset shot (shot me-reset waktu) | screenshot malam | KEEP |
+| 145 | Verifikasi malam: overlay gelap + jam ☾ 21:00 + kerucut headlight terlihat + game tetap terbaca | screenshot malam | KEEP |
+| 146 | Verifikasi headless test tetap ALL PASS | headless test | KEEP |

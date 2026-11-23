@@ -710,6 +710,9 @@ export function createRenderer(canvas) {
       ctx.fillRect(28, 102, 130, 5);
       ctx.fillStyle = PALETTE.danger;
       ctx.fillRect(28, 102, 130 * Math.min(1, state.wantedPoints / 10), 5);
+      // The heat has a name, so the player knows how serious it is.
+      const heatNames = ['', 'Spotted', 'Chased', 'Hunted', 'Lockdown', 'Citywide manhunt'];
+      text(heatNames[state.wanted], 168, 108, 13, PALETTE.danger, 'left', true);
     }
     if (p.shotgun > 0) {
       text(`Shotgun  ${p.shotgun} shells`, 28, 122, 15, PALETTE.gold, 'left', true);

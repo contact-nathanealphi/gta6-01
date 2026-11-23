@@ -25,6 +25,9 @@ const seed = Number.isInteger(seedParam) ? seedParam : Math.floor(Math.random() 
 const canvas = document.getElementById('game');
 const status = document.getElementById('status');
 const game = createGame(createRng(seed));
+// ?time=N starts the clock at N seconds (a testing convenience: 130 is night).
+const timeParam = Number.parseInt(params.get('time') ?? '', 10);
+if (Number.isInteger(timeParam) && timeParam >= 0) game.state.time = timeParam;
 const renderer = createRenderer(canvas);
 const audio = createAudio();
 
@@ -48,6 +51,9 @@ function writeSave() {
 
 function runShot(name) {
   const scene = stageShot(name, game);
+  // A ?time=N override survives the shot's reset (it only affects the
+  // rendering clock, not the staged scene).
+  if (Number.isInteger(timeParam) && timeParam >= 0) game.state.time = timeParam;
   let painted = 0;
   function paint() {
     const nearCar = game.state.player.onFoot ? game.nearestCar(85) : null;
