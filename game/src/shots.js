@@ -18,8 +18,8 @@ const drv = (g, av) => {
  while (d < -P) d += P * 2;
  return { ...IDLE, up: true, left: d < -0.08, right: d > 0.08 };
 };
-const ped = (g, x, y, shirt) => {
- g.state.peds.push({ x, y, angle: 0, speed: 60, target: { x: x + 30, y }, down: 0, scared: 0, fleeX: 0, fleeY: 0, radius: 12, shirt: shirt || '#e8e2d4', jogger: false });
+const ped = (g, x, y, shirt, a) => {
+ g.state.peds.push({ x, y, angle: a || 0, speed: 60, target: { x: x + 30, y }, down: 0, scared: 0, fleeX: 0, fleeY: 0, radius: 12, shirt: shirt || '#e8e2d4', jogger: false });
 };
 const sc = (g) => { const s = g.state; s.cash = 48750; s.player.health = 92; s.hurtFlash = 0; s.shake = 0; s.wantedFlash = 0; };
 export function stageShot(name, g, o) {
@@ -48,10 +48,10 @@ export function stageShot(name, g, o) {
   rivals.forEach((c, i) => { c.x = px + (i % 2 === 0 ? -32 : 32); c.y = py + 90 + i * 80; c.angle = H; c.speed = 330; c.raceGate = 0; c.raceLap = 1; c.color = ['#ffd23d', '#2f6fd0', '#ff7a2d'][i % 3]; });
   const ahead = [[1475, 420, 'sedan', H], [1525, 500, 'taxi', -H], [1475, 580, 'van', H], [1525, 660, 'pickup', -H], [1475, 740, 'sedan', H]];
   for (const [x, y, k, a] of ahead) g.spawnParkedCar(k, px + (x - 1500), py + (y - 300), a);
-  ped(g, px - 12, py + 80, '#7fb3d5');
-  ped(g, px + 18, py + 150, '#d4693c');
-  ped(g, px - 78, py + 260, '#f2c94c');
-  ped(g, px + 78, py + 340, '#7fb3d5');
+  ped(g, px - 37, py + 60, '#7fb3d5');
+  ped(g, px + 109, py + 120, '#d4693c', P);
+  ped(g, px - 37, py + 170, '#f2c94c');
+  ped(g, px + 109, py + 200, '#7fb3d5', P);
   s.nearMissStreak = 3; s.nearMissStreakT = 4;
   s.radioToast = { name: 'VICE FM 104.5', until: performance.now() + 60000 };
   s.banner = 'STREET RACE — 3 laps!';
@@ -77,11 +77,11 @@ export function stageShot(name, g, o) {
   const h = s.air.heli;
   if (h) { h.x = 1030; h.y = 420; h.z = 80; h.spotX = 875; h.spotY = 250; h.angle = -0.4; }
   wreck(s, 980, 230, 0.6);
-  for (const [x, y, col, sz] of [[980, 230, '#ff7a2d', 10], [995, 220, '#ffd23d', 8], [970, 245, '#ff3b1f', 9]]) s.particles.push({ x, y, vx: 0, vy: -20, life: 0.5, maxLife: 0.5, color: col, size: sz });
+  for (const [x, y, col, sz] of [[980, 230, '#ff2a08', 16], [995, 220, '#ff5a00', 13], [970, 245, '#e83c00', 14]]) s.particles.push({ x, y, vx: 0, vy: -20, life: 0.5, maxLife: 0.5, color: col, size: sz });
   s.upgrades.glow = 1;
   s.dialogue = ['NBPD Dispatch: SWAT converging on your position!'];
   sc(g); st();
-  return { screen: PL, wheelOpen: true, wheelSlot: 6, wheelPos: { x: 320, y: 400 } };
+  return { screen: PL };
  }
  if (name === 'mission') {
   g.reset(); sm();
@@ -101,11 +101,15 @@ export function stageShot(name, g, o) {
   g.spawnParkedCar('van', 3275, 430, H);
   g.spawnParkedCar('pickup', 2620, 420, H);
   g.spawnParkedCar('limo', 3300, 330, P);
+  g.spawnParkedCar('patrol', 2750, 500, H);
+  g.spawnParkedCar('sports', 3250, 500, -H);
   for (const [x, y] of [[2740, 330], [3260, 330], [2700, 430], [3300, 430], [2700, 250], [3300, 260]]) g.city.palms.push({ x, y });
   ped(g, 2900, 430, '#7fb3d5');
   ped(g, 3100, 430, '#e8e2d4');
   ped(g, 2950, 700, '#c2a06a');
   ped(g, 3000, 300, '#d4693c');
+  ped(g, 2880, 350, '#ff7a2d');
+  ped(g, 3120, 350, '#7fb3d5');
   s.banner = 'MISSION 10/10: THE GRAND CASINO HEIST — $5,000';
   s.bannerTimer = 30;
   sc(g); st();
@@ -123,13 +127,13 @@ export function stageShot(name, g, o) {
  rf(g, 2, IDLE);
  sp.x = 1500; sp.y = 1800; sp.angle = 0; sp.speed = 420;
  const staged = [sp];
- for (const [x, y, a] of [[1740, 1772, 0], [1790, 1828, 0], [1660, 1770, 0]]) { const c = g.spawnPatrolCar('patrol'); c.x = x; c.y = y; c.angle = a; c.speed = 380; staged.push(c); }
+ for (const [x, y, a] of [[1740, 1772, 0], [1790, 1828, 0], [1700, 1855, 0]]) { const c = g.spawnPatrolCar('patrol'); c.x = x; c.y = y; c.angle = a; c.speed = 380; staged.push(c); }
  s.cars = s.cars.filter((c) => staged.includes(c));
  s.cops = [];
  for (const [x, y] of [[1560, 1900], [1620, 1700]]) { const c = g.spawnFootCop(); c.x = x; c.y = y; }
  const h = s.air.heli;
  if (h) { h.x = 1700; h.y = 1880; h.z = 70; h.spotX = 1500; h.spotY = 1800; h.angle = 0.5; }
- wreck(s, 1620, 1745, 0.6);
+ wreck(s, 1640, 1800, 0.6);
  s.upgrades.glow = 1;
  s.dialogue = ['Fixer: Five stars, Viper. Lose them before the meet — or make it loud.'];
  ped(g, 1560, 1700, '#7fb3d5');

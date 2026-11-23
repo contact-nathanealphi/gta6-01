@@ -16,21 +16,25 @@ vec3 env(vec3 r){vec3 sd=normalize(uSD);float s=max(dot(r,sd),0.);vec3 c=mix(vec
 void main(){
 vec3 base=texture2D(uTex,vUv).rgb*vCol;
 vec3 n=normalize(vNor),sd=normalize(uSD),v=normalize(uCam-vWp);
-float dif=max(dot(n,sd),0.),sh=1.;
+vec3 ld=normalize(vec3(sd.x,max(sd.y,.32),sd.z));
+float dif=max(dot(n,ld),0.),sh=1.;
 if(uSHO>.5){vec3 sp=vSh.xyz/vSh.w;if(sp.x>0.&&sp.x<1.&&sp.y>0.&&sp.y<1.){float bias=max(.004*(1.-dot(n,sd)),.001),s2=0.;for(int i=-1;i<=1;i++)for(int j=-1;j<=1;j++)s2+=step(sp.z-bias,texture2D(uSH,sp.xy+vec2(float(i),float(j))/1024.).r);sh=s2/9.;}}
 vec3 amb=mix(uAmb*vec3(.55,.42,.38),uAmb,n.y*.5+.5);
-vec3 col=base*(amb+uSunCol*dif*sh*1.7);
+vec3 col=base*(amb+uSunCol*dif*sh*1.6);
 vec3 h=normalize(sd+v);
-col+=uSunCol*pow(max(dot(n,h),0.),32.)*.45*(.4+.6*sh);
+col+=uSunCol*pow(max(dot(n,h),0.),32.)*.7*(.4+.6*sh);
+col+=uSunCol*pow(max(dot(n,h),0.),8.)*.18*(.4+.6*sh);
 vec3 r=reflect(-v,n);
 float fres=pow(1.-max(dot(n,v),0.),5.),lum=dot(base,vec3(.33));
 float pd=smoothstep(.8,.95,vn(vWp.xz*.045));
 float wet=step(.9,n.y)*pd*step(lum,.12);
 col+=env(r)*(fres*.06+wet*.25);
-col+=vec3(1.,.55,.2)*pow(max(dot(r,sd),0.),60.)*wet*.6;
+col+=vec3(1.,.55,.2)*pow(max(dot(r,sd),0.),150.)*wet*.5;
 vec3 toSun=normalize(vec3(sd.x,0.,sd.z)),toCam=normalize(vec3(vWp.x-uCam.x,0.,vWp.z-uCam.z));
 float path=pow(max(dot(toSun,toCam),0.),6.);
-col+=vec3(1.,.35,.45)*path*wet*.25+vec3(.35,.55,1.)*path*wet*.2;
+col+=vec3(1.,.35,.45)*path*wet*.15+vec3(.35,.55,1.)*path*wet*.12;
+col*=.72+.28*clamp(vWp.y/45.,0.,1.);
+col=col/(1.+col*.35);
 vec3 fc=mix(uFC,vec3(1.,.55,.25),pow(max(dot(normalize(vWp-uCam),sd),0.),3.)*.5);
 float f=1.-exp(-uFogDen*uFogDen*vDist*vDist);
 col=mix(col,fc,clamp(f,0.,1.));

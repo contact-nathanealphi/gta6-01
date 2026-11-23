@@ -39,31 +39,30 @@ for(const palm of city.palms){
 const lean=((palm.x*7+palm.y*3)%10)/10*.6-.3,lx=Math.sin(lean),lz=Math.cos(lean)*.4;
 m.tb(palm.x+lx*7,20,palm.y+lz*7,lx*.35,1,lz*.35,2.4,1.7,40,tr2,null,U,0,6);
 const cxp=palm.x+lx*16,czp=palm.y+lz*16;
-for(let f=0;f<10;f++){const a=f/10*Math.PI*2+lean,ca=Math.cos(a),sa=Math.sin(a),lc=f%2?lf:lf2,px=-sa,pz=ca,x1=cxp+ca*13,z1=czp+sa*13,x2=cxp+ca*26,z2=czp+sa*26;m.q([cxp+px*3,40,czp+pz*3],[x1+px*3,39,z1+pz*3],[x1-px*3,39,z1-pz*3],[cxp-px*3,40,czp-pz*3],0,1,0,lc,U,0);m.q([x1+px*3,39,z1+pz*3],[x2+px*1.5,30,z2+pz*1.5],[x2-px*1.5,30,z2-pz*1.5],[x1-px*3,39,z1-pz*3],0,1,0,lc,U,0);}
-}
+for(let f=0;f<12;f++){const a=f/12*6.283+lean,ca=Math.cos(a),sa=Math.sin(a),lc=f%2?lf:lf2,px=-sa,pz=ca,x1=cxp+ca*14,z1=czp+sa*14,x2=cxp+ca*24,z2=czp+sa*24;m.q([cxp+px*3,41,czp+pz*3],[x1+px*3,38,z1+pz*3],[x1-px*3,38,z1-pz*3],[cxp-px*3,41,czp-pz*3],0,1,0,lc,U,0);m.q([x1+px*3,38,z1+pz*3],[x2+px*1.5,30,z2+pz*1.5],[x2-px*1.5,30,z2-pz*1.5],[x1-px*3,38,z1-pz*3],0,1,0,lc,U,0);}
+for(let f=0;f<6;f++){const a=f/6*6.283+lean+.5,ca=Math.cos(a),sa=Math.sin(a),x2=cxp+ca*18,z2=czp+sa*18;m.q([cxp-sa*2,44,czp+ca*2],[x2-sa,35,z2+ca],[x2+sa,35,z2-ca],[cxp+sa*2,44,czp-ca*2],0,1,0,lf2,U,0);}
+m.ba(cxp+4,37,czp,2.6,2.2,2.6,X('#8a6f3c'),0);}
 let lamp=0;
 for(const ax of AVENUES)for(const sy of STREETS){lamp++;if(lamp%2===0)continue;m.tb(ax+70,13,sy+70,0,1,0,1.6,1.2,26,[.15,.15,.17],null,U,0,6);m.tb(ax+66,26,sy+70,-.7,.25,0,1,1,11,[.15,.15,.17],null,U,0,5);m.ba(ax+62,27,sy+70,3.5,2.5,3.5,[1,.85,.55],1);for(let z=0;z<3;z++)m.gq(ax-56,sy-78+z*10,ax+56,sy-72+z*10,.2,wh,0);}
 m.gq(0,2624,WORLD.width,2646,.25,viceHex('#8a6f4d'),0);
 const dk=X('#4a3f35');
 for(let s=0;s<3;s++){const bx=800+s*1000;m.b(bx,10,2780,1000,4,26,0,dk,U,0);}
-for(const[bx,bz,by]of[[900,2720,.3],[1500,2720,.15],[2400,2720,-.2]]){m.pr([[-20,0],[18,0],[23,3],[10,5],[-16,5],[-20,2]],8,bx,0,bz,by,X('#e8e2d4'),U,.1);m.pr([[-8,5],[6,5],[8,10],[-6,10]],5,bx,0,bz,by,X('#2f6fd0'),U,.2);}
 return m.slice();}
 function carBody(m,x,z,angle,L,W,col,kind,wheels){
 const yaw=-angle,co=Math.cos(angle),si=Math.sin(angle),hL=L/2,hw=W/2-1;
 const P=(a,y,b)=>[x+co*a-si*b,y,z+si*a+co*b];
-const pts=[[hL,1.5],[hL,6],[L*.42,7.5],[L*.30,8],[L*.10,9.5],[-L*.10,16.5],[-L*.30,16.5],[-L*.44,9.5],[-hL,7],[-hL,1.5]];
-m.pr(pts,hw,x,0,z,yaw,col,U,0);
-const gl2=X('#0e1a26');
-const gN=(ax,ay)=>{const l=Math.hypot(ax,ay);return[ax/l*co,ay/l,-ax/l*si];};
-const g1=gN(7,L*.2),g2=gN(-7,L*.14);
-const off=(a,y,b,nn)=>{const qq=P(a,y,b);return[qq[0]+nn[0]*.8,qq[1]+nn[1]*.8,qq[2]+nn[2]*.8];};
-m.q(off(L*.10,9.5,-(hw-1),g1),off(L*.10,9.5,hw-1,g1),off(-L*.10,16.5,hw-1,g1),off(-L*.10,16.5,-(hw-1),g1),g1[0],g1[1],g1[2],gl2,U,.45);
-m.q(off(-L*.30,16.5,-(hw-1),g2),off(-L*.30,16.5,hw-1,g2),off(-L*.44,9.5,hw-1,g2),off(-L*.44,9.5,-(hw-1),g2),g2[0],g2[1],g2[2],gl2,U,.45);
-for(const s of[-1,1])m.q(P(-L*.28,10.5,s*(hw+.4)),P(L*.06,10.5,s*(hw+.4)),P(L*.06,15.5,s*(hw+.4)),P(-L*.28,15.5,s*(hw+.4)),-si*s,0,co*s,gl2,U,.45);
+m.pr([[hL,1.2],[hL,5.5],[L*.40,7.2],[L*.28,8.2],[L*.16,9],[-L*.30,9],[-L*.42,8],[-hL,6.5],[-hL,1.2]],hw,x,0,z,yaw,col,U,0);
+m.pr([[L*.24,8.2],[L*.06,15.5],[-L*.02,16.2],[-L*.26,16.2],[-L*.36,8.6]],hw-3.5,x,0,z,yaw,[.08,.12,.18],U,.25);
+const rp=P(-L*.10,16.9,0);m.b(rp[0],16.9,rp[2],L*.32,1.4,W-7,yaw,col,U,0);
+const hi=col.map(c=>Math.min(1,c*.5+.5));
+for(const s of[-1,1]){m.q(P(L*.38,6.8,s*(hw+.25)),P(-L*.40,6.8,s*(hw+.25)),P(-L*.40,8.4,s*(hw+.25)),P(L*.38,8.4,s*(hw+.25)),0,.6,s*.8,hi,U,.15);
+m.q(P(L*.36,1.2,s*(hw+.2)),P(-L*.36,1.2,s*(hw+.2)),P(-L*.36,2.6,s*(hw+.2)),P(L*.36,2.6,s*(hw+.2)),0,0,s,[.06,.06,.08],U,0);}
+m.q(P(hL+.3,1.2,-(hw-2)),P(hL+.3,1.2,hw-2),P(hL+.3,3.5,hw-2),P(hL+.3,3.5,-(hw-2)),co,0,si,[.08,.08,.1],U,0);
+m.q(P(-hL-.3,1.2,hw-2),P(-hL-.3,1.2,-(hw-2)),P(-hL-.3,3.5,-(hw-2)),P(-hL-.3,3.5,hw-2),-co,0,-si,[.08,.08,.1],U,0);
 if(wheels)for(const[lx,lz]of[[L*.32,hw+.5],[L*.32,-(hw+.5)],[-L*.32,hw+.5],[-L*.32,-(hw+.5)]]){const w2=P(lx,4.5,lz);m.tb(w2[0],4.5,w2[2],-si,0,co,4.5,4.5,3,[.08,.08,.1],[.75,.75,.78],U,0,6);}
-m.q(P(hL+.2,5,-(hw-3)),P(hL+.2,5,hw-3),P(hL+.2,9,hw-3),P(hL+.2,9,-(hw-3)),co,0,si,[1,.9,.6],U,1);
-m.q(P(-hL-.2,5,hw-3),P(-hL-.2,5,-(hw-3)),P(-hL-.2,9,-(hw-3)),P(-hL-.2,9,hw-3),-co,0,-si,[.9,.1,.1],U,.5);
-if(kind==='muscle'||kind==='sports'){const s2=P(-L*.46,12.5,0);m.b(s2[0],12.5,s2[2],3,1.5,W*.92,yaw,[.08,.08,.1],U,.2);}}
+m.q(P(hL+.2,4.5,-(hw-3)),P(hL+.2,4.5,hw-3),P(hL+.2,7.5,hw-3),P(hL+.2,7.5,-(hw-3)),co,0,si,[1,.9,.6],U,1);
+m.q(P(-hL-.2,4.5,hw-3),P(-hL-.2,4.5,-(hw-3)),P(-hL-.2,7.5,-(hw-3)),P(-hL-.2,7.5,hw-3),-co,0,-si,[.9,.1,.1],U,.5);
+if(kind==='muscle'||kind==='sports'){const s2=P(-L*.46,13.5,0);m.b(s2[0],13.5,s2[2],3,1.5,W*.92,yaw,[.08,.08,.1],U,.2);}}
 export function buildDyn(state,m){
 m.reset();
 const skin=X('#e8b98a'),px=state.player.x,pz=state.player.y;
@@ -93,20 +92,22 @@ for(const b of state.bullets)m.b(b.x,2,b.y,10,2,2,-Math.atan2(b.vy,b.vx),[1,.9,.
 for(const s of state.skids){const dx=s.x-px,dz=s.y-pz;if(dx*dx+dz*dz>1200*1200)continue;m.gq(s.x-7,s.y-2,s.x+7,s.y+2,.2,[.08,.08,.08],0);}
 if(state.objective){const o=state.objective,bob=30+Math.sin(state.time*3)*4,gd=[1,.82,.24];m.q([o.x,bob+14,o.y],[o.x+10,bob,o.y],[o.x,bob-14,o.y],[o.x-10,bob,o.y],0,0,1,gd,U,1);m.q([o.x,bob+14,o.y],[o.x,bob,o.y+10],[o.x,bob-14,o.y],[o.x,bob,o.y-10],1,0,0,gd,U,1);}
 const air=state.air;
-if(air&&air.heli){const h=air.heli,st=Math.floor(state.time*3)%2===0,fx=Math.cos(h.angle),fz=Math.sin(h.angle),lx=-fz,lz=fx,nv=[.18,.21,.34];
+if(air&&air.heli){const h=air.heli,st=Math.floor(state.time*3)%2===0,fx=Math.cos(h.angle),fz=Math.sin(h.angle),lx=-fz,lz=fx,nv=[.26,.30,.46];
 m.ba(h.x,h.z,h.y,36,9,15,nv,.15);
+m.b(h.x,h.z+8.5,h.y,46,2,8,-h.angle,[.92,.92,.95],U,.45);
 m.ba(h.x,h.z+2,h.y,31,2,16,[.92,.92,.94],.4);
-m.ba(h.x+fx*24,h.z+3,h.y+fz*24,14,6,12,X('#0e1a26'),.65);
+m.ba(h.x+fx*24,h.z+2,h.y+fz*24,15,6,13,X('#0e1a26'),.65);
 m.tb(h.x-fx*38,h.z+5,h.y-fz*38,-fx,.08,-fz,5,1.8,45,nv,null,U,.2,6);
 const tx=h.x-fx*60,tz=h.y-fz*60;
 m.tr([tx,h.z+3,tz],[tx-fx*8,h.z+3,tz-fz*8],[tx-fx*4,h.z+13,tz-fz*4],lx,0,lz,nv,U,.2);
 m.tr([tx,h.z+3,tz],[tx-fx*4,h.z+13,tz-fz*4],[tx-fx*8,h.z+3,tz-fz*8],-lx,0,-lz,nv,U,.2);
+m.ba(tx,h.z+6,tz,1.5,6,6,[.3,.3,.35],.3);
 m.tb(h.x,h.z+11,h.y,0,1,0,2.2,2.2,6,[.1,.1,.12],null,U,0,5);
 for(let k=0;k<2;k++){const ra=h.rotor+k*Math.PI/2,bx=Math.cos(ra),bz=Math.sin(ra),px2=-bz,pz2=bx;m.q([h.x+bx*36+px2*1.5,h.z+15,h.y+bz*36+pz2*1.5],[h.x-bx*36+px2*1.5,h.z+15,h.y-bz*36+pz2*1.5],[h.x-bx*36-px2*1.5,h.z+15,h.y-bz*36-pz2*1.5],[h.x+bx*36-px2*1.5,h.z+15,h.y+bz*36-pz2*1.5],0,1,0,[.4,.4,.46],U,.3);}
 for(const s of[-10,10]){m.tb(h.x+lx*s,h.z-11,h.y+lz*s,fx,0,fz,1.2,1.2,60,[.15,.15,.17],null,U,0,5);m.tb(h.x+lx*s,h.z-6,h.y+lz*s,0,1,0,1,1,10,[.15,.15,.17],null,U,0,5);}
 m.ba(h.x+fx*28,h.z-8,h.y+fz*28,4,3,4,[1,.95,.8],1);
 m.ba(tx,h.z+8,tz,3,3,3,st?[1,.2,.2]:[.2,.4,1],1);}
-for(const w of state.wrecks||[])carBody(m,w.x,w.y,w.angle-.22,52,24,[.28,.26,.26],'sedan',false);
+for(const w of state.wrecks||[])carBody(m,w.x,w.y,w.angle-.22,52,24,[.45,.32,.26],'sedan',true);
 if(state.race&&state.race.active){const circ=StreetRaceCircuit.CIRCUITS[state.race.circuit];if(!circ)return m.slice();const cg=circ.gates;for(let i=0;i<cg.length;i++){const g=cg[i],col=i===state.race.gate?[1,.18,.55]:[0,.9,1];for(const s of[-30,30])m.tb(g[0]+s,22,g[1],0,1,0,3,2,44,col,null,U,1,6);m.tb(g[0],44,g[1],1,0,0,2.5,2.5,66,col,null,U,1,5);m.gq(g[0]-33,g[1]-4,g[0]+33,g[1]+4,.3,col,.9);}}
 return m.slice();}
 export function buildAdd(state,m){
@@ -127,11 +128,11 @@ let dn=0;
 for(const pt of state.particles){if(dn>=30)break;const dx=pt.x-p.x,dz=pt.y-p.y;if(dx*dx+dz*dz>1200*1200)continue;const s=pt.size||3;m.gq(pt.x-s,pt.y-s,pt.x+s,pt.y+s,1,X(pt.color||'#ffd23d'),.6);dn++;}
 if(state.objective)vb(state.objective.x,state.objective.y,150,5,[1,.82,.24],.3);
 const air=state.air;
-if(air&&air.heli){const h=air.heli;bm(h.x,h.z-2,h.y,h.spotX,1,h.spotY,10,45,[1,.8,.4],.5);bm(h.x,h.z-2,h.y,h.spotX,1,h.spotY,5,24,[1,.9,.6],.6);m.gq(h.spotX-60,h.spotY-60,h.spotX+60,h.spotY+60,.3,[1,.9,.6],.5);}
-for(const w of state.wrecks||[]){const fl=1+Math.sin(state.time*9+w.x)*.15;m.gq(w.x-46,w.y-46,w.x+46,w.y+46,.35,[1,.32,.06],.5);for(let k=0;k<3;k++){const fx=w.x+(k-1)*9,fw=(26-k*3)*fl,fh=(48-k*6)*fl,fc=k===0?[1,.28,.02]:k===1?[1,.52,.06]:[1,.82,.28];m.q([fx-fw,10,w.y],[fx+fw,10,w.y],[fx+fw,10+fh,w.y],[fx-fw,10+fh,w.y],0,0,1,fc,U,.95);m.q([fx,10,w.y-fw],[fx,10,w.y+fw],[fx,10+fh,w.y+fw],[fx,10+fh,w.y-fw],1,0,0,fc,U,.95);}}
+if(air&&air.heli){const h=air.heli;bm(h.x,h.z-2,h.y,h.spotX,1,h.spotY,12,52,[1,.8,.4],.6);bm(h.x,h.z-2,h.y,h.spotX,1,h.spotY,8,38,[1,.9,.6],.7);m.gq(h.spotX-60,h.spotY-60,h.spotX+60,h.spotY+60,.3,[1,.9,.6],.5);}
+for(const w of state.wrecks||[]){const fl=1+Math.sin(state.time*9+w.x)*.15;m.gq(w.x-60,w.y-60,w.x+60,w.y+60,.35,[1,.32,.06],.6);for(let k=0;k<3;k++){const fx=w.x+(k-1)*9,fw=(32-k*4)*fl,fh=(58-k*7)*fl,fc=k===0?[1,.16,.02]:k===1?[1,.34,.04]:[1,.58,.10];m.q([fx-fw,10,w.y],[fx+fw,10,w.y],[fx+fw,10+fh,w.y],[fx-fw,10+fh,w.y],0,0,1,fc,U,.7);m.q([fx,10,w.y-fw],[fx,10,w.y+fw],[fx,10+fh,w.y+fw],[fx,10+fh,w.y-fw],1,0,0,fc,U,.7);}}
 return m.slice();}
 export function buildSmk(state,m){
 m.reset();
 const p=state.player;
-for(const w of state.wrecks||[]){const dx=w.x-p.x,dz=w.y-p.y;if(dx*dx+dz*dz>1200*1200)continue;const dr=Math.sin(state.time*.7+w.x)*6;for(let k=0;k<5;k++){const sy=22+k*20,sr=16+k*8,sa=.5-k*.06,sx=w.x-10-k*4+dr,sz=w.y-2+k*2,g2=.08+k*.02,sc=[g2,g2,g2+.02];m.q([sx-sr,sy,sz],[sx+sr,sy,sz],[sx+sr,sy+sr*1.6,sz],[sx-sr,sy+sr*1.6,sz],0,0,1,sc,U,sa);m.q([sx,sy,sz-sr],[sx,sy,sz+sr],[sx,sy+sr*1.6,sz+sr],[sx,sy+sr*1.6,sz-sr],1,0,0,sc,U,sa);}}
+for(const w of state.wrecks||[]){const dx=w.x-p.x,dz=w.y-p.y;if(dx*dx+dz*dz>1200*1200)continue;const dr=Math.sin(state.time*.7+w.x)*6;for(let k=0;k<5;k++){const sy=30+k*20,sr=18+k*9,sa=.75-k*.05,sx=w.x-10-k*4+dr,sz=w.y-2+k*2,g2=.03+k*.01,sc=[g2,g2,g2+.02];m.q([sx-sr,sy,sz],[sx+sr,sy,sz],[sx+sr,sy+sr*1.6,sz],[sx-sr,sy+sr*1.6,sz],0,0,1,sc,U,sa);m.q([sx,sy,sz-sr],[sx,sy,sz+sr],[sx,sy+sr*1.6,sz+sr],[sx,sy+sr*1.6,sz-sr],1,0,0,sc,U,sa);}}
 return m.slice();}
