@@ -726,6 +726,10 @@ export function createRenderer(canvas) {
     if (p.armor > 0) {
       text(`Armor  ${Math.ceil(p.armor)}s`, 28, 140, 15, '#4d8dff', 'left', true);
     }
+    // A near-miss streak shows while it is alive.
+    if (state.nearMissStreak > 1 && state.nearMissStreakT > 0) {
+      text(`Near-miss streak x${state.nearMissStreak}`, viewW - 28, viewH - 48, 16, PALETTE.gold, 'right', true);
+    }
     // Speedometer when driving: the player's car speed in km/h.
     if (!p.onFoot) {
       let myCar = null;

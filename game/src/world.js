@@ -144,6 +144,8 @@ export function createGame(rng) {
     shake: 0,
     roadblockCd: 0,
     nearMissCd: 0,
+    nearMissStreak: 0,
+    nearMissStreakT: 0,
     courier: null,
     courierCd: 20,
     wantedFlash: 0,
@@ -294,6 +296,8 @@ export function createGame(rng) {
     state.skids = [];
     state.roadblockCd = 0;
     state.nearMissCd = 0;
+    state.nearMissStreak = 0;
+    state.nearMissStreakT = 0;
     state.courier = null;
     state.courierCd = 20;
     state.fare = null;
@@ -475,6 +479,10 @@ export function createGame(rng) {
     if (state.hurtFlash > 0) state.hurtFlash = Math.max(0, state.hurtFlash - dt * 2.5);
     if (state.skidCd > 0) state.skidCd = Math.max(0, state.skidCd - dt);
     if (state.nearMissCd > 0) state.nearMissCd -= dt;
+    if (state.nearMissStreakT > 0) {
+      state.nearMissStreakT -= dt;
+      if (state.nearMissStreakT <= 0) state.nearMissStreak = 0;
+    }
     if (state.bannerTimer > 0) state.bannerTimer -= dt;
     if (state.dialogue.length > 0) {
       state.dialogueTimer += dt;
@@ -708,10 +716,16 @@ export function createGame(rng) {
           burst(car.x, car.y, '#ffd23d', 6, 200);
         }
       } else if (car.driver === 'player' && other.driver === 'traffic' && d < 75 && Math.abs(car.speed) > 300 && state.nearMissCd <= 0) {
-        // A close shave at speed, without touching: a small cash bonus.
+        // A close shave at speed, without touching: a cash bonus that grows
+        // with a streak (consecutive shaves within 5 seconds).
         state.nearMissCd = 2;
-        state.cash += 10;
-        showBanner('Near miss!  +$10', 1.2);
+        if (state.nearMissStreakT > 0) state.nearMissStreak += 1;
+        else state.nearMissStreak = 1;
+        state.nearMissStreakT = 5;
+        const bonus = Math.min(30, 5 + state.nearMissStreak * 5);
+        state.cash += bonus;
+        floatText(car.x, car.y - 30, `+$${bonus}`, '#57d977');
+        showBanner(state.nearMissStreak > 1 ? `Near miss x${state.nearMissStreak}!  +$${bonus}` : `Near miss!  +$${bonus}`, 1.2);
       }
     }
     // Running over a pedestrian is a crime.

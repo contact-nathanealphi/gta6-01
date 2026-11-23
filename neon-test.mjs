@@ -232,6 +232,26 @@ if (wrench) {
   check('repair: wrench fixes the car +50', myCar2.health === 80, `car hp=${myCar2.health}`);
 }
 
+// 7g. Near-miss streak: consecutive shaves within 5s grow the bonus.
+game.reset();
+game.startMission(0);
+const streakCar = s.cars[0];
+s.player.x = streakCar.x; s.player.y = streakCar.y;
+game.step(STEP, { ...IDLE, enter: true });
+runFor(game, 0.3, IDLE);
+const cashBeforeStreak = game.state.cash;
+// Force a near-miss: put a traffic car just beside the player at speed.
+const myCar3 = s.cars.find((c) => c.driver === 'player');
+myCar3.speed = 350;
+const nearCar = s.cars.find((c) => c.driver === 'traffic');
+if (nearCar && myCar3) {
+  nearCar.x = myCar3.x + 60; nearCar.y = myCar3.y;
+  nearCar.speed = 200;
+  runFor(game, 0.3, IDLE);
+  check('near-miss: first shave pays $10', game.state.cash === cashBeforeStreak + 10, `cash ${cashBeforeStreak}->${game.state.cash}`);
+  check('near-miss: streak is 1', game.state.nearMissStreak === 1, `streak=${game.state.nearMissStreak}`);
+}
+
 // 8. Long soak: 5 minutes of idle + driving, no crash, no NaN, counts stable.
 game.reset();
 game.startMission(0);

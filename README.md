@@ -30,7 +30,8 @@ up for Mama Rosa while the Neon Bay Police Department watches every move.
 - **Police escalation**: at four stars and up the NBPD sets roadblocks ahead
   of you — smash through or swerve around them.
 - **Near-miss bonuses**: thread past traffic at speed without touching it and
-  earn $10 a shave.
+  earn cash — and chain shaves within 5 seconds into a streak that pays more
+  (up to $30 a shave).
 - **Side work**: after the story, **courier** deliveries (grab a parcel, deliver
   in 40s) pay $120–200, and driving a **taxi** earns fares ($80–150) from
   passengers who hail you.

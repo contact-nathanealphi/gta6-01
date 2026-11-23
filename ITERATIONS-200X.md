@@ -179,3 +179,8 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 154 | Live: pause tampilkan "Mission 1 of 7 — in progress" + cash + wanted | screenshot live-4 | KEEP |
 | 155 | Live: HUD, minimap, jam, dialog semua render benar saat bermain | screenshot live | KEEP |
 | 156 | Live batch terverifikasi | Playwright live | KEEP |
+| 157 | Near-miss: streak — shave beruntun dalam 5 dtk menaikkan bonus ($10→$30) | headless test | KEEP |
+| 158 | Near-miss: state streak + timer + reset saat habis waktu | headless test | KEEP |
+| 159 | Near-miss: floater +$ dan banner "xN" + HUD "Near-miss streak xN" | headless test | KEEP |
+| 160 | Near-miss: test headless (shave pertama $10, streak 1) + perbaiki nama var ganda | headless test ALL PASS | KEEP |
+| 161 | README: near-miss streak didokumentasikan | — | KEEP |
