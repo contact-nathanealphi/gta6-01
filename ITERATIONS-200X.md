@@ -173,3 +173,9 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 148 | Title: info save (cash + misi ke-X / story complete) diteruskan via ui | headless test | KEEP |
 | 149 | Title: baris save tampil di panel bila ada save (panel tumbuh mengikuti) | headless test | KEEP |
 | 150 | Title batch terverifikasi (shot title tanpa save tetap sama) | headless test | KEEP |
+| 151 | Uji live-play: game dimainkan langsung di browser (Enter, jalan, E, drive, Esc) | Playwright live | KEEP |
+| 152 | Live: 0 error console/page selama bermain | Playwright live | KEEP |
+| 153 | Live: misi 1 maju (ambil paket → antar ke mall) saat jalan kaki | screenshot live-2 | KEEP |
+| 154 | Live: pause tampilkan "Mission 1 of 7 — in progress" + cash + wanted | screenshot live-4 | KEEP |
+| 155 | Live: HUD, minimap, jam, dialog semua render benar saat bermain | screenshot live | KEEP |
+| 156 | Live batch terverifikasi | Playwright live | KEEP |
