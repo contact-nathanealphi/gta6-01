@@ -529,6 +529,31 @@ export function createRenderer(canvas) {
     ctx.globalAlpha = 1;
   }
 
+  function drawHeadlights(state, cam) {
+    // At night, every car throws a pale cone of light ahead of it.
+    const hour = (8 + state.time / 10) % 24;
+    const dayness = Math.sin(((hour - 6) / 12) * Math.PI);
+    if (dayness > -0.1) return;
+    const strength = Math.min(1, (-dayness - 0.1) / 0.6);
+    for (const car of state.cars) {
+      if (!inView(cam, car.x, car.y, 200)) continue;
+      const spec = CAR_KINDS[car.kind];
+      const fx = Math.cos(car.angle);
+      const fy = Math.sin(car.angle);
+      const px = -fy;
+      const py = fx;
+      const reach = 170;
+      const spread = 46;
+      ctx.fillStyle = `rgba(255, 233, 163, ${0.10 * strength})`;
+      ctx.beginPath();
+      ctx.moveTo(car.x + fx * (spec.length / 2), car.y + fy * (spec.length / 2));
+      ctx.lineTo(car.x + fx * (spec.length / 2 + reach) + px * spread, car.y + fy * (spec.length / 2 + reach) + py * spread);
+      ctx.lineTo(car.x + fx * (spec.length / 2 + reach) - px * spread, car.y + fy * (spec.length / 2 + reach) - py * spread);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
   function drawMarker(state, cam) {
     const obj = state.objective;
     if (!obj) return;
@@ -830,6 +855,12 @@ export function createRenderer(canvas) {
       ctx.fillStyle = `rgba(10,12,40,${(0.26 * Math.min(1, (-dayness - 0.25) / 0.75)).toFixed(3)})`;
     }
     ctx.fillRect(0, 0, viewW, viewH);
+    // Headlights shine through the night overlay: re-apply the camera
+    // transform and draw them in world space, after the overlay.
+    ctx.save();
+    ctx.translate(-cam.x + shX, -cam.y + shY);
+    drawHeadlights(state, cam);
+    ctx.restore();
     if (screen === SCREEN_TITLE) {
       drawPanel('NEON BAY', [
         'Rico Vega is back in Neon Bay — and Mama Rosa has work for him.',

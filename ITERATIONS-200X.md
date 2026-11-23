@@ -117,3 +117,9 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 92 | Quip tampil sebagai dialog saat misi selesai | headless test | KEEP |
 | 93 | Perbaiki showDialogue (tidak ada) → push ke antrean dialogue | headless test | KEEP |
 | 94 | Komentar header "Six linked jobs" → "Seven linked jobs" | — | KEEP |
+| 95 | Headlight: kerucut cahaya di depan tiap mobil saat malam | headless test + screenshot | KEEP |
+| 96 | Headlight digambar SETELAH overlay malam (menembus gelap) + transform kamera diterapkan ulang | headless test + screenshot | KEEP |
+| 97 | /tmp dibersihkan VM: neon-test.mjs + shot-neon.mjs hilang — dibuat ulang di lokasi permanen (repo + shot-playwright) | headless test | KEEP |
+| 98 | neon-test.mjs dibuat ulang lengkap (semua test 1–8) + perbaiki bug loop misi (pakai misi AKTIF, teleport mobil saat mengemudi) | headless test ALL PASS | KEEP |
+| 99 | shot-neon.mjs dibuat ulang (serve + Playwright + __shotReady + JPEG <256KiB) | screenshot 4 scene | KEEP |
+| 100 | Verifikasi visual: shotgun 3 shells + misi 4/7 + repair + cash + dialog tampil benar | screenshot 4-mission | KEEP |
