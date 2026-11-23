@@ -15,7 +15,7 @@ function b(cx,cy,cz,sx,sy,sz,yaw,col,uv,emi,rUv,rEm){const co=Math.cos(yaw),si=M
 function tb(cx,cy,cz,ax,ay,az,r0,r1,len,col,cc,uv,emi,sg){const al=Math.hypot(ax,ay,az)||1;ax/=al;ay/=al;az/=al;const t=Math.abs(ay)<.9?[0,1,0]:[1,0,0];let ux=ay*t[2]-az*t[1],uy=az*t[0]-ax*t[2],uz=ax*t[1]-ay*t[0];const ul=Math.hypot(ux,uy,uz)||1;ux/=ul;uy/=ul;uz/=ul;const vx=ay*uz-az*uy,vy=az*ux-ax*uz,vz=ax*uy-ay*ux,c0=[cx-ax*len/2,cy-ay*len/2,cz-az*len/2],c1=[cx+ax*len/2,cy+ay*len/2,cz+az*len/2],c2=cc||col;sg=sg||6;for(let i=0;i<sg;i++){const a0=i/sg*Math.PI*2,a1=(i+1)/sg*Math.PI*2,d0=[ux*Math.cos(a0)+vx*Math.sin(a0),uy*Math.cos(a0)+vy*Math.sin(a0),uz*Math.cos(a0)+vz*Math.sin(a0)],d1=[ux*Math.cos(a1)+vx*Math.sin(a1),uy*Math.cos(a1)+vy*Math.sin(a1),uz*Math.cos(a1)+vz*Math.sin(a1)],p00=[c0[0]+d0[0]*r0,c0[1]+d0[1]*r0,c0[2]+d0[2]*r0],p01=[c0[0]+d1[0]*r0,c0[1]+d1[1]*r0,c0[2]+d1[2]*r0],p10=[c1[0]+d0[0]*r1,c1[1]+d0[1]*r1,c1[2]+d0[2]*r1],p11=[c1[0]+d1[0]*r1,c1[1]+d1[1]*r1,c1[2]+d1[2]*r1];q(p00,p10,p11,p01,(d0[0]+d1[0])/2,(d0[1]+d1[1])/2,(d0[2]+d1[2])/2,col,uv,emi);tr(c0,[c0[0]+d1[0]*r0,c0[1]+d1[1]*r0,c0[2]+d1[2]*r0],p00,-ax,-ay,-az,c2,uv,emi);tr(c1,p10,[c1[0]+d1[0]*r1,c1[1]+d1[1]*r1,c1[2]+d1[2]*r1],ax,ay,az,c2,uv,emi);}}
 function ba(cx,cy,cz,rx,ry,rz,col,emi){const T=[cx,cy+ry,cz],B=[cx,cy-ry,cz],E=[[cx+rx,cy,cz],[cx,cy,cz+rz],[cx-rx,cy,cz],[cx,cy,cz-rz]];for(let i=0;i<4;i++){const a=E[i],b2=E[(i+1)%4],mx=(a[0]+b2[0])/2-cx,mz=(a[2]+b2[2])/2-cz;tr(T,a,b2,mx/rx,1,mz/rz,col,U,emi);tr(B,b2,a,mx/rx,-1,mz/rz,col,U,emi);}}
 function pr(pts,hw,cx,cy,cz,yaw,col,uv,emi){const co=Math.cos(yaw),si=Math.sin(yaw),X=(lx,lz)=>[cx+lx*co+lz*si,cz-lx*si+lz*co];for(let i=0;i<pts.length;i++){const p0=pts[i],p1=pts[(i+1)%pts.length],dx=p1[0]-p0[0],dy=p1[1]-p0[1],ln=Math.hypot(dx,dy)||1,nn=[dy/ln,-dx/ln],w0=X(p0[0],-hw),w1=X(p1[0],-hw),w2=X(p1[0],hw),w3=X(p0[0],hw);q([w0[0],cy+p0[1],w0[1]],[w1[0],cy+p1[1],w1[1]],[w2[0],cy+p1[1],w2[1]],[w3[0],cy+p0[1],w3[1]],nn[0]*co,nn[1],-nn[0]*si,col,uv,emi);}let gx=0,gy=0;for(const p of pts){gx+=p[0];gy+=p[1];}gx/=pts.length;gy/=pts.length;const g0=X(gx,hw),g1=X(gx,-hw);for(let i=0;i<pts.length;i++){const p0=pts[i],p1=pts[(i+1)%pts.length],a0=X(p0[0],hw),a1=X(p1[0],hw),b0=X(p0[0],-hw),b1=X(p1[0],-hw);tr([g0[0],cy+gy,g0[1]],[a0[0],cy+p0[1],a0[1]],[a1[0],cy+p1[1],a1[1]],si,0,co,col,uv,emi);tr([g1[0],cy+gy,g1[1]],[b1[0],cy+p1[1],b1[1]],[b0[0],cy+p0[1],b0[1]],-si,0,-co,col,uv,emi);}}
-return{data,get count(){return n;},reset(){n=0;},slice(){return data.subarray(0,n*VICE_VERT_STRIDE);},q,tr,gq,gt,b,tb,ba,pr};}
+return{data,reset(){n=0;},slice(){return data.subarray(0,n*VICE_VERT_STRIDE);},q,tr,gq,gt,b,tb,ba,pr};}
 export function viceBuildingHeight(b){const h=(((b.x*7+b.y*13)%100)+100)%100/100,cx=b.x+b.w/2,cy=b.y+b.h/2;return(60+h*140)*(cx>1200&&cx<3000&&cy>600&&cy<2000?1.5:1)*(cy>2300?.6:1);}
 const NT=[[1,.18,.47],[0,.9,1],[1,.82,.24],[1,.48,.18]];
 export function buildStatic(city){
@@ -74,16 +74,18 @@ const spec=CAR_KINDS[car.kind]||CAR_KINDS.sedan,col=X(car.color||spec.color),L=s
 carBody(m,car.x,car.y,car.angle,L,W,col,car.kind,true);
 if(car.driver==='police'){const fl=Math.floor(state.time*3)%2===0,co=Math.cos(car.angle),si=Math.sin(car.angle);m.ba(car.x-co*4-si*6,19.5,car.y-si*4+co*6,4,2.5,3,fl?[1,.2,.2]:[.2,.4,1],1);m.ba(car.x-co*4+si*6,19.5,car.y-si*4-co*6,4,2.5,3,fl?[.2,.4,1]:[1,.2,.2],1);}
 if(car.kind==='taxi')m.b(car.x,22,car.y,14,4,8,-car.angle,[1,.82,.24],U,.8);}
-function person(x,y,shirt,angle,phase){
-const yaw=-angle,fx=Math.cos(angle),fz=Math.sin(angle),sw=Math.sin(state.time*6+(phase||0))*4,pn=[.15,.15,.18];
-m.b(x+fx*sw,4.5,y+fz*sw,5,9,5,yaw,pn,U,0);
-m.b(x-fx*sw,4.5,y-fz*sw,5,9,5,yaw,pn,U,0);
-m.b(x,17,y,13,16,10,yaw,shirt,U,0);
-m.b(x+fx*-sw*.7-fz*8,17,y+fz*-sw*.7+fx*8,4,14,4,yaw,shirt,U,0);
-m.b(x+fx*-sw*.7+fz*8,17,y+fz*-sw*.7-fx*8,4,14,4,yaw,shirt,U,0);
-m.ba(x,29,y,4.5,4.5,4.5,skin,0);}
+function person(x,y,shirt,angle,phase,hr){
+const yaw=-angle,fx=Math.cos(angle),fz=Math.sin(angle),sw=Math.sin(state.time*6+(phase||0))*4,pn=[.15,.15,.18],hc=hr||X('#241a12');
+m.b(x+fx*sw,4.5,y+fz*sw,4,9,4,yaw,pn,U,0);
+m.b(x-fx*sw,4.5,y-fz*sw,4,9,4,yaw,pn,U,0);
+m.b(x,15.5,y,11,13,8,yaw,shirt,U,0);
+m.b(x+fx*-sw*.7-fz*7,15,y+fz*-sw*.7+fx*7,3,11,3,yaw,shirt,U,0);
+m.b(x+fx*-sw*.7+fz*7,15,y+fz*-sw*.7-fx*7,3,11,3,yaw,shirt,U,0);
+m.tb(x,25,y,0,1,0,4.5,7.5,6,skin,null,U,0,8);
+m.tb(x,30,y,0,1,0,7.5,4.5,6,skin,null,U,0,8);
+m.tb(x,33,y,0,1,0,7.4,4.5,5,hc,null,U,0,8);}
 for(const ped of state.peds){if(ped.down>0)continue;const dx=ped.x-px,dz=ped.y-pz;if(dx*dx+dz*dz>1200*1200)continue;person(ped.x,ped.y,X(ped.shirt||'#e8e2d4'),ped.angle||0,ped.x*.7);}
-for(const cop of state.cops)person(cop.x,cop.y,X('#2f6fd0'),cop.angle||0,cop.x*.7);
+for(const cop of state.cops)person(cop.x,cop.y,X('#2f6fd0'),cop.angle||0,cop.x*.7,X('#16233f'));
 for(const rival of state.rivals)person(rival.x,rival.y,X('#a83232'),rival.angle||0,rival.x*.7);
 const p=state.player;
 if(p.onFoot)person(p.x,p.y,X('#ff5a3c'),p.angle,0);
@@ -125,8 +127,8 @@ let dn=0;
 for(const pt of state.particles){if(dn>=30)break;const dx=pt.x-p.x,dz=pt.y-p.y;if(dx*dx+dz*dz>1200*1200)continue;const s=pt.size||3;m.gq(pt.x-s,pt.y-s,pt.x+s,pt.y+s,1,X(pt.color||'#ffd23d'),.6);dn++;}
 if(state.objective)vb(state.objective.x,state.objective.y,150,5,[1,.82,.24],.3);
 const air=state.air;
-if(air&&air.heli){const h=air.heli;bm(h.x,h.z-2,h.y,h.spotX,1,h.spotY,8,48,[1,.88,.5],.4);m.gq(h.spotX-55,h.spotY-55,h.spotX+55,h.spotY+55,.3,[1,.9,.6],.55);}
-for(const w of state.wrecks||[]){const fl=1+Math.sin(state.time*9+w.x)*.15;for(let k=0;k<3;k++){const fx=w.x+(k-1)*8,fw=(18-k*2)*fl,fh=(34-k*4)*fl,fc=k===0?[1,.4,.05]:k===1?[1,.62,.12]:[1,.85,.3];m.q([fx-fw,10,w.y],[fx+fw,10,w.y],[fx+fw,10+fh,w.y],[fx-fw,10+fh,w.y],0,0,1,fc,U,.9);m.q([fx,10,w.y-fw],[fx,10,w.y+fw],[fx,10+fh,w.y+fw],[fx,10+fh,w.y-fw],1,0,0,fc,U,.9);}}
+if(air&&air.heli){const h=air.heli;bm(h.x,h.z-2,h.y,h.spotX,1,h.spotY,10,45,[1,.8,.4],.5);bm(h.x,h.z-2,h.y,h.spotX,1,h.spotY,5,24,[1,.9,.6],.6);m.gq(h.spotX-60,h.spotY-60,h.spotX+60,h.spotY+60,.3,[1,.9,.6],.5);}
+for(const w of state.wrecks||[]){const fl=1+Math.sin(state.time*9+w.x)*.15;m.gq(w.x-46,w.y-46,w.x+46,w.y+46,.35,[1,.32,.06],.5);for(let k=0;k<3;k++){const fx=w.x+(k-1)*9,fw=(26-k*3)*fl,fh=(48-k*6)*fl,fc=k===0?[1,.28,.02]:k===1?[1,.52,.06]:[1,.82,.28];m.q([fx-fw,10,w.y],[fx+fw,10,w.y],[fx+fw,10+fh,w.y],[fx-fw,10+fh,w.y],0,0,1,fc,U,.95);m.q([fx,10,w.y-fw],[fx,10,w.y+fw],[fx,10+fh,w.y+fw],[fx,10+fh,w.y-fw],1,0,0,fc,U,.95);}}
 return m.slice();}
 export function buildSmk(state,m){
 m.reset();

@@ -28,7 +28,7 @@ const cU=U(cityP,['uVP','uSP','uCam','uSD','uSunCol','uAmb','uFC','uFogDen','uSo
 const kU=U(skyP,['uVP','uSD','uTime','uCam']),wU=U(waterP,['uVP','uTime','uSD','uCam','uFC']),pU=U(postP,['uScene','uBloom','uMode','uTexel']),dU=U(depP,['uVP']);
 const uM=(l,v)=>gl.uniformMatrix4fv(l,false,v),u3=(l,v)=>gl.uniform3fv(l,v),u1=(l,v)=>gl.uniform1f(l,v),uI=(l,v)=>gl.uniform1i(l,v);
 const atlas=AT(gl);
-const dynM=viceCreateMesh(20000),addM=viceCreateMesh(6000),smkM=viceCreateMesh(4000);
+const dynM=viceCreateMesh(32000),addM=viceCreateMesh(6000),smkM=viceCreateMesh(4000);
 let sB=null,sN=0,kB=null,wB=null,dB=null,tB=null,vW=0,vH=0,dp=1,md=0,vs=true,fb=null;
 const se=[0,0,0];let ei=false;
 function tex(w,h,fmt,type){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,fmt,w,h,0,fmt===gl.DEPTH_COMPONENT24?gl.DEPTH_COMPONENT:gl.RGBA,type,null);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);return t;}
