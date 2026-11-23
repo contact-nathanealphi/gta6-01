@@ -68,7 +68,7 @@ export const MISSIONS = [
       { kind: 'survive', seconds: 30, label: 'Survive the police chase — 30 seconds' },
       { kind: 'go', x: 870, y: 550, label: "Get back to Mama Rosa's Diner" },
     ],
-    reward: 500,
+    reward: 750,
   },
   {
     title: 'The Big Score',
@@ -137,11 +137,13 @@ export function createGame(rng) {
 
   function newCar(kind, x, y, angle, driver) {
     const spec = CAR_KINDS[kind];
-    return {
+    const car = {
       id: nextCarId, kind, x, y, angle, speed: 0, color: spec.color,
       driver, health: 100, smoked: false, radius: 22,
       road: null, line: 0, dir: 1, targetSpeed: 0, turnCd: 0, deployT: 0,
     };
+    nextCarId += 1;
+    return car;
   }
 
   function spawnTrafficCar(near) {
@@ -161,7 +163,7 @@ export function createGame(rng) {
       car.angle = car.dir === 1 ? 0 : Math.PI;
       car.y = car.line + (car.dir === 1 ? 25 : -25);
     }
-    car.targetSpeed = rng.range(150, 230);
+    car.targetSpeed = rng.range(160, 250);
     car.speed = car.targetSpeed;
     state.cars.push(car);
     return car;
@@ -263,10 +265,10 @@ export function createGame(rng) {
     for (let i = 0; i < PED_COUNT; i += 1) spawnPed();
     for (let i = 0; i < 6; i += 1) {
       const p = randomSidewalkPoint(rng);
-      spawnPickup('cash', p.x, p.y, rng.int(25, 80));
+      spawnPickup('cash', p.x, p.y, rng.int(30, 90));
     }
-    spawnPickup('health', 1440, 620, 30);
-    spawnPickup('health', 900, 1620, 30);
+    spawnPickup('health', 1440, 620, 40);
+    spawnPickup('health', 900, 1620, 40);
     spawnPickup('ammo', 800, 1500, 24);
     spawnPickup('ammo', 1560, 1600, 24);
     startMission(0);
@@ -469,18 +471,18 @@ export function createGame(rng) {
     }
     let events = 0;
     if (input.punch && p.punchCd <= 0) {
-      p.punchCd = 0.4;
+      p.punchCd = 0.35;
       state.punchSound = true;
       events |= punch();
     }
     if (input.shoot && p.pistol && p.mag > 0 && p.shootCd <= 0 && p.reloadT <= 0) {
-      p.shootCd = 0.22;
+      p.shootCd = 0.2;
       p.mag -= 1;
       fireBullet(p.x, p.y, p.aimX, p.aimY, 'player', PLAYER.pistolDamage, 950);
       state.shotFired = true;
       state.shotSound = true;
     }
-    if (input.reload && p.pistol && p.mag < PLAYER.magSize && p.reloadT <= 0) p.reloadT = 1.1;
+    if (input.reload && p.pistol && p.mag < PLAYER.magSize && p.reloadT <= 0) p.reloadT = 0.9;
     return events;
   }
 
@@ -592,8 +594,8 @@ export function createGame(rng) {
       } else if (car.driver === 'player' && other.driver === 'traffic' && d < 75 && Math.abs(car.speed) > 300 && state.nearMissCd <= 0) {
         // A close shave at speed, without touching: a small cash bonus.
         state.nearMissCd = 2;
-        state.cash += 5;
-        showBanner('Near miss!  +$5', 1.2);
+        state.cash += 10;
+        showBanner('Near miss!  +$10', 1.2);
       }
     }
     // Running over a pedestrian is a crime.
@@ -856,7 +858,7 @@ export function createGame(rng) {
   }
 
   function bustPlayer() {
-    const fine = Math.max(50, Math.floor(state.cash * 0.2));
+    const fine = Math.max(50, Math.floor(state.cash * 0.15));
     state.cash -= fine;
     state.wantedPoints = 0;
     state.wanted = 0;
@@ -960,7 +962,7 @@ export function createGame(rng) {
           }
         } else if (p.invuln <= 0 && hitCircle(p)) {
           p.health -= b.damage;
-          p.invuln = 0.3;
+          p.invuln = 0.4;
           burst(p.x, p.y, '#c94f43', 6, 160);
           dead = true;
           if (p.health <= 0) {
@@ -974,7 +976,7 @@ export function createGame(rng) {
   }
 
   function wastePlayer() {
-    const lost = Math.max(25, Math.floor(state.cash * 0.1));
+    const lost = Math.max(25, Math.floor(state.cash * 0.08));
     state.cash -= lost;
     state.wantedPoints = 0;
     state.wanted = 0;
@@ -1005,7 +1007,7 @@ export function createGame(rng) {
       if (item.kind === 'health') {
         if (p.health >= PLAYER.health) continue;
         p.health = Math.min(PLAYER.health, p.health + item.amount);
-        showBanner('Health +30', 1.5);
+        showBanner(`Health +${item.amount}`, 1.5);
       } else if (item.kind === 'ammo') {
         if (!p.pistol) continue;
         p.mag = PLAYER.magSize;
@@ -1014,7 +1016,7 @@ export function createGame(rng) {
         state.cash += item.amount;
         showBanner(`+$${item.amount}`, 1.2);
         const spot = randomSidewalkPoint(rng);
-        spawnPickup('cash', spot.x, spot.y, rng.int(25, 80));
+        spawnPickup('cash', spot.x, spot.y, rng.int(30, 90));
       } else if (item.kind === 'crate') {
         state.hasCrate = true;
         state.wantedPoints = 8;

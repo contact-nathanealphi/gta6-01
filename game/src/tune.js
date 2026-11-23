@@ -15,13 +15,13 @@ export const WALK = 26;
 
 export const PLAYER = {
   radius: 14,
-  walkSpeed: 235,
-  runSpeed: 355,
+  walkSpeed: 245,
+  runSpeed: 365,
   health: 100,
-  punchDamage: 12,
+  punchDamage: 15,
   punchRange: 46,
-  pistolDamage: 25,
-  magSize: 12,
+  pistolDamage: 28,
+  magSize: 14,
 };
 
 export const CAR_KINDS = {
@@ -44,21 +44,21 @@ export const WANTED = {
   kill: 3,
   maxPoints: 10,
   /** Seconds with no crime before the heat starts cooling off. */
-  coolDelay: 18,
-  coolRate: 0.4,
+  coolDelay: 15,
+  coolRate: 0.5,
   /** A cop must be this close to spot the player and keep the heat on. */
   spotRange: 520,
 };
 
 export const COPS = {
   footSpeed: 265,
-  footArrestTime: 1.6,
+  footArrestTime: 1.9,
   footHealth: 50,
-  carChaseSpeed: 540,
+  carChaseSpeed: 550,
   ramDamage: 8,
 };
 
-export const RIVAL = { health: 50, shootRange: 340, shootEvery: 0.9, damage: 7 };
+export const RIVAL = { health: 50, shootRange: 340, shootEvery: 1.1, damage: 6 };
 
 export const PALETTE = {
   grass: '#6f9e57',
