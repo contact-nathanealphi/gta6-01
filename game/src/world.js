@@ -101,6 +101,7 @@ export function createGame(rng) {
     pickups: [],
     bullets: [],
     particles: [],
+    skids: [],
     missionIndex: 0,
     stageIndex: 0,
     missionActive: false,
@@ -121,6 +122,9 @@ export function createGame(rng) {
     pickupSound: false,
     crashLoud: false,
     sirenOn: false,
+    shake: 0,
+    roadblockCd: 0,
+    nearMissCd: 0,
   };
 
   function newPlayer(x, y) {
@@ -143,7 +147,7 @@ export function createGame(rng) {
   function spawnTrafficCar(near) {
     const point = randomRoadPoint(rng, near, 500);
     const vertical = Math.abs(point.x - AVENUES[0]) < 40 || rng.chance(0.5);
-    const car = newCar(rng.pick(['sedan', 'sedan', 'taxi', 'van']), point.x, point.y, 0, 'traffic');
+    const car = newCar(rng.pick(['sedan', 'sedan', 'taxi', 'van', 'pickup']), point.x, point.y, 0, 'traffic');
     if (vertical) {
       car.road = 'v';
       car.line = AVENUES.reduce((best, ax) => (Math.abs(ax - point.x) < Math.abs(best - point.x) ? ax : best), AVENUES[0]);
@@ -235,6 +239,9 @@ export function createGame(rng) {
     state.pickups = [];
     state.bullets = [];
     state.particles = [];
+    state.skids = [];
+    state.roadblockCd = 0;
+    state.nearMissCd = 0;
     state.missionIndex = 0;
     state.stageIndex = 0;
     state.missionActive = false;
@@ -387,6 +394,8 @@ export function createGame(rng) {
   function step(dt, input) {
     let events = 0;
     state.time += dt;
+    if (state.shake > 0) state.shake = Math.max(0, state.shake - dt * 26);
+    if (state.nearMissCd > 0) state.nearMissCd -= dt;
     if (state.bannerTimer > 0) state.bannerTimer -= dt;
     if (state.dialogue.length > 0) {
       state.dialogueTimer += dt;
@@ -532,6 +541,19 @@ export function createGame(rng) {
     const steer = (input.left ? -1 : 0) + (input.right ? 1 : 0);
     const grip = Math.min(1, Math.abs(car.speed) / 220);
     car.angle += steer * spec.turn * grip * dt * (car.speed >= 0 ? 1 : -1);
+    // Hard cornering at speed leaves skid marks at the rear wheels.
+    if (steer !== 0 && Math.abs(car.speed) > 260) {
+      const fx = Math.cos(car.angle);
+      const fy = Math.sin(car.angle);
+      const px = -fy;
+      const py = fx;
+      const bx = car.x - fx * (spec.length / 2 - 4);
+      const by = car.y - fy * (spec.length / 2 - 4);
+      for (const side of [-1, 1]) {
+        state.skids.push({ x: bx + px * side * (spec.width / 2 - 3), y: by + py * side * (spec.width / 2 - 3), angle: car.angle, life: 4 });
+      }
+      if (state.skids.length > 400) state.skids.splice(0, state.skids.length - 400);
+    }
     const nx = car.x + Math.cos(car.angle) * car.speed * dt;
     const ny = car.y + Math.sin(car.angle) * car.speed * dt;
     const before = Math.abs(car.speed);
@@ -541,6 +563,7 @@ export function createGame(rng) {
         car.health -= (before - 240) / 12;
         burst(body.x, body.y, '#ffd23d', 10, 260);
         state.crashLoud = true;
+        if (car.driver === 'player') state.shake = 12;
       }
       car.speed *= 0.35;
     }
@@ -566,6 +589,11 @@ export function createGame(rng) {
           car.speed *= 0.7;
           burst(car.x, car.y, '#ffd23d', 6, 200);
         }
+      } else if (car.driver === 'player' && other.driver === 'traffic' && d < 75 && Math.abs(car.speed) > 300 && state.nearMissCd <= 0) {
+        // A close shave at speed, without touching: a small cash bonus.
+        state.nearMissCd = 2;
+        state.cash += 5;
+        showBanner('Near miss!  +$5', 1.2);
       }
     }
     // Running over a pedestrian is a crime.
@@ -700,10 +728,33 @@ export function createGame(rng) {
     let events = 0;
     // Reinforcements arrive while the heat is on.
     const wantFoot = state.wanted >= 1 ? Math.min(2 + state.wanted, 5) : 0;
-    const wantCars = state.wanted >= 2 ? Math.min(state.wanted, 2) : 0;
+    const wantCars = state.wanted >= 2 ? Math.min(state.wanted, 3) : 0;
     if (state.cops.length < wantFoot && rng.chance(0.02)) spawnFootCop();
     const patrols = state.cars.filter((c) => c.driver === 'police').length;
     if (patrols < wantCars && rng.chance(0.015)) spawnPatrolCar();
+    // At four stars and up the NBPD sets a roadblock ahead of the player.
+    if (state.wanted >= 4) {
+      state.roadblockCd -= dt;
+      if (state.roadblockCd <= 0) {
+        state.roadblockCd = 25;
+        const p = state.player;
+        const ahead = 420;
+        const fx = Math.cos(p.angle);
+        const fy = Math.sin(p.angle);
+        const bx = p.x + fx * ahead;
+        const by = p.y + fy * ahead;
+        const px = -fy;
+        const py = fx;
+        for (const side of [-45, 45]) {
+          const car = spawnPatrolCar();
+          car.x = bx + px * side;
+          car.y = by + py * side;
+          car.angle = Math.atan2(-fy, -fx);
+          car.speed = 0;
+        }
+        showBanner('NBPD roadblock ahead!', 3);
+      }
+    }
     for (let i = state.cops.length - 1; i >= 0; i -= 1) {
       const cop = state.cops[i];
       if (state.wanted === 0 || cop.health <= 0) {
@@ -987,6 +1038,11 @@ export function createGame(rng) {
       pt.vy *= 0.94;
       pt.life -= dt;
       if (pt.life <= 0) state.particles.splice(i, 1);
+    }
+    // Skid marks fade slowly off the asphalt.
+    for (let i = state.skids.length - 1; i >= 0; i -= 1) {
+      state.skids[i].life -= dt;
+      if (state.skids[i].life <= 0) state.skids.splice(i, 1);
     }
   }
 

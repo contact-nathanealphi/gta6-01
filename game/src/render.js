@@ -106,6 +106,20 @@ export function createRenderer(canvas) {
     ctx.setLineDash([]);
   }
 
+  function drawSkids(state, cam) {
+    for (const s of state.skids) {
+      if (!inView(cam, s.x, s.y, 30)) continue;
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      ctx.rotate(s.angle);
+      ctx.globalAlpha = Math.min(0.5, (s.life / 4) * 0.5);
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(-7, -2, 14, 4);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
   function drawBuildings(city, cam) {
     for (const b of city.buildings) {
       if (!inView(cam, b.x + b.w / 2, b.y + b.h / 2, Math.max(b.w, b.h))) continue;
@@ -472,6 +486,16 @@ export function createRenderer(canvas) {
       text(`Pistol  ${p.mag}/${PLAYER.magSize}`, 28, 122, 15, PALETTE.hudText, 'left');
       if (p.reloadT > 0) text('Reloading…', 150, 122, 15, PALETTE.gold, 'left');
     }
+    // Speedometer when driving: the player's car speed in km/h.
+    if (!p.onFoot) {
+      let myCar = null;
+      for (const car of state.cars) if (car.driver === 'player') { myCar = car; break; }
+      if (myCar) {
+        const kmh = Math.round(Math.abs(myCar.speed) * 0.32);
+        text(`${kmh} km/h`, 28, 122, 15, PALETTE.hudText, 'left');
+        text(myCar.kind === 'patrol' ? 'NBPD Interceptor' : (CAR_KINDS[myCar.kind] ? CAR_KINDS[myCar.kind].label : myCar.kind), 150, 122, 15, PALETTE.hudMuted, 'left');
+      }
+    }
     drawMinimap(state);
     // Objective, bottom-left.
     if (state.objective) {
@@ -557,12 +581,17 @@ export function createRenderer(canvas) {
   /** Paint one frame: the world, then the HUD or a panel for the screen the game is on. */
   function draw(state, city, screen, ui) {
     const cam = camera(state);
+    // Screen shake after a hard crash: a decaying random offset on the camera.
+    const sh = state.shake > 0 ? state.shake : 0;
+    const shX = sh > 0 ? (Math.random() - 0.5) * sh : 0;
+    const shY = sh > 0 ? (Math.random() - 0.5) * sh : 0;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = '#0b0e18';
     ctx.fillRect(0, 0, viewW, viewH);
     ctx.save();
-    ctx.translate(-cam.x, -cam.y);
+    ctx.translate(-cam.x + shX, -cam.y + shY);
     drawGround(cam);
+    drawSkids(state, cam);
     drawBuildings(city, cam);
     drawPickups(state, cam);
     drawPeople(state, cam);

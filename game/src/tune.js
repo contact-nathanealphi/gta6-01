@@ -29,11 +29,12 @@ export const CAR_KINDS = {
   sports: { label: 'Golden Comet', topSpeed: 580, accel: 680, turn: 3.1, color: '#f2c94c', length: 46, width: 22 },
   taxi: { label: 'Bay Cab', topSpeed: 420, accel: 480, turn: 2.6, color: '#f2d13d', length: 44, width: 22 },
   van: { label: 'Harbor Van', topSpeed: 350, accel: 380, turn: 2.2, color: '#7d8aa0', length: 52, width: 24 },
+  pickup: { label: 'Dune Runner', topSpeed: 460, accel: 520, turn: 2.5, color: '#5a7d4a', length: 48, width: 23 },
   patrol: { label: 'NBPD Interceptor', topSpeed: 520, accel: 620, turn: 3.0, color: '#2f6fd0', length: 46, width: 22 },
 };
 
-export const TRAFFIC_COUNT = 14;
-export const PED_COUNT = 18;
+export const TRAFFIC_COUNT = 22;
+export const PED_COUNT = 30;
 
 export const WANTED = {
   /** Points per crime; level is floor(points / 2), capped at 5. */

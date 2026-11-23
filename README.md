@@ -25,9 +25,16 @@ up for Mama Rosa while the Neon Bay Police Department watches every move.
   score at the port, with dialogue, markers and cash rewards.
 - **Combat**: fists and a pistol, health and ammo pickups, and rival crews who
   shoot back.
-- A **HUD with a minimap**, a start screen, and **saves** (your progress,
-  cash and mission state are kept in the browser).
-- **Synthesized sound**: engine hum, police sirens, gunshots, crashes and
+- **Police escalation**: at four stars and up the NBPD sets roadblocks ahead
+  of you — smash through or swerve around them.
+- **Near-miss bonuses**: thread past traffic at speed without touching it and
+  earn $5 a shave.
+- **A living city**: 22 traffic cars (sedans, taxis, vans and the new Dune
+  Runner pickup) and 30 pedestrians going about their day.
+- A **HUD with a minimap and a speedometer**, a start screen, and **saves**
+  (your progress, cash and mission state are kept in the browser).
+- **Feel**: screen shake on hard crashes, skid marks on hard cornering, and
+  **synthesized sound**: engine hum, police sirens, gunshots, crashes and
   mission jingles — all made with WebAudio, no audio files.
 
 ## Play
