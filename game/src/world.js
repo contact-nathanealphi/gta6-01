@@ -4,7 +4,7 @@
 // what happened as bit flags, so the caller can react without the world knowing
 // about screens or sound. Nothing here allocates after createGame returns.
 
-import { AVENUES, CAR_KINDS, COPS, PED_COUNT, PLAYER, RIVAL, STREETS, TRAFFIC_COUNT, WANTED, WORLD } from './tune.js';
+import { AVENUES, CAR_KINDS, COPS, PALETTE, PED_COUNT, PLAYER, RIVAL, STREETS, TRAFFIC_COUNT, WANTED, WORLD } from './tune.js';
 import { buildCity, lineBlocked, nearestRoadPoint, randomRoadPoint, randomSidewalkPoint, resolveBuildings } from './city.js';
 
 export const EVENT_BUSTED = 1;
@@ -143,6 +143,7 @@ export function createGame(rng) {
     hurtFlash: 0,
     fare: null,
     fareCd: 15,
+    floaters: [],
   };
 
   function newPlayer(x, y) {
@@ -244,6 +245,20 @@ export function createGame(rng) {
     return EVENT_CRIME;
   }
 
+  function floatText(x, y, label, color) {
+    if (state.floaters.length >= 12) return;
+    state.floaters.push({ x, y, label, color, life: 1.1, maxLife: 1.1 });
+  }
+
+  function updateFloaters(dt) {
+    for (let i = state.floaters.length - 1; i >= 0; i -= 1) {
+      const f = state.floaters[i];
+      f.y -= 42 * dt;
+      f.life -= dt;
+      if (f.life <= 0) state.floaters.splice(i, 1);
+    }
+  }
+
   function burst(x, y, color, count, speed) {
     for (let i = 0; i < count; i += 1) {
       // Cap particles so a big chain reaction cannot grow the array forever.
@@ -274,6 +289,7 @@ export function createGame(rng) {
     state.courierCd = 20;
     state.fare = null;
     state.fareCd = 15;
+    state.floaters = [];
     state.missionIndex = 0;
     state.stageIndex = 0;
     state.missionActive = false;
@@ -371,6 +387,7 @@ export function createGame(rng) {
     }
     if (state.stageIndex >= mission.stages.length) {
       state.cash += mission.reward;
+      floatText(state.player.x, state.player.y - 30, `+$${mission.reward}`, PALETTE.gold);
       state.missionActive = false;
       state.objective = null;
       showBanner(`Mission complete — ${mission.title}  +$${mission.reward}`, 3.5);
@@ -486,6 +503,7 @@ export function createGame(rng) {
     updateCourier(dt);
     updateFare(dt);
     updateParticles(dt);
+    updateFloaters(dt);
     events |= updateWanted(dt);
     events |= updateMissions(dt);
     maintainCrowd();
@@ -1116,6 +1134,7 @@ export function createGame(rng) {
       state.objective = { x: f.x, y: f.y, label: `Taxi fare — ${Math.max(0, Math.ceil(f.timer))}s` };
       if (Math.hypot(p.x - f.x, p.y - f.y) < 75) {
         state.cash += f.reward;
+        floatText(p.x, p.y - 30, `+$${f.reward}`, '#57d977');
         showBanner(`Fare complete — +$${f.reward}`, 2.5);
         state.fare = null;
         state.objective = state.missionActive ? state.objective : null;
@@ -1154,6 +1173,7 @@ export function createGame(rng) {
       const p = state.player;
       if (Math.hypot(p.x - c.x, p.y - c.y) < 75) {
         state.cash += c.reward;
+        floatText(p.x, p.y - 30, `+$${c.reward}`, '#57d977');
         showBanner(`Courier done — +$${c.reward}`, 2.5);
         state.courier = null;
         state.objective = null;
@@ -1209,6 +1229,7 @@ export function createGame(rng) {
         state.cash += item.amount;
         state.cashSound = true;
         state.pickupSound = false;
+        floatText(p.x, p.y - 30, `+$${item.amount}`, '#57d977');
         showBanner(`+$${item.amount}`, 1.2);
         const spot = randomSidewalkPoint(rng);
         spawnPickup('cash', spot.x, spot.y, rng.int(30, 90));

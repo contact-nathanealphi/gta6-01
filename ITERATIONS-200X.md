@@ -107,3 +107,9 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 82 | Repair: perbaiki mobil pemain; di jalan kaki pickup tetap di tempat (tanpa bunyi) | headless test | KEEP |
 | 83 | Repair: render kunci inggris + dot hijau minimap | headless test | KEEP |
 | 84 | Repair: test headless + perbaiki bug CARS undefined (max HP mobil = 100) | headless test | KEEP |
+| 85 | Floating text: state field floaters[] | headless test | KEEP |
+| 86 | floatText helper + updateFloaters (naik + memudar, cap 12) | headless test | KEEP |
+| 87 | Floater "+$X" saat pickup uang, courier, taxi fare, reward misi | headless test | KEEP |
+| 88 | drawFloaters di render.js (teks naik + transparan) | headless test | KEEP |
+| 89 | Perbaiki bug PALETTE undefined di world.js (import dari tune.js) | headless test | KEEP |
+| 90 | updateFloaters dipanggil dari step() | headless test | KEEP |

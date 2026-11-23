@@ -520,6 +520,15 @@ export function createRenderer(canvas) {
     ctx.globalAlpha = 1;
   }
 
+  function drawFloaters(state, cam) {
+    for (const f of state.floaters) {
+      if (!inView(cam, f.x, f.y, 40)) continue;
+      ctx.globalAlpha = Math.max(0, f.life / f.maxLife);
+      text(f.label, f.x, f.y, 17, f.color, 'center', true);
+    }
+    ctx.globalAlpha = 1;
+  }
+
   function drawMarker(state, cam) {
     const obj = state.objective;
     if (!obj) return;
@@ -784,6 +793,7 @@ export function createRenderer(canvas) {
     }
     drawPlayer(state, cam);
     drawBulletsAndParticles(state, cam);
+    drawFloaters(state, cam);
     drawMarker(state, cam);
     ctx.restore();
     // Speed lines at very high speed: short streaks near the screen edges.
