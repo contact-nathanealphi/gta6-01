@@ -1,13 +1,10 @@
-// Neon Bay's map: a grid of avenues and streets, the blocks between them filled
-// with buildings, and the named places the story happens in. Everything is built
-// once from a seeded generator, so the city is the same every run.
+// Neon Bay's map: avenues and streets, buildings per block, named places, palms.
 
 import { AVENUES, ROAD_HALF, STREETS, WALK, WORLD } from './tune.js';
 
 const ROOF_COLORS = ['#b08954', '#8a6f4d', '#a5715e', '#7d8a99', '#c2a06a', '#96705a', '#6f7f6a'];
 const GLASS_COLORS = ['#7fb3d5', '#9cc3d8', '#6f9fb8'];
 
-/** Named places, by the block they sit in (avenue index, street index). */
 const LANDMARKS = [
   { col: 0, row: 0, name: "Mama Rosa's Diner", kind: 'diner', color: '#d4693c' },
   { col: 1, row: 0, name: 'Neon Bay General', kind: 'hospital', color: '#e8e2d4' },
@@ -23,8 +20,6 @@ export function buildCity(rng) {
   const buildings = [];
   const palms = [];
 
-  // One or two buildings per block, inset from the road so a sidewalk ring stays
-  // walkable around every block.
   for (let col = 0; col < AVENUES.length - 1; col += 1) {
     for (let row = 0; row < STREETS.length - 1; row += 1) {
       const x0 = AVENUES[col] + ROAD_HALF + WALK + 14;
@@ -54,12 +49,10 @@ export function buildCity(rng) {
     }
   }
 
-  // Palm trees along the beach strip at the south edge.
   for (let x = 120; x < WORLD.width; x += 170) {
     palms.push({ x: x + rng.range(-30, 30), y: rng.range(2470, 2620) });
   }
 
-  // A lighthouse at the far east end of the beach, by the water.
   buildings.push({
     x: 3300, y: 2480, w: 70, h: 70,
     color: '#e8e2d4', glass: '#ffd23d', name: 'Neon Bay Lighthouse', kind: 'lighthouse',
@@ -68,45 +61,23 @@ export function buildCity(rng) {
   return { buildings, palms, landmarks: LANDMARKS };
 }
 
-/** True when the point is on a road (asphalt), not a sidewalk or a block. */
-export function onRoad(x, y) {
-  for (const ax of AVENUES) if (Math.abs(x - ax) <= ROAD_HALF && y >= 0 && y <= WORLD.height) return true;
-  for (const sy of STREETS) if (Math.abs(y - sy) <= ROAD_HALF && x >= 0 && x <= WORLD.width) return true;
-  return false;
+function nearestIn(list, v) {
+  let best = list[0];
+  let bestD = Infinity;
+  for (const x of list) {
+    const d = Math.abs(x - v);
+    if (d < bestD) { bestD = d; best = x; }
+  }
+  return best;
 }
 
-/** True when the point is on a sidewalk ring hugging a road. */
-export function onSidewalk(x, y) {
-  for (const ax of AVENUES) {
-    const d = Math.abs(x - ax);
-    if (d > ROAD_HALF && d <= ROAD_HALF + WALK) return true;
-  }
-  for (const sy of STREETS) {
-    const d = Math.abs(y - sy);
-    if (d > ROAD_HALF && d <= ROAD_HALF + WALK) return true;
-  }
-  return false;
-}
-
-/** The nearest point on a road centre line, for spawning traffic and cops. */
 export function nearestRoadPoint(x, y, rng) {
-  let bestAx = AVENUES[0];
-  let bestDx = Infinity;
-  for (const ax of AVENUES) {
-    const d = Math.abs(x - ax);
-    if (d < bestDx) { bestDx = d; bestAx = ax; }
-  }
-  let bestSy = STREETS[0];
-  let bestDy = Infinity;
-  for (const sy of STREETS) {
-    const d = Math.abs(y - sy);
-    if (d < bestDy) { bestDy = d; bestSy = sy; }
-  }
-  if (bestDx < bestDy) return { x: bestAx + rng.range(-30, 30), y: Math.max(60, Math.min(WORLD.height - 60, y)) };
+  const bestAx = nearestIn(AVENUES, x);
+  const bestSy = nearestIn(STREETS, y);
+  if (Math.abs(x - bestAx) < Math.abs(y - bestSy)) return { x: bestAx + rng.range(-30, 30), y: Math.max(60, Math.min(WORLD.height - 60, y)) };
   return { x: Math.max(60, Math.min(WORLD.width - 60, x)), y: bestSy + rng.range(-30, 30) };
 }
 
-/** A random point on a road, away from the given spot when one is given. */
 export function randomRoadPoint(rng, awayFrom, minAway) {
   for (let tries = 0; tries < 12; tries += 1) {
     const vertical = rng.chance(0.5);
@@ -118,7 +89,6 @@ export function randomRoadPoint(rng, awayFrom, minAway) {
   return { x: AVENUES[0], y: STREETS[0] };
 }
 
-/** A random point on a sidewalk, for spawning pedestrians. */
 export function randomSidewalkPoint(rng) {
   const vertical = rng.chance(0.5);
   if (vertical) {
@@ -129,10 +99,6 @@ export function randomSidewalkPoint(rng) {
   return { x: rng.range(80, WORLD.width - 80), y: sy + (rng.chance(0.5) ? 1 : -1) * (ROAD_HALF + WALK / 2) };
 }
 
-/**
- * Push a circle (x, y, radius) out of every building it overlaps. Returns true
- * when it was pushed at all, so the caller can kill speed on a hard hit.
- */
 export function resolveBuildings(buildings, body) {
   let pushed = false;
   for (const b of buildings) {
@@ -149,7 +115,6 @@ export function resolveBuildings(buildings, body) {
       body.x += (dx / dist) * push;
       body.y += (dy / dist) * push;
     } else {
-      // Centre inside the building: shove it out through the nearest side.
       const left = body.x - b.x;
       const right = b.x + b.w - body.x;
       const top = body.y - b.y;
@@ -164,7 +129,6 @@ export function resolveBuildings(buildings, body) {
   return pushed;
 }
 
-/** True when the straight line from (x1,y1) to (x2,y2) crosses a building. */
 export function lineBlocked(buildings, x1, y1, x2, y2) {
   for (const b of buildings) {
     if (segmentHitsRect(x1, y1, x2, y2, b)) return true;
@@ -173,7 +137,6 @@ export function lineBlocked(buildings, x1, y1, x2, y2) {
 }
 
 function segmentHitsRect(x1, y1, x2, y2, r) {
-  // A segment hits a rectangle when it crosses any of its four edges, or starts inside it.
   if (x1 >= r.x && x1 <= r.x + r.w && y1 >= r.y && y1 <= r.y + r.h) return true;
   const edges = [
     [r.x, r.y, r.x + r.w, r.y],

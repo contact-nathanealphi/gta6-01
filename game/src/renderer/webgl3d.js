@@ -1,9 +1,7 @@
-// True 3D Vice-Dusk WebGL2 renderer (pure WebGL2, no libraries, no network):
-// reads the same 2D simulation state in real time and paints it as a third-
-// person 3D city at golden hour. Falls back to the Canvas 2D renderer when
-// WebGL2 is unavailable. Camera: chase (V cycles chase / cinematic / top-down).
+// True 3D Vice-Dusk WebGL2 renderer: third-person 3D city at golden hour, 2D fallback.
 
 import { WORLD } from '../tune.js';
+import { lineBlocked } from '../city.js';
 import { createViceDuskTextureAtlas } from './textures3d.js';
 import { VICE_VERT_STRIDE, buildViceCityStaticGeometry, buildViceDynamicGeometry, viceCreateMesh } from './meshes3d.js';
 
@@ -173,7 +171,7 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
     dynBuf = gl.createBuffer();
   }
 
-  function chaseCamera(state) {
+  function chaseCamera(state, city) {
     const p = state.player;
     const car = state.cars.find((c) => c.driver === 'player');
     let px, pz, fx, fz, speed;
@@ -183,10 +181,18 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
       px = p.x; pz = p.y; fx = Math.cos(p.angle); fz = Math.sin(p.angle); speed = 0;
     }
     const onFoot = p.onFoot;
-    const dist = onFoot ? 58 : 115;
+    let dist = onFoot ? 58 : 115;
     const height = onFoot ? 28 : 55;
     const ahead = onFoot ? 45 : 85;
-    const ex = px - fx * dist, ey = height, ez = pz - fz * dist;
+    let ex = px - fx * dist, ez = pz - fz * dist;
+    if (city) {
+      while (dist > 36 && lineBlocked(city.buildings, px, pz, ex, ez)) {
+        dist *= 0.75;
+        ex = px - fx * dist;
+        ez = pz - fz * dist;
+      }
+    }
+    const ey = height;
     const tx = px + fx * ahead, ty = onFoot ? 4 : 6, tz = pz + fz * ahead;
     const fov = (62 + Math.min(10, speed * 0.012)) * Math.PI / 180;
     return { eye: [ex, ey, ez], target: [tx, ty, tz], fov };
@@ -224,7 +230,7 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
       if (glCanvas.width !== Math.round(viewW * dpr)) resize();
       const hour = (8 + state.time / 10) % 24;
       const sun = viceDuskSun(hour);
-      const cam = (screen === 'title' || mode === 1) ? cinematicCamera(state) : chaseCamera(state);
+      const cam = (screen === 'title' || mode === 1) ? cinematicCamera(state) : chaseCamera(state, city);
       if (!eyeInit) {
         smoothEye[0] = cam.eye[0]; smoothEye[1] = cam.eye[1]; smoothEye[2] = cam.eye[2];
         eyeInit = true;

@@ -1,8 +1,4 @@
-// Vice-Dusk 3D geometry: one merged static mesh for the whole city (ground,
-// buildings, landmarks, palms, lamps) and one dynamic mesh rebuilt per frame
-// (cars, people, bullets, particles, marker, lighthouse beam). Vertex layout:
-// pos(3) normal(3) colour(3) uv(2) emissive(1) = 12 floats. Yaw is the 3D
-// rotation about Y; a 2D angle a maps to yaw -a, forward (cos a, 0, sin a).
+// Vice-Dusk 3D geometry: one merged static mesh (city) + one dynamic mesh per frame.
 
 import { AVENUES, CAR_KINDS, STREETS, WORLD } from '../tune.js';
 import { VICE_FACADE_UV, VICE_ROOF_UV, VICE_WHITE_UV } from './textures3d.js';
@@ -49,11 +45,11 @@ export function viceCreateMesh(capacity) {
     const N = [[0, 1, 0], [co, 0, -si], [-co, 0, si], [si, 0, co], [-si, 0, -co]];
     const rUv = roofUv || uv;
     const rEm = roofEmi === undefined ? emi : roofEmi;
-    quad(P[4], P[5], P[6], P[7], N[0][0], N[0][1], N[0][2], col, rUv, rEm);
-    quad(P[1], P[2], P[6], P[5], N[1][0], N[1][1], N[1][2], col, uv, emi);
-    quad(P[3], P[0], P[4], P[7], N[2][0], N[2][1], N[2][2], col, uv, emi);
-    quad(P[2], P[3], P[7], P[6], N[3][0], N[3][1], N[3][2], col, uv, emi);
-    quad(P[0], P[1], P[5], P[4], N[4][0], N[4][1], N[4][2], col, uv, emi);
+    quad(P[4], P[5], P[6], P[7], ...N[0], col, rUv, rEm);
+    quad(P[1], P[2], P[6], P[5], ...N[1], col, uv, emi);
+    quad(P[3], P[0], P[4], P[7], ...N[2], col, uv, emi);
+    quad(P[2], P[3], P[7], P[6], ...N[3], col, uv, emi);
+    quad(P[0], P[1], P[5], P[4], ...N[4], col, uv, emi);
   }
   return {
     data,
@@ -75,7 +71,7 @@ export function viceBuildingHeight(b) {
 const NEON_TRIM = [[1, 0.18, 0.47], [0, 0.9, 1], [1, 0.82, 0.24], [1, 0.48, 0.18]];
 
 export function buildViceCityStaticGeometry(city) {
-  const m = viceCreateMesh(22000);
+  const m = viceCreateMesh(32000);
   const white = [1, 1, 1];
   const grass = viceHex('#5d8a48');
   const sand = viceHex('#e2cd96');
@@ -99,8 +95,8 @@ export function buildViceCityStaticGeometry(city) {
   }
   for (const b of city.buildings) {
     const cx = b.x + b.w / 2, cz = b.y + b.h / 2;
-    const ti = Math.abs(Math.floor(b.x * 3 + b.y * 5) % 4);
-    const trim = NEON_TRIM[Math.abs(Math.floor(b.x + b.y) % 4)];
+    const ti = Math.floor(b.x * 3 + b.y * 5) % 4;
+    const trim = NEON_TRIM[Math.floor(b.x + b.y) % 4];
     if (b.kind === 'casino') {
       m.box(cx, 30, cz, b.w, 60, b.h, 0, white, VICE_FACADE_UV[2], 0.4, VICE_ROOF_UV, 0);
       m.box(cx, 82, cz, b.w * 0.7, 45, b.h * 0.7, 0, white, VICE_FACADE_UV[2], 0.5, VICE_ROOF_UV, 0);
@@ -125,11 +121,24 @@ export function buildViceCityStaticGeometry(city) {
     const hgt = viceBuildingHeight(b);
     m.box(cx, hgt / 2, cz, b.w, hgt, b.h, 0, white, VICE_FACADE_UV[ti], 0.35, VICE_ROOF_UV, 0);
     m.box(cx, hgt - 2, cz, b.w + 4, 4, b.h + 4, 0, trim, VICE_WHITE_UV, 1);
+    if (hgt > 150) {
+      const th = hgt * 0.32;
+      m.box(cx, hgt + th / 2, cz, b.w * 0.55, th, b.h * 0.55, 0, white, VICE_FACADE_UV[ti], 0.4, VICE_ROOF_UV, 0);
+      m.box(cx, hgt + th - 1, cz, b.w * 0.55 + 4, 3, b.h * 0.55 + 4, 0, trim, VICE_WHITE_UV, 1);
+    }
   }
+  const trunk = viceHex('#5a4632'), leaf = viceHex('#3f7d3a'), leaf2 = viceHex('#2f6b2e');
   for (const palm of city.palms) {
-    m.box(palm.x, 11, palm.y, 4, 22, 4, 0, viceHex('#5a4632'), VICE_WHITE_UV, 0);
-    m.box(palm.x, 24, palm.y, 26, 4, 26, 0.4, viceHex('#3f7d3a'), VICE_WHITE_UV, 0);
-    m.box(palm.x + 3, 27, palm.y + 2, 18, 3, 18, 0.9, viceHex('#2f6b2e'), VICE_WHITE_UV, 0);
+    const lean = ((palm.x * 7 + palm.y * 3) % 10) / 10 * 0.6 - 0.3;
+    m.box(palm.x, 6, palm.y, 4, 12, 4, 0, trunk, VICE_WHITE_UV, 0);
+    m.box(palm.x + lean * 6, 15, palm.y + lean * 3, 4, 12, 4, 0, trunk, VICE_WHITE_UV, 0);
+    m.box(palm.x + lean * 14, 22, palm.y + lean * 7, 3, 10, 3, 0, trunk, VICE_WHITE_UV, 0);
+    const cxp = palm.x + lean * 18, czp = palm.y + lean * 9;
+    for (let f = 0; f < 6; f += 1) {
+      const a = (f / 6) * Math.PI * 2 + lean;
+      m.box(cxp + Math.cos(a) * 9, 26 - Math.abs(Math.sin(a)) * 2, czp + Math.sin(a) * 9, 20, 2, 5, -a, f % 2 ? leaf : leaf2, VICE_WHITE_UV, 0);
+    }
+    m.box(cxp, 28, czp, 10, 4, 10, 0, leaf2, VICE_WHITE_UV, 0);
   }
   let lamp = 0;
   for (const ax of AVENUES) {
@@ -140,12 +149,28 @@ export function buildViceCityStaticGeometry(city) {
       m.box(ax + 70, 27, sy + 70, 9, 3, 9, 0, [1, 0.85, 0.55], VICE_WHITE_UV, 1);
     }
   }
+  m.groundQuad(0, 2624, WORLD.width, 2646, 0.25, viceHex('#8a6f4d'), 0);
+  const deck = viceHex('#4a3f35');
+  for (let s = 0; s < 3; s += 1) {
+    const bx0 = 300 + s * 1000, bx1 = bx0 + 1000;
+    m.box((bx0 + bx1) / 2, 10, 2780, 1000, 4, 26, 0, deck, VICE_WHITE_UV, 0);
+    m.box((bx0 + bx1) / 2, 12, 2780 - 14, 1000, 2, 2, 0, s % 2 ? [1, 0.18, 0.47] : [0, 0.9, 1], VICE_WHITE_UV, 1);
+    m.box((bx0 + bx1) / 2, 12, 2780 + 14, 1000, 2, 2, 0, s % 2 ? [0, 0.9, 1] : [1, 0.18, 0.47], VICE_WHITE_UV, 1);
+  }
+  for (let x = 500; x < 3300; x += 500) {
+    m.box(x, 4, 2780, 6, 10, 6, 0, viceHex('#3a3f4a'), VICE_WHITE_UV, 0);
+    m.box(x, 14, 2780, 4, 4, 4, 0, [1, 0.85, 0.55], VICE_WHITE_UV, 1);
+  }
+  for (const [bx, bz, byaw] of [[900, 2720, 0.3], [2400, 2720, -0.2]]) {
+    m.box(bx, 2, bz, 46, 4, 16, byaw, viceHex('#e8e2d4'), VICE_WHITE_UV, 0);
+    m.box(bx, 5, bz, 20, 5, 12, byaw, viceHex('#2f6fd0'), VICE_WHITE_UV, 0.2);
+    m.box(bx, 12, bz, 2, 12, 2, byaw, viceHex('#5a4632'), VICE_WHITE_UV, 0);
+  }
   return m.slice();
 }
 
 export function buildViceDynamicGeometry(state, m) {
   m.reset();
-  const white = [1, 1, 1];
   const dark = [0.08, 0.08, 0.1];
   const skin = viceHex('#e8b98a');
   const px = state.player.x, pz = state.player.y;
@@ -156,9 +181,13 @@ export function buildViceDynamicGeometry(state, m) {
     const yaw = -car.angle;
     const col = viceHex(car.color || spec.color);
     const L = spec.length, W = spec.width;
-    m.box(car.x, 9, car.y, L, 10, W, yaw, col, VICE_WHITE_UV, 0);
-    m.box(car.x - Math.cos(car.angle) * 2, 17, car.y - Math.sin(car.angle) * 2, L * 0.45, 8, W * 0.85, yaw, viceHex('#9fd4e8'), VICE_WHITE_UV, 0.15);
     const co = Math.cos(car.angle), si = Math.sin(car.angle);
+    m.box(car.x - co * (L * 0.18), 7, car.y - si * (L * 0.18), L * 0.62, 7, W, yaw, col, VICE_WHITE_UV, 0);
+    m.box(car.x + co * (L * 0.32), 6, car.y + si * (L * 0.32), L * 0.3, 5, W * 0.94, yaw, col, VICE_WHITE_UV, 0);
+    m.box(car.x - co * (L * 0.3), 6, car.y - si * (L * 0.3), L * 0.28, 5, W * 0.94, yaw, col, VICE_WHITE_UV, 0);
+    m.box(car.x - co * 2, 14, car.y - si * 2, L * 0.42, 7, W * 0.8, yaw, viceHex('#0e1a26'), VICE_WHITE_UV, 0.35);
+    const fx0 = car.x + co * (L / 2), fz0 = car.y + si * (L / 2);
+    m.tri([fx0, 0.5, fz0], [fx0 + co * 95 - si * 26, 0.5, fz0 + si * 95 + co * 26], [fx0 + co * 95 + si * 26, 0.5, fz0 + si * 95 - co * 26], 0, 1, 0, [1, 0.93, 0.65], VICE_WHITE_UV, 0.5);
     for (const [lx, lz] of [[L * 0.32, W / 2], [L * 0.32, -W / 2], [-L * 0.32, W / 2], [-L * 0.32, -W / 2]]) {
       m.box(car.x + lx * co - lz * si, 4, car.y + lx * si + lz * co, 10, 8, 3, yaw, dark, VICE_WHITE_UV, 0);
     }

@@ -1,7 +1,4 @@
-// Sound, all synthesized with WebAudio — no audio files, no network. Engine hum,
-// police sirens, gunshots, punches, crashes, pickups and mission jingles are built
-// from oscillators and a short noise buffer. Nothing plays until the first user
-// gesture creates the audio context.
+// Sound: all synthesized with WebAudio, no audio files, no network.
 
 export function createAudio() {
   let ctx = null;
@@ -15,8 +12,6 @@ export function createAudio() {
   let muted = false;
   let musicTimer = null;
   let musicStep = 0;
-  // A slow synthwave bass line (A minor), one note per eighth at ~112 BPM.
-  // Two patterns alternate every four loops so the groove does not get stale.
   const BASSLINE_A = [55, 55, 65.41, 82.41, 55, 49, 82.41, 73.42];
   const BASSLINE_B = [55, 65.41, 82.41, 98, 82.41, 73.42, 65.41, 49];
   const BASS_STEP = 60 / 112 / 2;
@@ -36,7 +31,6 @@ export function createAudio() {
       noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
       const data = noiseBuf.getChannelData(0);
       for (let i = 0; i < data.length; i += 1) data[i] = Math.random() * 2 - 1;
-      // Engine: a low sawtooth whose pitch follows the car's speed.
       engineOsc = ctx.createOscillator();
       engineOsc.type = 'sawtooth';
       engineOsc.frequency.value = 55;
@@ -49,7 +43,6 @@ export function createAudio() {
       engineFilter.connect(engineGain);
       engineGain.connect(master);
       engineOsc.start();
-      // Siren: a triangle wailing between two tones, driven by a slow square LFO.
       sirenOsc = ctx.createOscillator();
       sirenOsc.type = 'triangle';
       sirenOsc.frequency.value = 780;
@@ -104,7 +97,6 @@ export function createAudio() {
     if (!ctx || musicTimer || muted) return;
     musicStep = 0;
     musicTimer = setInterval(() => {
-      // Four loops of A, then one loop of B, then back to A.
       const loop = Math.floor(musicStep / 8) % 5;
       const line = loop === 4 ? BASSLINE_B : BASSLINE_A;
       playBassNote(line[musicStep % 8], 0);
@@ -131,14 +123,15 @@ export function createAudio() {
     osc.stop(t + seconds + 0.02);
   }
 
-  function noise(seconds, volume, filterFreq) {
+  function noise(seconds, volume, filterFreq, filterType, q) {
     if (!ctx) return;
     const t = ctx.currentTime;
     const source = ctx.createBufferSource();
     source.buffer = noiseBuf;
     const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
+    filter.type = filterType || 'lowpass';
     filter.frequency.value = filterFreq || 1200;
+    if (q) filter.Q.value = q;
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(volume, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + seconds);
@@ -154,7 +147,6 @@ export function createAudio() {
     setMuted,
     isMuted() { return muted; },
     music(on) { if (on) startMusic(); else stopMusic(); },
-    /** speed01 is 0..1 (car speed over its top speed); 0 silences the engine. */
     engine(speed01, driving) {
       if (!ctx) return;
       const target = driving ? 0.05 + speed01 * 0.09 : 0;
@@ -173,39 +165,16 @@ export function createAudio() {
       const notes = [523, 659, 784, 1047];
       notes.forEach((freq, i) => blip(freq, 0.16, 'triangle', 0.2, i * 0.11));
     },
-    /** The story-complete fanfare: a longer rising arpeggio. */
     story() {
       const notes = [523, 659, 784, 1047, 784, 1047, 1319, 1568];
       notes.forEach((freq, i) => blip(freq, 0.22, 'triangle', 0.22, i * 0.13));
     },
-    /** A two-tone car horn. */
     horn() {
       blip(370, 0.18, 'square', 0.12);
       blip(466, 0.18, 'square', 0.12);
     },
-    /** A cash cha-ching: two bright blips. */
     cash() { blip(1320, 0.07, 'sine', 0.18); blip(1760, 0.12, 'sine', 0.18, 0.07); },
-    /** A tyre screech: a short burst of filtered noise. */
-    screech() {
-      if (!ctx || muted) return;
-      const dur = 0.35;
-      const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < data.length; i += 1) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
-      const src = ctx.createBufferSource();
-      src.buffer = buffer;
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'bandpass';
-      filter.frequency.value = 900;
-      filter.Q.value = 2;
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
-      src.connect(filter);
-      filter.connect(gain);
-      gain.connect(master);
-      src.start();
-    },
+    screech() { noise(0.35, 0.12, 900, 'bandpass', 2); },
     busted() { blip(220, 0.3, 'sawtooth', 0.2); blip(165, 0.4, 'sawtooth', 0.2, 0.25); },
     click() { blip(660, 0.06, 'square', 0.12); },
   };

@@ -1,7 +1,4 @@
-// Drawing only: the world's state and the current screen in, pixels out. A
-// camera follows the player across the 3600x2700 city; the HUD (cash, health,
-// wanted stars, objective, minimap) is drawn in screen space on top. Flat shapes
-// and canvas text — no images, no assets.
+// Drawing only: world state + screen in, pixels out. HUD in screen space on top.
 
 import { AVENUES, CAR_KINDS, FONT, PALETTE, PLAYER, STREETS, WORLD } from './tune.js';
 import { MISSIONS } from './world.js';
@@ -21,8 +18,6 @@ export function createRenderer(canvas) {
   let viewW = 1280;
   let viewH = 800;
   const fonts = new Map();
-  // When the WebGL2 3D renderer owns the world, this canvas paints only the
-  // HUD (transparent), so the 3D view shows through from behind.
   let world3D = false;
   function resize() {
     dpr = window.devicePixelRatio || 1;
@@ -42,7 +37,6 @@ export function createRenderer(canvas) {
     ctx.font = font(size, bold);
     ctx.fillStyle = color;
     ctx.textAlign = align || 'left';
-    ctx.textBaseline = 'alphabetic';
     ctx.fillText(value, x, y);
   }
 
@@ -55,11 +49,15 @@ export function createRenderer(canvas) {
     return { x, y, w: viewW, h: viewH };
   }
 
+  function playerCar(state) {
+    for (const car of state.cars) if (car.driver === 'player') return car;
+    return null;
+  }
+
   function inView(cam, x, y, margin) {
     return x > cam.x - margin && x < cam.x + cam.w + margin && y > cam.y - margin && y < cam.y + cam.h + margin;
   }
   function drawHeadlights(state, cam) {
-    // At night, every car throws a pale cone of light ahead of it.
     const hour = (8 + state.time / 10) % 24;
     const dayness = Math.sin(((hour - 6) / 12) * Math.PI);
     if (dayness > -0.1) return;
@@ -71,21 +69,15 @@ export function createRenderer(canvas) {
       const fy = Math.sin(car.angle);
       const px = -fy;
       const py = fx;
-      const reach = 170;
-      const spread = 46;
       ctx.fillStyle = `rgba(255, 233, 163, ${0.10 * strength})`;
       ctx.beginPath();
       ctx.moveTo(car.x + fx * (spec.length / 2), car.y + fy * (spec.length / 2));
-      ctx.lineTo(car.x + fx * (spec.length / 2 + reach) + px * spread, car.y + fy * (spec.length / 2 + reach) + py * spread);
-      ctx.lineTo(car.x + fx * (spec.length / 2 + reach) - px * spread, car.y + fy * (spec.length / 2 + reach) - py * spread);
+      ctx.lineTo(car.x + fx * (spec.length / 2 + 170) + px * 46, car.y + fy * (spec.length / 2 + 170) + py * 46);
+      ctx.lineTo(car.x + fx * (spec.length / 2 + 170) - px * 46, car.y + fy * (spec.length / 2 + 170) - py * 46);
       ctx.closePath();
       ctx.fill();
     }
   }
-  // Compact 2D fallback world (used when WebGL2 is unavailable and for the
-  // top-down camera): flat ground, roads, building rects, car rects, people
-  // dots and the objective marker. Keeps the game playable without the
-  // detailed 2D painters.
   function drawFallbackWorld(state, city, cam) {
     ctx.fillStyle = PALETTE.grass;
     ctx.fillRect(cam.x, cam.y, cam.w, cam.h);
@@ -224,26 +216,19 @@ export function createRenderer(canvas) {
     }
     ctx.fillStyle = PALETTE.sand;
     ctx.fillRect(x0, y0 + 2440 * sy, MINIMAP.w, 12);
+    const carDot = { traffic: '#9a9a9a', police: '#4d8dff' };
     for (const car of state.cars) {
-      if (car.driver === 'traffic') ctx.fillStyle = '#9a9a9a';
-      else if (car.driver === 'police') ctx.fillStyle = '#4d8dff';
-      else if (car.driver === 'player') continue;
-      else ctx.fillStyle = '#d8d8d8';
+      if (car.driver === 'player') continue;
+      ctx.fillStyle = carDot[car.driver] || '#d8d8d8';
       ctx.fillRect(x0 + car.x * sx - 2, y0 + car.y * sy - 2, 4, 4);
     }
     for (const rival of state.rivals) {
       ctx.fillStyle = '#ff5a5a';
       ctx.fillRect(x0 + rival.x * sx - 2, y0 + rival.y * sy - 2, 4, 4);
     }
-    // Pickups on the minimap: health green, cash gold, crate brown.
+    const pickupColor = { health: '#57d977', cash: '#2fae5f', ammo: '#f2c94c', courier: '#ffffff', shotgun: '#ff8c42', repair: '#2fae5f' };
     for (const item of state.pickups) {
-      if (item.kind === 'health') ctx.fillStyle = '#57d977';
-      else if (item.kind === 'cash') ctx.fillStyle = '#2fae5f';
-      else if (item.kind === 'ammo') ctx.fillStyle = '#f2c94c';
-      else if (item.kind === 'courier') ctx.fillStyle = '#ffffff';
-      else if (item.kind === 'shotgun') ctx.fillStyle = '#ff8c42';
-      else if (item.kind === 'repair') ctx.fillStyle = '#2fae5f';
-      else ctx.fillStyle = '#8a6f4d';
+      ctx.fillStyle = pickupColor[item.kind] || '#8a6f4d';
       ctx.fillRect(x0 + item.x * sx - 2, y0 + item.y * sy - 2, 4, 4);
     }
     if (state.objective) {
@@ -271,8 +256,6 @@ export function createRenderer(canvas) {
 
   function drawHud(state, ui, cam) {
     const p = state.player;
-    // Cash, health and wanted stars, top-left. The panel is tall enough for
-    // the weapon, armor, car-health and taxi lines below the stars.
     ctx.fillStyle = PALETTE.hudPanel;
     ctx.fillRect(14, 14, 250, 190);
     text(`$${state.cash.toLocaleString('en-US')}`, 28, 46, 28, PALETTE.gold, 'left', true);
@@ -282,24 +265,20 @@ export function createRenderer(canvas) {
     ctx.fillRect(28, 58, 180 * (p.health / PLAYER.health), 12);
     text(`${Math.ceil(p.health)}`, 216, 70, 14, PALETTE.hudText, 'left', true);
     for (let i = 0; i < 5; i += 1) {
-      // A fresh star flashes red briefly when the heat rises.
       const flash = state.wantedFlash > 0 && i === state.wanted - 1;
       text('★', 28 + i * 26, 96, 20, flash ? PALETTE.danger : (i < state.wanted ? PALETTE.gold : '#555'), 'left');
     }
-    // A thin heat meter under the stars: total wanted points (0–10).
     if (state.wantedPoints > 0) {
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
       ctx.fillRect(28, 102, 130, 5);
       ctx.fillStyle = PALETTE.danger;
       ctx.fillRect(28, 102, 130 * Math.min(1, state.wantedPoints / 10), 5);
-      // The heat has a name, so the player knows how serious it is.
       const heatNames = ['', 'Spotted', 'Chased', 'Hunted', 'Lockdown', 'Citywide manhunt'];
       text(heatNames[state.wanted], 168, 108, 13, PALETTE.danger, 'left', true);
     }
     if (p.shotgun > 0) {
       text(`Shotgun  ${p.shotgun} shells`, 28, 122, 15, PALETTE.gold, 'left', true);
     } else if (p.pistol) {
-      // A low magazine warns the player to reload or find ammo.
       const lowAmmo = p.mag <= 3 && p.reloadT <= 0;
       text(`Pistol  ${p.mag}/${PLAYER.magSize}`, 28, 122, 15, lowAmmo ? PALETTE.danger : PALETTE.hudText, 'left', true);
       if (p.reloadT > 0) text('Reloading…', 150, 122, 15, PALETTE.gold, 'left');
@@ -308,25 +287,20 @@ export function createRenderer(canvas) {
     if (p.armor > 0) {
       text(`Armor  ${Math.ceil(p.armor)}s`, 28, 140, 15, '#4d8dff', 'left', true);
     }
-    // A near-miss streak shows while it is alive.
     if (state.nearMissStreak > 1 && state.nearMissStreakT > 0) {
       text(`Near-miss streak x${state.nearMissStreak}`, viewW - 28, viewH - 48, 16, PALETTE.gold, 'right', true);
     }
-    // Speedometer when driving: the player's car speed in km/h.
     if (!p.onFoot) {
-      let myCar = null;
-      for (const car of state.cars) if (car.driver === 'player') { myCar = car; break; }
+      const myCar = playerCar(state);
       if (myCar) {
         const kmh = Math.round(Math.abs(myCar.speed) * 0.32);
         text(`${kmh} km/h`, 28, 122, 15, PALETTE.hudText, 'left');
         text(myCar.kind === 'patrol' ? 'NBPD Interceptor' : (CAR_KINDS[myCar.kind] ? CAR_KINDS[myCar.kind].label : myCar.kind), 150, 122, 15, PALETTE.hudMuted, 'left');
-        // Car health bar, so the player knows when to find a repair wrench.
         text('CAR', 28, 168, 13, PALETTE.hudMuted, 'left');
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fillRect(72, 158, 160, 9);
         ctx.fillStyle = myCar.health > 50 ? '#57d977' : myCar.health > 25 ? '#f2c94c' : '#ff4d4d';
         ctx.fillRect(72, 158, 160 * Math.max(0, myCar.health) / 100, 9);
-        // A taxi sign reminds the player fares are available in a cab.
         if (myCar.kind === 'taxi') {
           ctx.fillStyle = PALETTE.gold;
           ctx.fillRect(28, 176, 44, 16);
@@ -336,12 +310,11 @@ export function createRenderer(canvas) {
       }
     }
     drawMinimap(state);
-    // In-game clock: the 4-minute day cycle reads as a 24-hour clock, starting at 08:00.
-    const hours = Math.floor((8 + state.time / 10) % 24);
-    const mins = Math.floor((((8 + state.time / 10) % 24) % 1) * 60);
+    const clock = (8 + state.time / 10) % 24;
+    const hours = Math.floor(clock);
+    const mins = Math.floor((clock % 1) * 60);
     const night = hours < 6 || hours >= 18;
     text(`${night ? '☾' : '☀'} ${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`, viewW - 14, 14 + MINIMAP.h + 28, 15, PALETTE.hudText, 'right', true);
-    // Objective, bottom-left.
     if (state.objective) {
       ctx.fillStyle = PALETTE.hudPanel;
       ctx.fillRect(14, viewH - 76, 430, 62);
@@ -349,7 +322,6 @@ export function createRenderer(canvas) {
       const dist = Math.round(Math.hypot(state.objective.x - p.x, state.objective.y - p.y));
       text(`${state.objective.label}  ·  ${dist}m`, 28, viewH - 28, 17, PALETTE.hudText, 'left');
     }
-    // Dialogue line, bottom-centre.
     if (state.dialogue.length > 0) {
       const line = state.dialogue[0];
       ctx.font = font(17, false);
@@ -358,7 +330,6 @@ export function createRenderer(canvas) {
       ctx.fillRect((viewW - w) / 2, viewH - 132, w, 40);
       text(line, viewW / 2, viewH - 105, 17, '#ffe9c4', 'center');
     }
-    // Banner, top-centre.
     if (state.banner && state.bannerTimer > 0) {
       ctx.font = font(26, true);
       const w = ctx.measureText(state.banner).width + 48;
@@ -366,7 +337,6 @@ export function createRenderer(canvas) {
       ctx.fillRect((viewW - w) / 2, 18, w, 44);
       text(state.banner, viewW / 2, 48, 26, PALETTE.gold, 'center', true);
     }
-    // Near-car prompt.
     if (ui.nearCar) {
       ctx.fillStyle = PALETTE.hudPanel;
       const label = `E — ${ui.nearCar}`;
@@ -375,10 +345,7 @@ export function createRenderer(canvas) {
       ctx.fillRect((viewW - w) / 2, viewH - 190, w, 40);
       text(label, viewW / 2, viewH - 163, 18, PALETTE.gold, 'center', true);
     }
-    // Controls hint, bottom-right.
     text('WASD move / drive · E car · F punch · Click shoot · H horn · P save · M mute · Esc pause', viewW - 16, viewH - 16, 13, PALETTE.hudMuted, 'right');
-    // Crosshair when a gun is out on foot. It turns red over a rival
-    // or a cop, so the player knows the shot will land on a target.
     if (p.onFoot && (p.pistol || p.shotgun > 0) && ui.mouse) {
       const mx = ui.mouse.x;
       const my = ui.mouse.y;
@@ -407,13 +374,11 @@ export function createRenderer(canvas) {
       ctx.lineTo(mx, my + 16);
       ctx.stroke();
     }
-    // Low-health vignette.
     if (p.health < 35) {
       ctx.strokeStyle = `rgba(255,40,40,${0.35 + 0.3 * Math.sin(state.time * 5)})`;
       ctx.lineWidth = 26;
       ctx.strokeRect(0, 0, viewW, viewH);
     }
-    // A red flash at the screen edge when the player is just hit.
     if (state.hurtFlash > 0) {
       ctx.strokeStyle = `rgba(255,40,40,${0.45 * state.hurtFlash})`;
       ctx.lineWidth = 34;
@@ -425,7 +390,7 @@ export function createRenderer(canvas) {
     ctx.fillStyle = 'rgba(8,10,20,0.55)';
     ctx.fillRect(0, 0, viewW, viewH);
     const width = 640;
-    const height = 150 + lines.length * 32 + 70;
+    const height = 220 + lines.length * 32;
     const x = (viewW - width) / 2;
     const y = (viewH - height) / 2;
     ctx.fillStyle = 'rgba(12,16,26,0.92)';
@@ -440,10 +405,8 @@ export function createRenderer(canvas) {
     text(prompt, viewW / 2, y + height - 30, 20, PALETTE.gold, 'center', true);
   }
 
-  /** Paint one frame: the world, then the HUD or a panel for the screen the game is on. */
   function draw(state, city, screen, ui) {
     const cam = camera(state);
-    // Screen shake after a hard crash: a decaying random offset on the camera.
     const sh = state.shake > 0 ? state.shake : 0;
     const shX = sh > 0 ? (Math.random() - 0.5) * sh : 0;
     const shY = sh > 0 ? (Math.random() - 0.5) * sh : 0;
@@ -457,10 +420,8 @@ export function createRenderer(canvas) {
     ctx.translate(-cam.x + shX, -cam.y + shY);
     drawFallbackWorld(state, city, cam);
     ctx.restore();
-    // Speed lines at very high speed: short streaks near the screen edges.
     if (!state.player.onFoot) {
-      let myCar = null;
-      for (const car of state.cars) if (car.driver === 'player') { myCar = car; break; }
+      const myCar = playerCar(state);
       if (myCar && Math.abs(myCar.speed) > 420) {
         const strength = Math.min(1, (Math.abs(myCar.speed) - 420) / 160);
         ctx.strokeStyle = `rgba(255,255,255,${0.25 * strength})`;
@@ -478,9 +439,6 @@ export function createRenderer(canvas) {
         }
       }
     }
-    // A slow day cycle (4 minutes = 24 in-game hours, starting at 08:00):
-    // the wash over the city shifts from clear noon to a warm sunset,
-    // then a dark blue night, and back to a pale dawn.
     const hour = (8 + state.time / 10) % 24;
     const dayness = Math.sin(((hour - 6) / 12) * Math.PI);
     if (dayness > 0.35) {
@@ -491,8 +449,6 @@ export function createRenderer(canvas) {
       ctx.fillStyle = `rgba(10,12,40,${(0.26 * Math.min(1, (-dayness - 0.25) / 0.75)).toFixed(3)})`;
     }
     ctx.fillRect(0, 0, viewW, viewH);
-    // Headlights shine through the night overlay: re-apply the camera
-    // transform and draw them in world space, after the overlay.
     ctx.save();
     ctx.translate(-cam.x + shX, -cam.y + shY);
     drawHeadlights(state, cam);
