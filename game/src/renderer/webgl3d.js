@@ -8,9 +8,9 @@ const DEPTH_FS='precision mediump float;void main(){}';
 function persp(fov,asp,near,far){const f=1/Math.tan(fov/2),nf=1/(near-far);return[f/asp,0,0,0,0,f,0,0,0,0,(far+near)*nf,-1,0,0,2*far*near*nf,0];}
 function lookAt(e,t,up){const n=(x,y,z)=>{const l=Math.hypot(x,y,z);return[x/l,y/l,z/l];},[zx,zy,zz]=n(e[0]-t[0],e[1]-t[1],e[2]-t[2]),[xx,xy,xz]=n(up[1]*zz-up[2]*zy,up[2]*zx-up[0]*zz,up[0]*zy-up[1]*zx),yx=zy*xz-zz*xy,yy=zz*xx-zx*xz,yz=zx*xy-zy*xx;return[xx,yx,zx,0,xy,yy,zy,0,xz,yz,zz,0,-(xx*e[0]+xy*e[1]+xz*e[2]),-(yx*e[0]+yy*e[1]+yz*e[2]),-(zx*e[0]+zy*e[1]+zz*e[2]),1];}
 function mul(a,b){const o=new Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];return o;}
-function duskSun(hour){const t=((hour-6)/12)*Math.PI,el=Math.max(0.08,Math.sin(t)),w=1-Math.min(1,el*2.5),dir=[-Math.cos(t),el,0.3],l=Math.hypot(dir[0],dir[1],dir[2]);return{dir:[dir[0]/l,dir[1]/l,dir[2]/l],col:[1,1-0.45*w,1-0.75*w],amb:[0.44,0.32,0.42],fog:[0.32,0.13,0.30]};}
+function duskSun(hour){const t=((hour-6)/12)*Math.PI,el=Math.max(0.08,Math.sin(t)),w=1-Math.min(1,el*2.5),dir=[-Math.cos(t),el,0.3],l=Math.hypot(dir[0],dir[1],dir[2]);return{dir:[dir[0]/l,dir[1]/l,dir[2]/l],col:[1,1-0.45*w,1-0.75*w],amb:[0.48,0.34,0.36],fog:[0.42,0.15,0.2]};}
 function skyCube(){const s=4000,v=[];for(let i=0;i<8;i++)v.push([(i+3)%4<2?s:-s,i&2?s:-s,i&4?s:-s]);const f=[[0,1,2,3],[5,4,7,6],[4,0,3,7],[1,5,6,2],[3,2,6,7],[4,5,1,0]],out=new Float32Array(36*3);let n=0;for(const[a,b,c,d]of f)for(const[i,j,k]of[[a,b,c],[a,c,d]])for(const idx of[i,j,k]){out[n]=v[idx][0];out[n+1]=v[idx][1];out[n+2]=v[idx][2];n+=3;}return out;}
-function waterGrid(){const x0=-12000,x1=16000,z0=2600,z1=14000,verts=[];for(let i=0;i<128;i++){const r=(i/16)|0,c=i%16,ax=x0+(x1-x0)*(c/16),az=z0+(z1-z0)*(r/8),bx=x0+(x1-x0)*((c+1)/16),bz=z0+(z1-z0)*((r+1)/8);verts.push(ax,0,az,bx,0,az,bx,0,bz,ax,0,az,bx,0,bz,ax,0,bz);}return new Float32Array(verts);}
+function waterGrid(){return new Float32Array([-12000,0,2600,16000,0,2600,16000,0,14000,-12000,0,2600,16000,0,14000,-12000,0,14000]);}
 export async function createWebGL3DViceDuskRenderer(c2){
 const gc=document.createElement('canvas');
 gc.style.cssText='position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;';
@@ -51,7 +51,7 @@ function resize(){dp=window.devicePixelRatio||1;vW=window.innerWidth;vH=window.i
 function initB(cityData){const mk=d=>{const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,d,gl.STATIC_DRAW);return b;};const st=buildStatic(cityData);sN=st.length/VICE_VERT_STRIDE;sB=mk(st);kB=mk(skyCube());wB=mk(waterGrid());dB=gl.createBuffer();tB=mk(new Float32Array([-1,-1,3,-1,-1,3]));}
 function chaseCam(st,ct){const p=st.player,car=st.cars.find(c=>c.driver==='player'),o=car&&!p.onFoot?car:p,px=o.x,pz=o.y,fx=Math.cos(o.angle),fz=Math.sin(o.angle),sp=car&&!p.onFoot?Math.abs(car.speed):0,onF=p.onFoot;let dist=onF?58:115;const ht=onF?28:55,ah=onF?45:85;let ex=px-fx*dist,ez=pz-fz*dist;if(ct){while(dist>30&&lineBlocked(ct.buildings,px,pz,ex,ez)){dist*=0.7;ex=px-fx*dist;ez=pz-fz*dist;}}return{eye:[ex,ht,ez],target:[px+fx*ah,onF?4:6,pz+fz*ah],fov:(62+Math.min(10,sp*0.012))*Math.PI/180};}
 function cineCam(st){const p=st.player,t=st.time*0.08,R=280,H=130;return{eye:[p.x+Math.cos(t)*R,H,p.y+Math.sin(t)*R],target:[p.x,12,p.y],fov:58*Math.PI/180};}
-function shotCam(st){const p=st.player,car=st.cars.find(c=>c.driver==='player'),o=car&&!p.onFoot?car:p,cx=o.x,cz=o.y,fx=Math.cos(o.angle),fz=Math.sin(o.angle);if(st.shotCam==='drone')return{eye:[550,330,3040],target:[2850,0,2430],fov:58*Math.PI/180};if(st.shotCam==='hero')return{eye:[3000,170,90],target:[3000,30,620],fov:58*Math.PI/180};if(st.shotCam==='action')return{eye:[cx-fx*135,64,cz-fz*135],target:[cx+fx*100,10,cz+fz*100],fov:62*Math.PI/180};return{eye:[cx-fx*115,55,cz-fz*115],target:[cx+fx*110,6,cz+fz*110],fov:62*Math.PI/180};}
+function shotCam(st){const p=st.player,car=st.cars.find(c=>c.driver==='player'),o=car&&!p.onFoot?car:p,cx=o.x,cz=o.y,fx=Math.cos(o.angle),fz=Math.sin(o.angle),D=180/Math.PI;if(st.shotCam==='drone')return{eye:[550,330,3040],target:[2850,0,2430],fov:58/D};if(st.shotCam==='hero')return{eye:[3000,85,170],target:[3000,30,460],fov:60/D};if(st.shotCam==='action')return{eye:[cx-fx*150,55,cz-fz*150],target:[cx+fx*90,12,cz+fz*90],fov:62/D};if(st.shotCam==='low'){const px=-fz,pz=fx;return{eye:[cx-fx*62+px*13,20,cz-fz*62+pz*13],target:[cx+fx*130,8,cz+fz*130],fov:66/D};}if(st.shotCam==='race')return{eye:[cx-fx*68,22,cz-fz*68],target:[cx+fx*130,8,cz+fz*130],fov:66/D};return{eye:[cx-fx*115,55,cz-fz*115],target:[cx+fx*110,6,cz+fz*110],fov:62/D};}
 window.addEventListener('keydown',e=>{if(e.code==='KeyV'&&!e.repeat)md=(md+1)%3;});
 window.addEventListener('resize',resize);
 resize();
@@ -95,9 +95,9 @@ gl.drawArrays(gl.TRIANGLES,0,36);
 gl.enable(gl.DEPTH_TEST);gl.depthMask(true);
 gl.useProgram(waterP);uM(wU.uVP,vp);u1(wU.uTime,st.time);u3(wU.uSD,sun.dir);u3(wU.uCam,se);u3(wU.uFC,sun.fog);
 bA(waterP,wB,3,[['aPos',3,0]]);
-gl.drawArrays(gl.TRIANGLES,0,16*8*6);
+gl.drawArrays(gl.TRIANGLES,0,6);
 gl.useProgram(cityP);
-uM(cU.uVP,vp);uM(cU.uSP,sVP);u3(cU.uCam,se);u3(cU.uSD,sun.dir);u3(cU.uSunCol,sun.col);u3(cU.uAmb,sun.amb);u3(cU.uFC,sun.fog);u1(cU.uFogDen,0.00022);u1(cU.uSoft,0);u1(cU.uSHO,fb.shOk?1:0);
+uM(cU.uVP,vp);uM(cU.uSP,sVP);u3(cU.uCam,se);u3(cU.uSD,sun.dir);u3(cU.uSunCol,sun.col);u3(cU.uAmb,sun.amb);u3(cU.uFC,sun.fog);u1(cU.uFogDen,0.00012);u1(cU.uSoft,0);u1(cU.uSHO,fb.shOk?1:0);
 gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,atlas);uI(cU.uTex,0);
 gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,fb.shTex);uI(cU.uSH,1);
 bA(cityP,sB,VICE_VERT_STRIDE,defs);

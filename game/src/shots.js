@@ -21,14 +21,6 @@ const drv = (g, av) => {
 const ped = (g, x, y, shirt) => {
  g.state.peds.push({ x, y, angle: 0, speed: 60, target: { x: x + 30, y }, down: 0, scared: 0, fleeX: 0, fleeY: 0, radius: 12, shirt: shirt || '#e8e2d4', jogger: false });
 };
-const sedan = (g, x, y) => {
- const p = g.state.player;
- p.x = 830; p.y = 660;
- const c = g.nearestCar(85) || g.nearestCar(400);
- if (c) g.enterCar(c);
- const m = g.playerCar();
- if (m) { m.x = x; m.y = y; m.angle = H; m.speed = 0; }
-};
 const sc = (g) => { const s = g.state; s.cash = 48750; s.player.health = 92; s.hurtFlash = 0; s.shake = 0; s.wantedFlash = 0; };
 export function stageShot(name, g, o) {
  const s = g.state;
@@ -41,6 +33,7 @@ export function stageShot(name, g, o) {
   const p = s.player;
   p.x = 1500; p.y = 330;
   g.enterCar(m);
+  m.color = '#ff2a1a';
   m.speed = 300;
   s.upgrades.glow = 1;
   g.sys.race.start(1);
@@ -52,8 +45,8 @@ export function stageShot(name, g, o) {
   RC.CIRCUITS[1].gates = [[px, py - 600], [px, py + 420], [px + 600, py + 420], [px + 600, py - 600]];
   s.race = { active: true, circuit: 1, gate: 1, lap: 2, laps: 3, reward: 800 };
   const rivals = s.cars.filter((c) => c.driver === 'race');
-  rivals.forEach((c, i) => { c.x = px + (i % 2 === 0 ? -32 : 32); c.y = py + 90 + i * 80; c.angle = H; c.speed = 330; c.raceGate = 0; c.raceLap = 1; });
-  const ahead = [[1475, 420, 'sedan', H], [1525, 500, 'taxi', -H], [1475, 580, 'van', H], [1525, 660, 'pickup', -H], [1475, 740, 'sedan', H], [1525, 820, 'limo', -H], [1475, 900, 'sedan', H], [1525, 980, 'taxi', -H]];
+  rivals.forEach((c, i) => { c.x = px + (i % 2 === 0 ? -32 : 32); c.y = py + 90 + i * 80; c.angle = H; c.speed = 330; c.raceGate = 0; c.raceLap = 1; c.color = ['#ffd23d', '#2f6fd0', '#ff7a2d'][i % 3]; });
+  const ahead = [[1475, 420, 'sedan', H], [1525, 500, 'taxi', -H], [1475, 580, 'van', H], [1525, 660, 'pickup', -H], [1475, 740, 'sedan', H]];
   for (const [x, y, k, a] of ahead) g.spawnParkedCar(k, px + (x - 1500), py + (y - 300), a);
   ped(g, px - 92, py + 150, '#7fb3d5');
   ped(g, px + 92, py + 260, '#d4693c');
@@ -68,26 +61,27 @@ export function stageShot(name, g, o) {
  }
  if (name === 'chase') {
   g.reset(); sm();
-  const sp = g.spawnParkedCar('sports', 875, 200, H);
+  const sp = g.spawnParkedCar('sports', 920, 270, H);
+  sp.color = '#ff2a1a';
   const p = s.player;
-  p.x = 875; p.y = 230;
-  g.enterCar(sp);
+  p.x = 875; p.y = 250;
   p.pistol = true; p.mag = PLAYER.magSize; p.shotgun = 5; p.rpg = 3; p.weapon = 6;
   g.setWanted(10);
   rf(g, 2, IDLE);
-  sp.x = 875; sp.y = 200; sp.angle = H; sp.speed = 420; sp.health = 100;
+  p.x = 875; p.y = 250; p.angle = 0;
   const staged = [sp];
-  for (const [x, y, v, k, a] of [[845, 275, 380, 'patrol', H], [915, 255, 360, 'patrol', H], [860, 430, 0, 'van', H + 0.45]]) { const c = g.spawnPatrolCar(k); c.x = x; c.y = y; c.angle = a; c.speed = v; staged.push(c); }
+  for (const [x, y, v, k, a] of [[845, 320, 0, 'patrol', H], [915, 300, 0, 'patrol', H], [860, 470, 0, 'van', H + 0.45]]) { const c = g.spawnPatrolCar(k); c.x = x; c.y = y; c.angle = a; c.speed = v; staged.push(c); }
   s.cars = s.cars.filter((c) => staged.includes(c));
   s.cops = [];
-  for (const [x, y] of [[810, 380], [810, 440], [795, 320]]) { const c = g.spawnFootCop(); c.x = x; c.y = y; }
+  for (const [x, y] of [[810, 380], [810, 440], [795, 320], [940, 380]]) { const c = g.spawnFootCop(); c.x = x; c.y = y; }
   const h = s.air.heli;
-  if (h) { h.x = 930; h.y = 365; h.z = 96; h.spotX = 875; h.spotY = 200; h.angle = 0.12; }
-  wreck(s, 815, 230, 0.6);
+  if (h) { h.x = 960; h.y = 360; h.z = 55; h.spotX = 875; h.spotY = 250; h.angle = -0.4; }
+  wreck(s, 980, 230, 0.6);
+  for (const [x, y, col, sz] of [[980, 230, '#ff7a2d', 10], [995, 220, '#ffd23d', 8], [970, 245, '#ff3b1f', 9]]) s.particles.push({ x, y, vx: 0, vy: -20, life: 0.5, maxLife: 0.5, color: col, size: sz });
   s.upgrades.glow = 1;
-  s.dialogue = [];
+  s.dialogue = ['NBPD Dispatch: SWAT converging on your position!'];
   sc(g); st();
-  return { screen: PL, wheelOpen: true, wheelSlot: 6, wheelPos: { x: 380, y: 400 } };
+  return { screen: PL, wheelOpen: true, wheelSlot: 6, wheelPos: { x: 320, y: 400 } };
  }
  if (name === 'mission') {
   g.reset(); sm();
@@ -107,8 +101,6 @@ export function stageShot(name, g, o) {
   g.spawnParkedCar('van', 3275, 430, H);
   g.spawnParkedCar('pickup', 2620, 420, H);
   g.spawnParkedCar('limo', 3300, 330, P);
-  g.spawnParkedCar('sports', 2750, 220, 0.4);
-  g.spawnParkedCar('sedan', 3250, 250, -0.4);
   for (const [x, y] of [[2740, 330], [3260, 330], [2700, 430], [3300, 430], [2700, 250], [3300, 260]]) g.city.palms.push({ x, y });
   ped(g, 2900, 430, '#7fb3d5');
   ped(g, 3100, 430, '#e8e2d4');
@@ -120,21 +112,28 @@ export function stageShot(name, g, o) {
   return { screen: PL };
  }
  g.reset(); sm();
- sedan(g, 2200, 2500);
- rf(g, 8, IDLE);
- g.spawnParkedCar('taxi', 2675, 2150, H);
- g.spawnParkedCar('sedan', 2725, 2350, -H);
- g.spawnParkedCar('sports', 3275, 2400, H);
- g.spawnParkedCar('muscle', 875, 2500, 0);
- for (const [x, k] of [[1200, 'sedan'], [1500, 'taxi'], [1800, 'pickup'], [2000, 'van'], [2500, 'limo'], [2900, 'sports'], [3100, 'muscle']]) g.spawnParkedCar(k, x, 2500, 0);
- g.spawnParkedCar('sedan', 1350, 2500, 0);
- g.spawnParkedCar('taxi', 2150, 2500, 0);
- g.spawnParkedCar('sports', 2700, 2500, 0);
- for (const [x, y] of [[1700, 2560], [2900, 2560]]) g.city.palms.push({ x, y });
- ped(g, 2400, 2560, '#7fb3d5');
- ped(g, 2620, 2560, '#d4693c');
- ped(g, 1500, 2560, '#f2c94c');
- ped(g, 2000, 2560, '#7fb3d5');
+ const sp = g.spawnParkedCar('sports', 1500, 1800, 0);
+ sp.color = '#ff2a1a';
+ const p = s.player;
+ p.x = 1500; p.y = 1800;
+ g.enterCar(sp);
+ sp.speed = 420;
+ p.pistol = true; p.shotgun = 5; p.rpg = 3; p.weapon = 6;
+ g.setWanted(10);
+ rf(g, 2, IDLE);
+ sp.x = 1500; sp.y = 1800; sp.angle = 0; sp.speed = 420;
+ const staged = [sp];
+ for (const [x, y, a] of [[1740, 1772, 0], [1790, 1828, 0], [1660, 1770, 0]]) { const c = g.spawnPatrolCar('patrol'); c.x = x; c.y = y; c.angle = a; c.speed = 380; staged.push(c); }
+ s.cars = s.cars.filter((c) => staged.includes(c));
+ s.cops = [];
+ for (const [x, y] of [[1560, 1900], [1620, 1700]]) { const c = g.spawnFootCop(); c.x = x; c.y = y; }
+ const h = s.air.heli;
+ if (h) { h.x = 1700; h.y = 1880; h.z = 100; h.spotX = 1500; h.spotY = 1800; h.angle = 0.5; }
+ wreck(s, 1650, 1835, 0.6);
+ s.upgrades.glow = 1;
+ s.dialogue = ['Fixer: Five stars, Viper. Lose them before the meet — or make it loud.'];
+ ped(g, 1560, 1700, '#7fb3d5');
+ ped(g, 1700, 1900, '#d4693c');
  sc(g); st();
- return { screen: TI };
+ return { screen: PL };
 }

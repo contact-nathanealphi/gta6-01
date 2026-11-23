@@ -46,6 +46,14 @@ export function buildCity(rng) {
   for (let x = 120; x < WORLD.width; x += 150) {
     palms.push({ x: x + rng.range(-30, 30), y: rng.range(2470, 2620) });
   }
+  for (let x = 300; x <= 3300; x += 45) {
+    palms.push({ x: x + rng.range(-8, 8), y: 1800 - 100 });
+    palms.push({ x: x + rng.range(-8, 8), y: 1800 + 100 });
+  }
+  for (let y = 150; y <= 2350; y += 45) {
+    palms.push({ x: 1500 - 100, y: y + rng.range(-8, 8) });
+    palms.push({ x: 1500 + 100, y: y + rng.range(-8, 8) });
+  }
 
   buildings.push({
     x: 3300, y: 2480, w: 70, h: 70,
