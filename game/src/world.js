@@ -346,7 +346,9 @@ export function createGame(rng) {
     state.missionIndex = index;
     state.stageIndex = 0;
     state.missionActive = true;
-    state.dialogue = mission.brief.slice();
+    // The brief follows any line already queued (e.g. the previous mission's
+    // quip), so nothing is overwritten before the player can read it.
+    state.dialogue = [...state.dialogue, ...mission.brief];
     state.dialogueTimer = 0;
     showBanner(`${mission.title} — ${mission.giver}`, 3);
     setupStage();
@@ -1119,8 +1121,9 @@ export function createGame(rng) {
     const car = playerCar();
     const inTaxi = !p.onFoot && car && car.kind === 'taxi';
     if (!inTaxi) {
-      // Leaving the taxi cancels an active fare.
+      // Leaving the taxi cancels an active fare (and the hail).
       if (state.fare) {
+        if (state.fare.ped) state.fare.ped.hailing = false;
         state.fare = null;
         state.objective = state.missionActive ? state.objective : null;
       }
@@ -1130,7 +1133,11 @@ export function createGame(rng) {
       const f = state.fare;
       if (f.stage === 'pickup') {
         const ped = f.ped;
-        if (!ped || ped.down > 0) { state.fare = null; return; }
+        if (!ped || ped.down > 0) {
+          if (ped) ped.hailing = false;
+          state.fare = null;
+          return;
+        }
         state.objective = { x: ped.x, y: ped.y, label: 'Taxi fare — pick up the passenger' };
         if (Math.hypot(p.x - ped.x, p.y - ped.y) < 70) {
           // Passenger hops in.
@@ -1157,6 +1164,7 @@ export function createGame(rng) {
       }
       if (f.timer <= 0) {
         showBanner('Fare expired — the passenger walked away', 2.5);
+        if (f.ped) f.ped.hailing = false;
         state.fare = null;
         state.objective = state.missionActive ? state.objective : null;
         state.fareCd = 20;

@@ -136,3 +136,7 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 111 | HUD: bar kesehatan mobil (CAR) di bawah speedometer saat mengemudi | headless test + screenshot 2-drive | KEEP |
 | 112 | Panel HUD dipertinggi 140→168 agar bar CAR muat | screenshot 2-drive | KEEP |
 | 113 | Asap dari kap mobil saat HP mobil < 40 (tanda butuh repair) | headless test | KEEP |
+| 114 | Robustness: tanda TAXI dihapus saat fare batal (keluar taksi) | headless test | KEEP |
+| 115 | Robustness: tanda TAXI dihapus saat penumpang pingsan / fare kedaluwarsa | headless test | KEEP |
+| 116 | Robustness: quip misi TIDAK lagi tertimpa brief misi berikutnya (brief di-append ke antrean dialog) | headless test | KEEP |
+| 117 | Robustness batch terverifikasi | headless test ALL PASS | KEEP |
