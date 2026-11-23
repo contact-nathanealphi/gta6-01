@@ -31,8 +31,8 @@ export function createViceDuskTextureAtlas(gl) {
   F('#14101f', 512, 256, 256, 256);
   for (let r = 0; r < 6; r += 1) for (let col = 0; col < 6; col += 1) F(((r + col) % 3 === 0) ? '#7fe3ff' : 'rgba(0,0,0,0.4)', 526 + col * 40, 440 + r * 12, 26, 8);
   g.textAlign = 'center';
-  g.font = 'bold 58px sans-serif';
-  g.shadowBlur = 20;
+  g.font = 'bold 64px sans-serif';
+  g.shadowBlur = 28;
   g.save();
   g.translate(1280, 0);
   g.scale(-1, 1);

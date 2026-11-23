@@ -50,7 +50,7 @@ export function renderRadialWeaponWheel(hud, state, highlight, pos) {
   const cur = WEAPON_SLOTS_6[(state.player.weapon || 1) - 1];
   C(cx, cy, 58, 'rgba(12,16,26,0.95)');
   G(cx, cy, 58, '#f2c94c');
-  T('[' + cur.key + '] EQUIPPED', cx, cy - 4, 14, '#f2c94c', 'center', true);
+  T('EQUIPPED', cx, cy - 4, 14, '#f2c94c', 'center', true);
   if (!pos) T('release Tab to confirm', cx, cy + 16, 12, '#b9b3a4', 'center');
 }
 

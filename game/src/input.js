@@ -21,13 +21,13 @@ export function createInput(target) {
   });
   window.addEventListener('keyup', (event) => held.delete(HELD[event.code]));
   window.addEventListener('blur', () => { held.clear(); mouse.down = false; presses = 0; digits = 0; });
-  const track = (event) => {
+  const trackMouse = (event) => {
     const r = target.getBoundingClientRect();
     mouse.x = event.clientX - r.left;
     mouse.y = event.clientY - r.top;
   };
-  target.addEventListener('pointermove', track);
-  target.addEventListener('pointerdown', (event) => { track(event); mouse.down = true; });
+  target.addEventListener('pointermove', trackMouse);
+  target.addEventListener('pointerdown', (event) => { trackMouse(event); mouse.down = true; });
   window.addEventListener('pointerup', () => { mouse.down = false; });
   target.addEventListener('contextmenu', (event) => event.preventDefault());
 

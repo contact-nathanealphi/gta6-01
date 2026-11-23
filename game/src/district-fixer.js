@@ -37,7 +37,7 @@ export function renderFixerDialogueBox(hud, state) {
   R(x, y, w, 82, 'rgba(12,16,26,0.92)');
   R(x, y, w, 3, '#ff2e88');
   const px = x + 8, py = y + 6, cx = px + 35, cy = py + 35;
-  C(cx, cy, 35, '#2a0e2e');
+  C(cx, cy, 35, '#33102e');
   G(cx, cy, 35, '#ff2e88');
   C(cx, cy - 1, 19, '#e8b98a');
   R(px + 14, py + 8, 42, 20, '#1a1a22');

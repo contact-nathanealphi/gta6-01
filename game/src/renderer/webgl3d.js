@@ -1,7 +1,7 @@
 import { WORLD } from '../tune.js';
 import { lineBlocked } from '../city.js';
 import { createViceDuskTextureAtlas } from './textures3d.js';
-import { VICE_VERT_STRIDE, buildViceCityStaticGeometry, buildViceDynamicGeometry, viceCreateMesh } from './meshes3d.js';
+import { VICE_VERT_STRIDE, buildViceAdditiveGeometry, buildViceCityStaticGeometry, buildViceDynamicGeometry, viceCreateMesh } from './meshes3d.js';
 async function loadShaderText(url) {
   const res = await fetch(url);
   const src = await res.text();
@@ -50,7 +50,7 @@ function duskSun(hour) {
   dir[0] /= l; dir[1] /= l; dir[2] /= l;
   const warm = 1 - Math.min(1, el * 2.5);
   const col = [1, 1 - 0.45 * warm, 1 - 0.75 * warm];
-  return { dir, col, amb: [0.38, 0.26, 0.46], fog: [0.45, 0.2, 0.4] };
+  return { dir, col, amb: [0.46, 0.32, 0.52], fog: [0.45, 0.2, 0.4] };
 }
 function skyCube() {
   const s = 4000;
@@ -91,6 +91,7 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
   if (!skyProg || !cityProg || !waterProg) { glCanvas.remove(); return null; }
   const atlas = createViceDuskTextureAtlas(gl);
   const dynMesh = viceCreateMesh(16000);
+  const addMesh = viceCreateMesh(4000);
   let staticBuf = null, staticCount = 0;
   let skyBuf = null, waterBuf = null, dynBuf = null;
   let viewW = 0, viewH = 0, dpr = 1;
@@ -160,7 +161,7 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
     const p = state.player;
     const car = state.cars.find((c) => c.driver === 'player'), o = car && !p.onFoot ? car : p;
     const cx = o.x, cz = o.y, fx = Math.cos(o.angle), fz = Math.sin(o.angle);
-    if (state.shotCam === 'drone') return { eye: [200, 350, 2950], target: [3200, 0, 2700], fov: 58 * Math.PI / 180 };
+    if (state.shotCam === 'drone') return { eye: [150, 300, 2960], target: [3200, 0, 2700], fov: 58 * Math.PI / 180 };
     if (state.shotCam === 'hero') return { eye: [3000, 150, 100], target: [3000, 25, 650], fov: 58 * Math.PI / 180 };
     if (state.shotCam === 'action') return { eye: [cx - fx * 150, 72, cz - fz * 150], target: [cx + fx * 90, 8, cz + fz * 90], fov: 62 * Math.PI / 180 };
     return { eye: [cx - fx * 115, 55, cz - fz * 115], target: [cx + fx * 110, 6, cz + fz * 110], fov: 62 * Math.PI / 180 };
@@ -234,6 +235,17 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
       gl.bufferData(gl.ARRAY_BUFFER, dyn, gl.DYNAMIC_DRAW);
       bindAttribs(cityProg, dynBuf, VICE_VERT_STRIDE, defs);
       gl.drawArrays(gl.TRIANGLES, 0, dyn.length / VICE_VERT_STRIDE);
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+      gl.depthMask(false);
+      const add = buildViceAdditiveGeometry(state, addMesh);
+      gl.bindBuffer(gl.ARRAY_BUFFER, dynBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, add, gl.DYNAMIC_DRAW);
+      bindAttribs(cityProg, dynBuf, VICE_VERT_STRIDE, defs);
+      gl.drawArrays(gl.TRIANGLES, 0, add.length / VICE_VERT_STRIDE);
+      gl.depthMask(true);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.disable(gl.BLEND);
     },
   };
 }

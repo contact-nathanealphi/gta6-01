@@ -68,7 +68,7 @@ async function runShot(name) {
     syncWorld3D(game.state, scene.screen);
     renderer.draw(game.state, game.city, scene.screen, { hasSave: false, nearCar: nearCar ? `Steal the ${nearCar.kind}` : null, mouse: null, sys: game.sys, wheelOpen: !!scene.wheelOpen, wheelSlot: scene.wheelSlot || 0, wheelPos: scene.wheelPos || null });
     painted += 1;
-    if (painted < 2) requestAnimationFrame(paint);
+    if (painted < 3) requestAnimationFrame(paint);
     else window.__shotReady = true;
   }
   requestAnimationFrame(paint);

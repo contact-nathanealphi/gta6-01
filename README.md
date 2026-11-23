@@ -51,6 +51,16 @@ up for Mama Rosa while the Neon Bay Police Department watches every move.
   a horn, cash cha-chings, mission jingles and a synthwave bass line — all
   made with WebAudio, no audio files.
 
+## Round 4 — Kill Top 5 (23 Nov 2026)
+
+Final visual pass before the last submit window: additive WebGL2 light pass
+(searchlight, wreck flames, headlights, underglow, lighthouse beam) so glow no
+longer renders as solid brown shapes; a 1.8x NBPD AIR-1 helicopter with a
+layered volumetric searchlight and a burning wreck in the chase scene; a hard
+gold sun disc, deep teal water with a gold glitter path and shoreline foam on
+the cover; glossier car glass, red tail-lights and neon underglow. Entry
+01a20769 stands at #1,448 / 10,996 (score 988.731); the target is Top 4–#10.
+
 ## Play
 
 Open `game/index.html` in a desktop browser (or serve `game/` with any static

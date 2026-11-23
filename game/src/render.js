@@ -378,7 +378,7 @@ export function createRenderer(canvas) {
       hud.rect(bx, 300, bw, 56, PALETTE.gold);
       text('▶  ENTER — PLAY', viewW / 2, 336, 22, '#1a1a22', 'center', true);
       if (ui.hasSave) text(ui.saveStoryDone ? `Saved game: $${ui.saveCash.toLocaleString('en-US')} — story complete` : `Saved game: $${ui.saveCash.toLocaleString('en-US')} — mission ${ui.saveMission + 1} of ${MISSIONS.length}`, viewW / 2, 280, 15, PALETTE.hudMuted, 'center');
-      const pills = ['10 MISSIONS — THE GRAND HEIST', '6 DISTRICTS · 3 CREW · 2 RACES', 'WANTED ★★★★★ · 3 RADIO'];
+      const pills = ['THE GRAND CASINO HEIST — $5,000', '6 DISTRICTS · 3 CREW · 2 RACES', 'WANTED ★★★★★ · 3 RADIO'];
       const pw = 360, gap = 16, px0 = (viewW - (pw * 3 + gap * 2)) / 2, py = viewH - 80;
       for (let i = 0; i < 3; i += 1) {
         hud.rect(px0 + i * (pw + gap), py, pw, 44, 'rgba(12,16,26,0.85)');

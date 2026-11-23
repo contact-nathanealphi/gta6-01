@@ -39,7 +39,7 @@ let nextCarId = 1;
 export function createGame(rng) {
   const city = buildCity(rng);
   function freshState() {
-    return { time: 105.8, cash: 120, wantedPoints: 0, wanted: 0, lastCrime: -999, cars: [], peds: [], cops: [], rivals: [], pickups: [], bullets: [], particles: [], skids: [], missionIndex: 0, stageIndex: 0, missionActive: false, stageTimer: 0, hasCrate: false, targetCarId: 0, rivalsLeft: 0, objective: null, banner: null, bannerTimer: 0, dialogue: [], dialogueTimer: 0, storyDone: false, roadblockCd: 0, nearMissCd: 0, nearMissStreak: 0, nearMissStreakT: 0, courier: null, courierCd: 20, fare: null, fareCd: 15, floaters: [], skidSound: false, skidCd: 0, air: { heli: null, heliT: 0, swat: false }, wrecks: [], rep: {}, crewCd: [0, 0, 0], race: { active: false, circuit: 0, gate: 0, lap: 1, laps: 2, reward: 0 }, nitrousT: 0, radioToast: null, garageOpen: false, garagePoint: null };
+    return { time: 106.2, cash: 120, wantedPoints: 0, wanted: 0, lastCrime: -999, cars: [], peds: [], cops: [], rivals: [], pickups: [], bullets: [], particles: [], skids: [], missionIndex: 0, stageIndex: 0, missionActive: false, stageTimer: 0, hasCrate: false, targetCarId: 0, rivalsLeft: 0, objective: null, banner: null, bannerTimer: 0, dialogue: [], dialogueTimer: 0, storyDone: false, roadblockCd: 0, nearMissCd: 0, nearMissStreak: 0, nearMissStreakT: 0, courier: null, courierCd: 20, fare: null, fareCd: 15, floaters: [], skidSound: false, skidCd: 0, air: { heli: null, heliT: 0, swat: false }, wrecks: [], rep: {}, crewCd: [0, 0, 0], race: { active: false, circuit: 0, gate: 0, lap: 1, laps: 2, reward: 0 }, nitrousT: 0, radioToast: null, garageOpen: false, garagePoint: null };
   }
   const state = { ...freshState(), player: null, muted: false, shotFired: false, shotSound: false, punchSound: false, pickupSound: false, cashSound: false, crashLoud: false, sirenOn: false, shake: 0, wantedFlash: 0, hurtFlash: 0 };
   const fx = {
@@ -511,7 +511,7 @@ export function createGame(rng) {
       s.particles.push({ x: car.x - ca * (L / 2), y: car.y - sa * (L / 2), vx: -ca * 40, vy: -sa * 40, life: 0.5, maxLife: 0.5, color: '#9a9a9a', size: 3 });
     }
     if (car.health < 40 && !car.smoked && rng.chance(0.25)) {
-      s.particles.push({ x: car.x + ca * (L / 2), y: car.y + sa * (L / 2), vx: 0, vy: -30, life: 0.7, maxLife: 0.7, color: '#666666', size: 4 });
+      s.particles.push({ x: car.x + ca * (L / 2), y: car.y + sa * (L / 2), vx: 0, vy: -30, life: 0.7, maxLife: 0.7, color: '#3a3a3a', size: 4 });
     }
     car.speed -= car.speed * 0.12 * dt;
     car.speed = Math.max(-top * 0.4, Math.min(top, car.speed));

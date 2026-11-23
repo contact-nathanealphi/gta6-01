@@ -74,11 +74,15 @@ export function stageShot(name, g, o) {
     g.setWanted(10);
     rf(g, 2, IDLE);
     sp.x = 875; sp.y = 200; sp.angle = Math.PI / 2; sp.speed = 420; sp.health = 100;
-    for (const [x, y, v, k] of [[925, 320, 320, 'patrol'], [830, 380, 300, 'patrol'], [875, 480, 280, 'van']]) { const c = g.spawnPatrolCar(k); c.x = x; c.y = y; c.angle = Math.PI / 2; c.speed = v; }
+    const staged = [sp];
+    for (const [x, y, v, k] of [[925, 320, 320, 'patrol'], [830, 380, 300, 'patrol'], [875, 480, 280, 'van']]) { const c = g.spawnPatrolCar(k); c.x = x; c.y = y; c.angle = Math.PI / 2; c.speed = v; staged.push(c); }
+    s.cars = s.cars.filter((c) => staged.includes(c));
+    s.cops = [];
     for (const [x, y] of [[820, 380], [930, 450], [820, 600]]) { const c = g.spawnFootCop(); c.x = x; c.y = y; }
     const h = s.air.heli;
-    if (h) { h.x = 890; h.y = 280; h.z = 85; h.spotX = 875; h.spotY = 200; }
-    wreck(s, 815, 280, 0.5);
+    if (h) { h.x = 875; h.y = 320; h.z = 120; h.spotX = 875; h.spotY = 200; h.angle = -Math.PI / 2 + 0.5; }
+    wreck(s, 860, 225, 0.6);
+    s.upgrades.glow = 1;
     s.dialogue = [];
     sc(g); st();
     return { screen: PL, wheelOpen: true, wheelSlot: 6, wheelPos: { x: 380, y: 400 } };
@@ -114,6 +118,7 @@ export function stageShot(name, g, o) {
   g.spawnParkedCar('sedan', 2725, 2350, -Math.PI / 2);
   g.spawnParkedCar('sports', 3275, 2400, Math.PI / 2);
   g.spawnParkedCar('muscle', 875, 2500, 0);
+  for (const [x, k] of [[1200, 'sedan'], [1500, 'taxi'], [1800, 'pickup'], [2000, 'van'], [2500, 'limo'], [2900, 'sports'], [3100, 'muscle']]) g.spawnParkedCar(k, x, 2500, 0);
   sc(g); st();
   return { screen: TI };
 }

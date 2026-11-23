@@ -25,10 +25,10 @@ void main(){
   vec3 col=mix(hor,mid,smoothstep(0.0,0.28,h));
   col=mix(col,top,smoothstep(0.22,0.75,h));
   col=mix(vec3(0.14,0.09,0.22),col,smoothstep(-0.12,0.02,h));
-  float disc=smoothstep(0.9985,0.9995,s);
+  float disc=smoothstep(0.9975,0.9992,s);
   float halo=pow(max(s,0.0),6.0)*smoothstep(0.55,0.0,abs(h-0.06));
-  col=mix(col,vec3(1.0,0.42,0.06),disc*0.95);
-  col+=vec3(1.0,0.55,0.22)*halo*0.9;
-  col+=vec3(1.0,0.45,0.18)*pow(max(s,0.0),20.0)*0.55;
+  col+=vec3(1.0,0.5,0.3)*halo*0.9;
+  col+=vec3(1.0,0.45,0.18)*pow(max(s,0.0),20.0)*0.8;
+  col=mix(col,vec3(1.0,0.85,0.45),disc*0.98);
   gl_FragColor=vec4(col,1.0);
 }

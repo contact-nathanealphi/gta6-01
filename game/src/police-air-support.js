@@ -5,7 +5,7 @@ export class PoliceAirSupportSystem {
     if (!air.heli && s.wanted >= 3) {
       air.heliT += dt;
       if (air.heliT > 1.5) {
-        air.heli = { x: p.x + 260, y: p.y - 260, z: 26, angle: 0, rotor: 0, fireT: 2, spotX: p.x, spotY: p.y, leaving: false };
+        air.heli = { x: p.x + 260, y: p.y - 260, z: 30, angle: 0, rotor: 0, fireT: 2, spotX: p.x, spotY: p.y, leaving: false };
         air.heliT = 0;
         this.fx.showBanner('AIR-1 overhead!', 3);
       }
@@ -24,7 +24,7 @@ export class PoliceAirSupportSystem {
         const tx = p.x - Math.cos(p.angle) * 130 - Math.sin(p.angle) * 90, ty = p.y - Math.sin(p.angle) * 130 + Math.cos(p.angle) * 90;
         h.x += (tx - h.x) * Math.min(1, dt * 1.4);
         h.y += (ty - h.y) * Math.min(1, dt * 1.4);
-        h.z += ((26 + Math.sin(s.time * 1.3) * 2) - h.z) * Math.min(1, dt * 2);
+        h.z += ((30 + Math.sin(s.time * 1.3) * 2) - h.z) * Math.min(1, dt * 2);
         h.angle = Math.atan2(p.y - h.y, p.x - h.x);
         h.fireT -= dt;
         if (h.fireT <= 0 && s.wanted >= 3) {
@@ -55,13 +55,13 @@ export class PoliceAirSupportSystem {
 export function renderChopperSearchlight(ctx, state) {
   const h = state.air && state.air.heli;
   if (!h) return;
-  const r = 95;
-  ctx.fillStyle = 'rgba(255,240,180,0.10)';
+  const r = 110;
+  ctx.fillStyle = 'rgba(255,240,180,0.16)';
   ctx.beginPath();
   ctx.moveTo(h.x, h.y);
   ctx.arc(h.spotX, h.spotY, r, 0, Math.PI * 2);
   ctx.closePath(); ctx.fill();
-  ctx.fillStyle = 'rgba(255,240,180,0.20)';
+  ctx.fillStyle = 'rgba(255,240,180,0.30)';
   ctx.beginPath(); ctx.arc(h.spotX, h.spotY, r, 0, Math.PI * 2); ctx.fill();
   ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.angle);
   ctx.fillStyle = '#1d4a8a'; ctx.fillRect(-26, -11, 52, 22);

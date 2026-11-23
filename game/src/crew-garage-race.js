@@ -160,7 +160,7 @@ export function renderRadioToast(hud, state) {
   T('♪ ' + t.name, x + 14, y + 22, 15, '#ffffff', 'left', true);
   T('[R] switch', x + 14, y + 42, 12, '#b9b3a4', 'left');
   for (let i = 0; i < 8; i += 1) {
-    const bh = 6 + Math.abs(Math.sin(performance.now() / 140 + i * 0.9)) * 22;
+    const bh = 6 + Math.abs(Math.sin(performance.now() / 140 + i * 0.9)) * 26;
     R(x + w - 66 + i * 7, y + h - 8 - bh, 5, bh, '#00e5ff');
   }
 }

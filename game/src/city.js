@@ -43,7 +43,7 @@ export function buildCity(rng) {
     }
   }
 
-  for (let x = 120; x < WORLD.width; x += 170) {
+  for (let x = 120; x < WORLD.width; x += 150) {
     palms.push({ x: x + rng.range(-30, 30), y: rng.range(2470, 2620) });
   }
 

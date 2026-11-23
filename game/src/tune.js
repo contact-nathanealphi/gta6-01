@@ -55,7 +55,7 @@ export const RIVAL = { health: 50, shootRange: 340, shootEvery: 1.2, damage: 5 }
 export const PALETTE = {
   grass: '#6f9e57',
   sand: '#e2cd96',
-  water: '#2e7fa8',
+  water: '#1f7d9e',
   asphalt: '#3c414d',
   lane: '#d8c96a',
   sidewalk: '#9a8f7d',

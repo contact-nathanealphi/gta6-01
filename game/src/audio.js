@@ -32,7 +32,7 @@ export function createAudio() {
       if (!AC) return false;
       ctx = new AC();
       master = gn();
-      master.gain.value = muted ? 0 : 0.5;
+      master.gain.value = muted ? 0 : 0.45;
       master.connect(ctx.destination);
       noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
       const data = noiseBuf.getChannelData(0);
