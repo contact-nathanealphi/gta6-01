@@ -30,7 +30,5 @@ void main(){
   col=mix(col,vec3(1.0,0.42,0.06),disc*0.95);
   col+=vec3(1.0,0.55,0.22)*halo*0.9;
   col+=vec3(1.0,0.45,0.18)*pow(max(s,0.0),20.0)*0.55;
-  float c=sin(d.x*5.0+uTime*0.02)*sin(d.z*7.0-uTime*0.013);
-  col+=vec3(0.85,0.45,0.55)*smoothstep(0.72,0.96,c)*smoothstep(0.04,0.3,h)*0.22;
   gl_FragColor=vec4(col,1.0);
 }

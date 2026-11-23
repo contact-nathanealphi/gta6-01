@@ -1,4 +1,3 @@
-// True 3D Vice-Dusk WebGL2 renderer: third-person city at golden hour.
 import { WORLD } from '../tune.js';
 import { lineBlocked } from '../city.js';
 import { createViceDuskTextureAtlas } from './textures3d.js';
@@ -13,7 +12,7 @@ function compile(gl, type, src) {
   const s = gl.createShader(type);
   gl.shaderSource(s, src);
   gl.compileShader(s);
-  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { console.error('ViceDusk shader error:', gl.getShaderInfoLog(s)); return null; }
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { console.error('shader error:', gl.getShaderInfoLog(s)); return null; }
   return s;
 }
 function program(gl, vsrc, fsrc) {
@@ -24,7 +23,7 @@ function program(gl, vsrc, fsrc) {
   gl.attachShader(p, vs);
   gl.attachShader(p, fs);
   gl.linkProgram(p);
-  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) { console.error('ViceDusk link error:', gl.getProgramInfoLog(p)); return null; }
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) { console.error('link error:', gl.getProgramInfoLog(p)); return null; }
   return p;
 }
 function persp(fov, aspect, near, far) {

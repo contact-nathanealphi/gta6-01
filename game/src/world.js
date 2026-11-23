@@ -1,5 +1,3 @@
-// Neon Bay — rules and state.
-
 import { AVENUES, CAR_KINDS, COPS, PALETTE, PED_COUNT, PLAYER, RIVAL, STREETS, TRAFFIC_COUNT, WANTED, WORLD } from './tune.js';
 import { buildCity, lineBlocked, randomRoadPoint, randomSidewalkPoint, resolveBuildings } from './city.js';
 import { PoliceAirSupportSystem, spawnBurningWreck } from './police-air-support.js';
@@ -13,24 +11,23 @@ export const EVENT_MISSION = 4;
 export const EVENT_STORY = 8;
 
 const MISSIONS_RAW = [
-  ['First Delivery', "Mama Rosa", ['Rico, welcome back. Take the package to Bayfront Mall. No stops.'], [['go', 870, 550, "Pick up the package at Mama Rosa's"], ['go', 1470, 1550, 'Deliver it to Bayfront Mall']], 150, 'Fast, but you made it. Good.'],
-  ['A Quiet Word', "Mama Rosa", ['The Harbor Boys lean on my suppliers. Grab the pistol, then have a word with their lookouts.'], [['go', 870, 1550, "Pick up the pistol at Rico's Garage"], ['kill', 3, [[1300, 1450], [1380, 1620], [1240, 1680]], 'Deal with the 3 Harbor Boys lookouts']], 250, 'Three lookouts, one word.'],
-  ['The Golden Comet', 'Mama Rosa', ['A Golden Comet sits in the mall lot. Its owner owes me. Take it to your garage.'], [['steal', 'sports', 1350, 1650, 'Steal the Golden Comet from the mall lot'], ['deliver', '', 870, 1550, "Bring the Comet to Rico's Garage"]], 400, 'A sports car, Rico? You always liked the fast ones.'],
-  ['Dockside Trouble', 'Mama Rosa', ['The Harbor Boys took my shipment at the port. Five of them, armed. Bring my crates back.'], [['go', 2400, 2270, 'Reach the Port of Neon Bay'], ['kill', 5, [[2350, 2200], [2450, 2180], [2520, 2260], [2300, 2300], [2470, 2330]], 'Clear the 5 Harbor Boys at the docks']], 600, 'Five of them, and you walked out.'],
-  ['Shake the Heat', 'Mama Rosa', ['The NBPD saw your face at the docks. Three stars, Rico. Survive the chase, then come home.'], [['survive', 30, 'Survive the police chase — 30 seconds'], ['go', 870, 550, "Get back to Mama Rosa's Diner"]], 750, 'Three stars, and you are still here.'],
-  ['The Big Score', 'Mama Rosa', ['One crate at the port. Rosa gold — enough to buy the docks. Grab it and run.'], [['go', 2400, 2270, 'Reach the port docks'], ['carry', 870, 1550, "Carry the crate to Rico's Garage", 2400, 2270, 'Grab the crate']], 2500, 'The crate is ours. The NBPD is furious.'],
-  ['The Getaway', 'Mama Rosa', ['The crate is ours — but the NBPD locked the city down. Four stars. Shake the chase, run for the beach boat.'], [['survive', 20, 'Survive the lockdown chase — 20 seconds'], ['go', 1800, 2560, 'Reach the boat at the south beach']], 1000, 'Neon Bay is yours, Rico. Go.'],
-  ["Viper's Cut", 'Elena "Viper" Cruz', ['Rico. Viper here. Four Syndicate defectors hide at Lighthouse Point — make them disappear.'], [['go', 3150, 2400, 'Reach Lighthouse Point'], ['kill', 4, [[3150, 2380], [3250, 2420], [3200, 2480], [3300, 2440]], 'Silence the 4 defectors']], 1850, 'Clean. The Syndicate notices that.'],
-  ['The Neon Limo', 'Elena "Viper" Cruz', ["The mayor's limo. Tonight it becomes Syndicate property — take it, no scratches."], [['steal', 'limo', 1800, 1300, "Steal the mayor's limo in Downtown Core"], ['deliver', 'limo', 870, 1550, "Bring the limo to Rico's Garage"]], 2500, 'The mayor walks tonight. We ride.'],
-  ['The Grand Casino Heist', 'Elena "Viper" Cruz', ['One vault. Rosa gold. The Neon Casino, tonight — grab it and run.'], [['go', 3000, 760, 'Reach the Neon Casino'], ['carry', 870, 1550, "Carry the casino gold to Rico's Garage", 3000, 760, 'Grab the casino gold']], 5000, 'The biggest score in Neon Bay history. We did it, Rico.'],
+  ['First Delivery', "Mama Rosa", ['Take the package to Bayfront Mall. No stops.'], [['go', 870, 550, "Pick up the package at Mama Rosa's"], ['go', 1470, 1550, 'Deliver it to Bayfront Mall']], 150, 'Fast. Good.'],
+  ['A Quiet Word', "Mama Rosa", ['Grab the pistol, then have a word with the Harbor Boys lookouts.'], [['go', 870, 1550, "Pick up the pistol at Rico's Garage"], ['kill', 3, [[1300, 1450], [1380, 1620], [1240, 1680]], 'Deal with the 3 lookouts']], 250, 'Three lookouts, one word.'],
+  ['The Golden Comet', 'Mama Rosa', ['A Golden Comet sits in the mall lot. Its owner owes me. Take it.'], [['steal', 'sports', 1350, 1650, 'Steal the Golden Comet from the mall lot'], ['deliver', '', 870, 1550, "Bring the Comet to Rico's Garage"]], 400, 'You always liked the fast ones.'],
+  ['Dockside Trouble', 'Mama Rosa', ['They took my shipment at the port. Five, armed. Bring my crates back.'], [['go', 2400, 2270, 'Reach the Port of Neon Bay'], ['kill', 5, [[2350, 2200], [2450, 2180], [2520, 2260], [2300, 2300], [2470, 2330]], 'Clear the 5 at the docks']], 600, 'Five of them, and you walked out.'],
+  ['Shake the Heat', 'Mama Rosa', ['NBPD saw your face. Three stars. Survive the chase, then come home.'], [['survive', 30, 'Survive the police chase — 30 seconds'], ['go', 870, 550, "Get back to Mama Rosa's Diner"]], 750, 'Three stars, and you are still here.'],
+  ['The Big Score', 'Mama Rosa', ['One crate at the port. Rosa gold. Grab it and run.'], [['go', 2400, 2270, 'Reach the port docks'], ['carry', 870, 1550, "Carry the crate to Rico's Garage", 2400, 2270, 'Grab the crate']], 2500, 'The crate is ours. The NBPD is furious.'],
+  ['The Getaway', 'Mama Rosa', ['The crate is ours, but NBPD locked the city down. Four stars. Shake them, run for the beach boat.'], [['survive', 20, 'Survive the lockdown chase — 20 seconds'], ['go', 1800, 2560, 'Reach the boat at the south beach']], 1000, 'Neon Bay is yours, Rico. Go.'],
+  ["Viper's Cut", 'Elena "Viper" Cruz', ['Viper here. Four Syndicate defectors hide at Lighthouse Point. Make them disappear.'], [['go', 3150, 2400, 'Reach Lighthouse Point'], ['kill', 4, [[3150, 2380], [3250, 2420], [3200, 2480], [3300, 2440]], 'Silence the 4 defectors']], 1850, 'Clean. The Syndicate notices that.'],
+  ['The Neon Limo', 'Elena "Viper" Cruz', ["The mayor's limo. Tonight it is Syndicate property — take it, no scratches."], [['steal', 'limo', 1800, 1300, "Steal the mayor's limo"], ['deliver', 'limo', 870, 1550, "Bring the limo to Rico's Garage"]], 2500, 'The mayor walks tonight. We ride.'],
+  ['The Grand Casino Heist', 'Elena "Viper" Cruz', ['One vault. Rosa gold. The Neon Casino, tonight. Grab it and run.'], [['go', 3000, 760, 'Reach the Neon Casino'], ['carry', 870, 1550, "Carry the casino gold to Rico's Garage", 3000, 760, 'Grab the casino gold']], 5000, 'The biggest score in Neon Bay history. We did it.'],
 ];
 
-// Compact mission table -> the same stage objects the engine already uses.
 const ST = (s) => {
   const o = { kind: s[0] };
   if (s[0] === 'go') { o.x = s[1]; o.y = s[2]; o.label = s[3]; }
   else if (s[0] === 'kill') { o.count = s[1]; o.at = s[2].map((p) => ({ x: p[0], y: p[1] })); o.label = s[3]; }
-  else if (s[0] === 'steal' || s[0] === 'deliver') { o.carKind = s[1] || undefined; o.x = s[2]; o.y = s[3]; o.label = s[4]; }
+  else if (s[0] === 'steal' || s[0] === 'deliver') { o.carKind = s[1]; o.x = s[2]; o.y = s[3]; o.label = s[4]; }
   else if (s[0] === 'survive') { o.seconds = s[1]; o.label = s[2]; }
   else if (s[0] === 'carry') { o.x = s[1]; o.y = s[2]; o.label = s[3]; o.cx = s[4]; o.cy = s[5]; o.carryLabel = s[6]; }
   return o;
@@ -251,7 +248,7 @@ export function createGame(rng) {
       state.player.pistol = true;
       state.player.weapon = 2;
       state.player.mag = PLAYER.magSize;
-      showBanner('Pistol acquired — click to shoot', 3);
+      showBanner('Pistol acquired', 3);
     }
     if (state.stageIndex >= mission.stages.length) {
       state.cash += mission.reward;
@@ -597,7 +594,7 @@ export function createGame(rng) {
       burst(car.x, car.y, '#ffd23d', 10, 300);
       burst(car.x, car.y, '#ff5a3c', 8, 200);
       s.shake = Math.max(s.shake, 8);
-      showBanner('Car wrecked — find another ride', 2.5);
+      showBanner('Wrecked — find another ride', 2.5);
     }
     p.x = car.x;
     p.y = car.y;
@@ -973,7 +970,7 @@ export function createGame(rng) {
     const lost = Math.min(s.cash, Math.max(25, Math.floor(s.cash * 0.08)));
     s.cash -= lost;
     clearHeat(1470, 640);
-    showBanner(`WASTED — you wake up at Neon Bay General, $${lost} lighter`, 3);
+    showBanner(`WASTED — Neon Bay General, $${lost} lighter`, 3);
     s.wastedFlag = true;
   }
 
@@ -998,7 +995,7 @@ export function createGame(rng) {
           s.fare = null;
           return;
         }
-        s.objective = { x: ped.x, y: ped.y, label: 'Taxi fare — pick up the passenger' };
+        s.objective = { x: ped.x, y: ped.y, label: 'Taxi: pick up the passenger' };
         if (Math.hypot(p.x - ped.x, p.y - ped.y) < 70) {
           const dest = randomSidewalkPoint(rng);
           f.stage = 'deliver';
@@ -1006,7 +1003,7 @@ export function createGame(rng) {
           f.timer = 45;
           f.reward = rng.int(80, 150);
           s.peds.splice(s.peds.indexOf(ped), 1);
-          showBanner('Passenger aboard — deliver them in 45s!', 2.5);
+          showBanner('Passenger aboard — deliver in 45s!', 2.5);
         }
         return;
       }
@@ -1037,7 +1034,7 @@ export function createGame(rng) {
       const ped = candidates[Math.floor(rng.next() * candidates.length)];
       ped.hailing = true;
       s.fare = { ped, stage: 'pickup' };
-      showBanner('Taxi fare — a passenger is hailing you', 2.5);
+      showBanner('Taxi fare — passenger hailing you', 2.5);
       s.fareCd = 9999;
     }
   }

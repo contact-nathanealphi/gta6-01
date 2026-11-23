@@ -50,10 +50,9 @@ void main(){
   vec3 r=reflect(-v,n);
   float wet=step(0.9,n.y)*(1.0-step(0.3,vCol.r))*(1.0-step(0.3,vCol.g));
   float glint=pow(max(dot(r,sd),0.0),24.0);
-  float sheen=pow(max(dot(r,normalize(vec3(0.0,0.4,-1.0))),0.0),6.0);
   float roadWet=step(0.9,n.y)*step(abs(vCol.r-0.20),0.06)*step(abs(vCol.g-0.22),0.06);
   float streak=pow(max(dot(r,normalize(vec3(0.9,0.25,0.3))),0.0),18.0);
-  col+=uSunCol*glint*wet*0.35+vec3(1.0,0.3,0.55)*sheen*wet*0.22;
+  col+=uSunCol*glint*wet*0.35;
   col+=vec3(1.0,0.62,0.25)*streak*roadWet*0.85+vec3(0.35,0.55,1.0)*pow(max(dot(r,normalize(vec3(-0.4,0.35,0.8))),0.0),10.0)*roadWet*0.5;
   float f=1.0-exp(-uFogDen*uFogDen*vDist*vDist);
   col=mix(col,uFogCol,clamp(f,0.0,1.0));

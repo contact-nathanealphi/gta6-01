@@ -7,7 +7,7 @@ export class PoliceAirSupportSystem {
       if (air.heliT > 1.5) {
         air.heli = { x: p.x + 260, y: p.y - 260, z: 26, angle: 0, rotor: 0, fireT: 2, spotX: p.x, spotY: p.y, leaving: false };
         air.heliT = 0;
-        this.fx.showBanner('NBPD AIR-1 overhead!', 3);
+        this.fx.showBanner('AIR-1 overhead!', 3);
       }
     } else if (!air.heli) air.heliT = 0;
     const h = air.heli;
@@ -37,7 +37,7 @@ export class PoliceAirSupportSystem {
     if (s.wanted >= 4 && !air.swat) {
       air.swat = true;
       this.fx.spawnPoliceCar('van');
-      this.fx.showBanner('NBPD SWAT Van inbound!', 3);
+      this.fx.showBanner('SWAT Van inbound!', 3);
     } else if (s.wanted < 4) air.swat = false;
     for (let i = s.wrecks.length - 1; i >= 0; i -= 1) {
       const w = s.wrecks[i];

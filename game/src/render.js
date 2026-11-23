@@ -1,5 +1,3 @@
-// Drawing: world state + screen in, pixels out.
-
 import { AVENUES, CAR_KINDS, FONT, PALETTE, PLAYER, STREETS, WORLD } from './tune.js';
 import { MISSIONS } from './world.js';
 import { renderChopperSearchlight, renderNbpdDispatchBoard } from './police-air-support.js';
@@ -253,7 +251,7 @@ export function createRenderer(canvas) {
         if (myCar.kind === 'taxi') {
           R(28, 176, 44, 16, PALETTE.gold);
           text('TAXI', 50, 188, 11, '#222', 'center', true);
-          text('fares pay — watch for hails', 80, 188, 13, PALETTE.hudMuted, 'left');
+          text('fares pay — watch hails', 80, 188, 13, PALETTE.hudMuted, 'left');
         }
       }
     }
@@ -307,7 +305,7 @@ export function createRenderer(canvas) {
     };
     if (ui.nearCar) pill(`E — ${ui.nearCar}`, viewH - 190, PALETTE.gold);
     if (sys && !s.garageOpen && sys.garage.near()) pill('G — Neon Customs: upgrade your ride', viewH - 240, '#ff2e88');
-    text('WASD move / drive · E car · F punch · Click shoot · H horn · P save · M mute · Esc pause', viewW - 16, viewH - 16, 13, PALETTE.hudMuted, 'right');
+    text('WASD move/drive · E car · F punch · Click shoot · H horn · P save · M mute · Esc', viewW - 16, viewH - 16, 13, PALETTE.hudMuted, 'right');
     if (p.onFoot && (p.pistol || p.shotgun > 0) && ui.mouse) {
       const mx = ui.mouse.x, my = ui.mouse.y, wx = cam.x + mx, wy = cam.y + my;
       let onTarget = false;
@@ -375,7 +373,7 @@ export function createRenderer(canvas) {
       hud.rect(0, 0, viewW, viewH, 'rgba(8,10,20,0.18)');
       text('NEON BAY', viewW / 2, 150, 64, PALETTE.gold, 'center', true);
       text('VICE DUSK', viewW / 2, 192, 26, '#ff2e88', 'center', true);
-      text('Ten jobs. One big score. The whole NBPD watching.', viewW / 2, 232, 16, PALETTE.hudText, 'center');
+      text('Ten jobs. One big score.', viewW / 2, 232, 16, PALETTE.hudText, 'center');
       const bw = 300, bx = (viewW - bw) / 2;
       hud.rect(bx, 300, bw, 56, PALETTE.gold);
       text('▶  ENTER — PLAY', viewW / 2, 336, 22, '#1a1a22', 'center', true);
@@ -394,11 +392,11 @@ export function createRenderer(canvas) {
     } else if (screen === SCREEN_BUSTED) {
       drawPanel('BUSTED', ['The NBPD caught up with you.', state.banner || ''], 'Press Enter to keep playing', '#4d8dff');
     } else if (screen === SCREEN_WASTED) {
-      drawPanel('WASTED', ['You wake up at Neon Bay General.', state.banner || ''], 'Press Enter to keep playing', PALETTE.danger);
+      drawPanel('WASTED', ['You wake up at the hospital.', state.banner || ''], 'Press Enter to keep playing', PALETTE.danger);
     } else if (screen === SCREEN_COMPLETE) {
       const mins = Math.floor(state.time / 60);
       const secs = Math.floor(state.time % 60);
-      drawPanel('THE BIG SCORE', [`You did it, Rico. The crate is Rosa's, the city is yours.`, `Cash: $${state.cash.toLocaleString('en-US')}   ·   Missions: ${MISSIONS.length}/${MISSIONS.length}`, `Time: ${mins}:${String(secs).padStart(2, '0')}   ·   Wanted: ${'★'.repeat(state.wanted)}${'☆'.repeat(5 - state.wanted)}`, 'Free roam: keep driving, keep the heat low. Courier and taxi fares pay, too.'], 'Press Enter to keep roaming', PALETTE.gold);
+      drawPanel('THE BIG SCORE', [`You did it, Rico. The crate is Rosa's.`, `Cash: $${state.cash.toLocaleString('en-US')}   ·   Missions: ${MISSIONS.length}/${MISSIONS.length}`, `Time: ${mins}:${String(secs).padStart(2, '0')}   ·   Wanted: ${'★'.repeat(state.wanted)}${'☆'.repeat(5 - state.wanted)}`, 'Free roam: courier and taxi fares pay.'], 'Press Enter to keep roaming', PALETTE.gold);
     }
   }
 

@@ -26,7 +26,6 @@ void main(){
   vec3 sd=normalize(uSunDir);
   vec3 r=reflect(-sd,n);
   float sp=pow(max(dot(r,v),0.0),60.0);
-  float sp2=pow(max(dot(r,v),0.0),8.0);
   vec3 deep=vec3(0.02,0.16,0.28);
   vec3 shal=vec3(0.05,0.38,0.44);
   vec3 col=mix(deep,shal,0.5+0.5*vWave*0.4);
@@ -37,7 +36,7 @@ void main(){
   vec3 toCam=normalize(vec3(vWp.x-uCam.x,0.0,vWp.z-uCam.z));
   float path=pow(max(dot(toSun,toCam),0.0),3.0)*smoothstep(0.9,0.2,abs(dot(normalize(vec3(-toSun.z,0.0,toSun.x)),toCam)));
   float glit=pow(0.5+0.5*sin(vWp.x*0.9+uTime*2.0)*sin(vWp.z*1.1-uTime*1.6),8.0);
-  col+=vec3(1.0,0.55,0.20)*sp*1.6+vec3(1.0,0.62,0.25)*sp2*0.35;
+  col+=vec3(1.0,0.55,0.20)*sp*1.6;
   col+=vec3(1.0,0.60,0.22)*path*(0.35+0.65*glit);
   gl_FragColor=vec4(col,1.0);
 }

@@ -22,8 +22,8 @@ up for Mama Rosa while the Neon Bay Police Department watches every move.
 - A **wanted system with police**: commit crimes, earn stars, and the NBPD
   chases you on foot and in patrol cars. Get busted or wasted and you wake up
   at the station or the hospital, lighter in the wallet.
-- **Missions and a story**: seven linked jobs, from a first delivery to the big
-  score at the port — and the getaway that follows — with dialogue, markers and cash rewards.
+- **Missions and a story**: ten linked jobs, from a first delivery to the Grand
+  Casino heist — with dialogue, markers and cash rewards.
 - **Combat**: fists, a pistol and a **shotgun** (five pellets, six shells),
   **armor vests** (half damage for 20s), health and ammo pickups, and rival
   crews who shoot back.

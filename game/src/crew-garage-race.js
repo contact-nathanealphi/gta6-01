@@ -12,10 +12,10 @@ export class CrewAbilitySystem {
     if (idx === 0) {
       s.wantedPoints = Math.max(0, s.wantedPoints - 4);
       s.wanted = Math.min(5, Math.floor(s.wantedPoints / 2));
-      s.crewCd[0] = 45; this.say('Jammed — heat -2 stars', 2.5);
+      s.crewCd[0] = 45; this.say('Jammed — heat -2', 2.5);
     } else if (idx === 1) {
       this.fx.spawnAlly();
-      s.crewCd[1] = 60; this.say('Hit Squad rolling in!', 2.5);
+      s.crewCd[1] = 60; this.say('Hit Squad rolling!', 2.5);
     } else {
       if (p.onFoot) { this.say('Nitrous needs a car', 1.5); return false; }
       s.nitrousT = 3; s.crewCd[2] = 20; this.say('NITROUS!');
@@ -40,8 +40,8 @@ export class NeonCustomsGarage {
     const s = this.s, u = N.UPGRADES[i];
     if (!u) return false;
     const lvl = this.levels[u.key];
-    if (lvl >= u.max) { s.banner = u.name + ' already maxed'; s.bannerTimer = 1.5; return false; }
-    if (s.cash < u.price) { s.banner = 'Need $' + u.price + ' for ' + u.name; s.bannerTimer = 2; return false; }
+    if (lvl >= u.max) { s.banner = u.name + ' maxed'; s.bannerTimer = 1.5; return false; }
+    if (s.cash < u.price) { s.banner = 'Need $' + u.price; s.bannerTimer = 2; return false; }
     s.cash -= u.price;
     this.levels[u.key] = lvl + 1;
     try { localStorage.setItem('neon-bay.upgrades.v1', JSON.stringify(this.levels)); } catch { /* off */ }
@@ -196,5 +196,5 @@ export function renderGarageShowroom(hud, state, garage) {
     R(x + 24, yy, w - 48, 36, 'rgba(255,255,255,0.06)');
     T('[' + (i + 1) + '] ' + u.name + ' — ' + u.desc + '   ' + (lvl >= u.max ? 'MAX' : '$' + u.price + ' · Lv' + lvl + '/' + u.max), x + 38, yy + 23, 15, '#f4f1e6', 'left', true);
   }
-  T('1-4 buy · G/Esc leave', hud.w / 2, y + h - 18, 14, '#b9b3a4', 'center');
+  T('1-4 buy · G leave', hud.w / 2, y + h - 18, 14, '#b9b3a4', 'center');
 }

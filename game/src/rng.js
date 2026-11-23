@@ -1,6 +1,3 @@
-// Seeded RNG (mulberry32): same seed gives the same city and traffic, which is
-// what makes the screenshot scenes repeatable.
-
 export function createRng(seed) {
   let a = seed | 0;
   function next() {

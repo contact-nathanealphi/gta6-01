@@ -43,6 +43,6 @@ export function renderFixerDialogueBox(hud, state) {
   R(px + 14, py + 8, 42, 20, '#1a1a22');
   for (const ex of [21, 40]) R(px + ex, py + 30, 9, 4, '#111');
   R(px + 28, py + 44, 15, 4, '#c22e5e');
-  T("ELENA 'VIPER' CRUZ — SYNDICATE FIXER", x + 92, y + 28, 14, '#ff2e88', 'left', true);
+  T("ELENA 'VIPER' CRUZ", x + 92, y + 28, 14, '#ff2e88', 'left', true);
   T(line, x + 92, y + 56, 16, '#ffe9c4', 'left');
 }

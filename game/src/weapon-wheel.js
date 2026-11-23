@@ -18,7 +18,7 @@ export class WeaponWheelSystem {
     if (slot < 1 || slot > 6) return false;
     const s = WEAPON_SLOTS_6[slot - 1];
     if (!this.available(slot)) {
-      this.s.banner = s.name + ' not available yet';
+      this.s.banner = s.name + ' locked';
       this.s.bannerTimer = 2;
       return false;
     }
@@ -51,7 +51,7 @@ export function renderRadialWeaponWheel(hud, state, highlight, pos) {
   C(cx, cy, 58, 'rgba(12,16,26,0.95)');
   G(cx, cy, 58, '#f2c94c');
   T('[' + cur.key + '] EQUIPPED', cx, cy - 4, 14, '#f2c94c', 'center', true);
-  if (!pos) T('release Tab / Q to confirm', cx, cy + 16, 12, '#b9b3a4', 'center');
+  if (!pos) T('release Tab to confirm', cx, cy + 16, 12, '#b9b3a4', 'center');
 }
 
 export function detonateHydraRpg(state, x, y) {

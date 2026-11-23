@@ -1,4 +1,3 @@
-// Vice-Dusk 3D geometry: static city mesh + dynamic mesh per frame.
 import { AVENUES, CAR_KINDS, STREETS, WORLD } from '../tune.js';
 import { VICE_CASINO_UV, VICE_FACADE_UV, VICE_ROOF_UV, VICE_WHITE_UV } from './textures3d.js';
 import { StreetRaceCircuit } from '../crew-garage-race.js';

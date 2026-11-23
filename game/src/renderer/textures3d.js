@@ -1,5 +1,3 @@
-// Procedural Vice-Dusk texture atlas (1024x1024, offscreen Canvas2D, no files).
-
 export const VICE_FACADE_UV = [
   [0.0, 0.75, 0.25, 1.0],
   [0.25, 0.75, 0.5, 1.0],

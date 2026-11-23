@@ -93,7 +93,7 @@ function runGame() {
     try { window.localStorage.removeItem(SAVE_KEY); } catch { /* storage can be off */ }
     accumulator = 0;
     screen = SCREEN_PLAY;
-    announce('Neon Bay. Mission 1: First Delivery.');
+    announce('Mission 1: First Delivery.');
   }
 
   function startContinued() {
@@ -102,7 +102,7 @@ function runGame() {
     else game.reset();
     accumulator = 0;
     screen = SCREEN_PLAY;
-    announce('Neon Bay. Welcome back, Rico.');
+    announce('Welcome back, Rico.');
   }
 
   function handleTitle(presses) {
@@ -140,8 +140,8 @@ function runGame() {
     };
     const events = game.step(STEP, worldInput);
     if (events & EVENT_BUSTED) { screen = SCREEN_BUSTED; audio.busted(); announce('Busted by the NBPD.'); }
-    else if (events & EVENT_WASTED) { screen = SCREEN_WASTED; audio.busted(); announce('Wasted. You wake up at Neon Bay General.'); }
-    else if (events & EVENT_STORY) { screen = SCREEN_COMPLETE; audio.story(); writeSave(); announce('Story complete. The big score is yours.'); }
+    else if (events & EVENT_WASTED) { screen = SCREEN_WASTED; audio.busted(); announce('Wasted.'); }
+    else if (events & EVENT_STORY) { screen = SCREEN_COMPLETE; audio.story(); writeSave(); announce('Story complete.'); }
     else if (events & EVENT_MISSION) { audio.mission(); writeSave(); }
     const snd = (k, f) => { if (s[k]) { s[k] = false; audio[f](); } };
     snd('shotSound', 'shot');
@@ -184,7 +184,7 @@ function runGame() {
         announce('Paused.');
       } else if (presses & PRESS_SAVE) {
         if (writeSave()) game.state.banner = 'Progress saved';
-        else game.state.banner = 'Save failed — storage is off';
+        else game.state.banner = 'Save failed';
         game.state.bannerTimer = 2;
       } else {
         if (presses & PRESS_GARAGE) {
@@ -247,7 +247,7 @@ function runGame() {
     }
   });
 
-  announce('Neon Bay. Press Enter to play.');
+  announce('Press Enter to play.');
   canvas.addEventListener('click', () => {
     if (screen === SCREEN_TITLE) { if (save) startContinued(); else startFresh(); }
   });

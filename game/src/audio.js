@@ -1,5 +1,3 @@
-// Sound: synthesized WebAudio, no files.
-
 export function createAudio() {
   let ctx = null, master = null, noiseBuf = null, engineOsc = null, engineGain = null;
   let sirenOsc = null, sirenLfo = null, sirenGain = null, muted = false, musicTimer = null, musicStep = 0;
@@ -136,7 +134,6 @@ export function createAudio() {
     ensure,
     setMuted,
     isMuted() { return muted; },
-    music(on) { if (on) startMusic(); else stopMusic(); },
     station(bass, bpm, wave) {
       radioLine = bass; radioStep = 60 / (Number.isFinite(bpm) && bpm > 0 ? bpm : 112) / 2; radioWave = wave || 'sawtooth';
       if (ctx && !muted) { stopMusic(); startMusic(); }
@@ -161,6 +158,5 @@ export function createAudio() {
     cash() { blip(1320, 0.07, 'sine', 0.18); blip(1760, 0.12, 'sine', 0.18, 0.07); },
     screech() { noise(0.35, 0.12, 900, 'bandpass', 2); },
     busted() { blip(220, 0.3, 'sawtooth', 0.2); blip(165, 0.4, 'sawtooth', 0.2, 0.25); },
-    click() { blip(660, 0.06, 'square', 0.12); },
   };
 }

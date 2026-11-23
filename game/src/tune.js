@@ -1,7 +1,3 @@
-// Neon Bay — every tuning number and colour in one place. The world is a fixed
-// 3600x2700 logical city; the camera follows the player, so nothing below depends
-// on the screen size.
-
 export const WORLD = { width: 3600, height: 2700 };
 
 export const STEP = 1 / 60;
@@ -63,14 +59,9 @@ export const PALETTE = {
   asphalt: '#3c414d',
   lane: '#d8c96a',
   sidewalk: '#9a8f7d',
-  curb: '#6e6455',
-  buildingRoof: '#b08954',
   player: '#ff5a3c',
-  playerDark: '#c22e18',
   cop: '#2f6fd0',
-  copDark: '#1d4a8a',
   rival: '#a83232',
-  ped: '#e8e2d4',
   hudPanel: 'rgba(12, 16, 26, 0.72)',
   hudText: '#f4f1e6',
   hudMuted: '#b9b3a4',
@@ -78,7 +69,6 @@ export const PALETTE = {
   danger: '#ff4d4d',
   health: '#57d977',
   marker: '#ffd23d',
-  night: 'rgba(10, 12, 30, 0.35)',
 };
 
 export const FONT = 'system-ui, sans-serif';

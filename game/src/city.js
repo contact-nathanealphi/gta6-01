@@ -1,5 +1,3 @@
-// Neon Bay's map: avenues, streets, buildings, landmarks, palms.
-
 import { AVENUES, ROAD_HALF, STREETS, WALK, WORLD } from './tune.js';
 
 const ROOF_COLORS = ['#b08954', '#8a6f4d', '#a5715e', '#7d8a99', '#c2a06a', '#96705a', '#6f7f6a'];
@@ -54,24 +52,7 @@ export function buildCity(rng) {
     color: '#e8e2d4', glass: '#ffd23d', name: 'Neon Bay Lighthouse', kind: 'lighthouse',
   });
 
-  return { buildings, palms, landmarks: LANDMARKS };
-}
-
-function nearestIn(list, v) {
-  let best = list[0];
-  let bestD = Infinity;
-  for (const x of list) {
-    const d = Math.abs(x - v);
-    if (d < bestD) { bestD = d; best = x; }
-  }
-  return best;
-}
-
-export function nearestRoadPoint(x, y, rng) {
-  const bestAx = nearestIn(AVENUES, x);
-  const bestSy = nearestIn(STREETS, y);
-  if (Math.abs(x - bestAx) < Math.abs(y - bestSy)) return { x: bestAx + rng.range(-30, 30), y: Math.max(60, Math.min(WORLD.height - 60, y)) };
-  return { x: Math.max(60, Math.min(WORLD.width - 60, x)), y: bestSy + rng.range(-30, 30) };
+  return { buildings, palms };
 }
 
 export function randomRoadPoint(rng, awayFrom, minAway) {

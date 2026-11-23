@@ -1,5 +1,3 @@
-// Keyboard and pointer input: held keys move, presses queue as flags.
-
 export const PRESS_CONFIRM = 1, PRESS_PAUSE = 2, PRESS_ENTER = 4, PRESS_PUNCH = 8, PRESS_RELOAD = 16, PRESS_SAVE = 32, PRESS_MUTE = 64, PRESS_HORN = 128, PRESS_GARAGE = 256;
 
 const HELD = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', ShiftLeft: 'run', ShiftRight: 'run', Tab: 'wheel', KeyQ: 'wheel' };
@@ -22,7 +20,6 @@ export function createInput(target) {
     event.preventDefault();
   });
   window.addEventListener('keyup', (event) => held.delete(HELD[event.code]));
-  // A key released while the tab is hidden never sends keyup: let go of everything on blur.
   window.addEventListener('blur', () => { held.clear(); mouse.down = false; presses = 0; digits = 0; });
   const track = (event) => {
     const r = target.getBoundingClientRect();

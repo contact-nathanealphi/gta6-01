@@ -1,4 +1,3 @@
-// Screenshot scenes behind ?shot=start|drive|chase|mission&cam=drone|chase|action|hero&tod=dusk|gold|evening|night — scripted play, same seed, same frame.
 import { PLAYER, STEP } from './tune.js';
 import { MISSIONS } from './world.js';
 import { SCREEN_PLAY as PL, SCREEN_TITLE as TI } from './render.js';
@@ -60,7 +59,7 @@ export function stageShot(name, g, o) {
     ped(g, px - 92, py + 700, '#f2c94c');
     s.nearMissStreak = 3; s.nearMissStreakT = 4;
     s.radioToast = { name: 'VICE FM 104.5', until: performance.now() + 60000 };
-    s.banner = 'STREET RACE: Bayfront Sprint — 3 laps!';
+    s.banner = 'STREET RACE — 3 laps!';
     s.bannerTimer = 30;
     sc(g); st();
     return { screen: PL };
