@@ -387,6 +387,12 @@ export function createRenderer(canvas) {
       ctx.beginPath();
       ctx.arc(ped.x + Math.cos(ped.angle) * 4, ped.y + Math.sin(ped.angle) * 4, 5, 0, Math.PI * 2);
       ctx.fill();
+      // A hailing passenger waves a yellow TAXI sign above their head.
+      if (ped.hailing) {
+        ctx.fillStyle = PALETTE.gold;
+        ctx.fillRect(ped.x - 16, ped.y - 34, 32, 13);
+        text('TAXI', ped.x, ped.y - 23, 10, '#222', 'center', true);
+      }
     }
     for (const cop of state.cops) {
       if (!inView(cam, cop.x, cop.y, 30)) continue;

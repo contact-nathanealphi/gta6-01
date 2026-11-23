@@ -96,3 +96,10 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 71 | Siklus siang/malam: overlay berubah selama 4 menit (siang→senja→malam→fajar) | headless test + screenshot | KEEP |
 | 72 | Jam in-game di HUD (ikon ☀/☾ + HH:MM) | screenshot | KEEP |
 | 73 | Perbaiki fase siklus: mulai 08:00 pagi (bukan tengah malam yang gelap) + jam cocok | screenshot 2-drive | KEEP |
+| 74 | Taxi: state field (fare, fareCd) | headless test | KEEP |
+| 75 | Taxi: pejalan kaki hailing saat pemain mengemudi taksi | headless test (taxi test) | KEEP |
+| 76 | Taxi: jemput penumpang → pengiriman 45 dtk ($80–150) | headless test | KEEP |
+| 77 | Taxi: bayar saat sampai, gagal saat habis waktu, batal saat keluar taksi | headless test | KEEP |
+| 78 | Taxi: tanda TAXI kuning di atas penumpang yang hailing | headless test | KEEP |
+| 79 | updateFare dipanggil dari step() | headless test | KEEP |
+| 80 | Taxi: test headless lengkap (hail→pickup→deliver→bayar) | headless test | KEEP |

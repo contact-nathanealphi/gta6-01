@@ -141,6 +141,8 @@ export function createGame(rng) {
     courierCd: 20,
     wantedFlash: 0,
     hurtFlash: 0,
+    fare: null,
+    fareCd: 15,
   };
 
   function newPlayer(x, y) {
@@ -270,6 +272,8 @@ export function createGame(rng) {
     state.nearMissCd = 0;
     state.courier = null;
     state.courierCd = 20;
+    state.fare = null;
+    state.fareCd = 15;
     state.missionIndex = 0;
     state.stageIndex = 0;
     state.missionActive = false;
@@ -477,6 +481,7 @@ export function createGame(rng) {
     }
     updatePickups(dt);
     updateCourier(dt);
+    updateFare(dt);
     updateParticles(dt);
     events |= updateWanted(dt);
     events |= updateMissions(dt);
@@ -1070,6 +1075,69 @@ export function createGame(rng) {
     p.angle = -Math.PI / 2;
     showBanner(`WASTED — you wake up at Neon Bay General, $${lost} lighter`, 3);
     state.wastedFlag = true;
+  }
+
+  function updateFare(dt) {
+    // Taxi fares: only while the player drives a taxi. A pedestrian hails,
+    // the player picks them up, then delivers them before the timer ends.
+    const p = state.player;
+    const car = playerCar();
+    const inTaxi = !p.onFoot && car && car.kind === 'taxi';
+    if (!inTaxi) {
+      // Leaving the taxi cancels an active fare.
+      if (state.fare) {
+        state.fare = null;
+        state.objective = state.missionActive ? state.objective : null;
+      }
+      return;
+    }
+    if (state.fare) {
+      const f = state.fare;
+      if (f.stage === 'pickup') {
+        const ped = f.ped;
+        if (!ped || ped.down > 0) { state.fare = null; return; }
+        state.objective = { x: ped.x, y: ped.y, label: 'Taxi fare — pick up the passenger' };
+        if (Math.hypot(p.x - ped.x, p.y - ped.y) < 70) {
+          // Passenger hops in.
+          const dest = randomSidewalkPoint(rng);
+          f.stage = 'deliver';
+          f.x = dest.x; f.y = dest.y;
+          f.timer = 45;
+          f.reward = rng.int(80, 150);
+          state.peds.splice(state.peds.indexOf(ped), 1);
+          showBanner('Passenger aboard — deliver them in 45s!', 2.5);
+        }
+        return;
+      }
+      f.timer -= dt;
+      state.objective = { x: f.x, y: f.y, label: `Taxi fare — ${Math.max(0, Math.ceil(f.timer))}s` };
+      if (Math.hypot(p.x - f.x, p.y - f.y) < 75) {
+        state.cash += f.reward;
+        showBanner(`Fare complete — +$${f.reward}`, 2.5);
+        state.fare = null;
+        state.objective = state.missionActive ? state.objective : null;
+        state.fareCd = 30;
+        return;
+      }
+      if (f.timer <= 0) {
+        showBanner('Fare expired — the passenger walked away', 2.5);
+        state.fare = null;
+        state.objective = state.missionActive ? state.objective : null;
+        state.fareCd = 20;
+      }
+      return;
+    }
+    state.fareCd -= dt;
+    if (state.fareCd <= 0) {
+      // A random pedestrian near a road hails the taxi.
+      const candidates = state.peds.filter((ped) => ped.down <= 0);
+      if (candidates.length === 0) return;
+      const ped = candidates[Math.floor(rng.next() * candidates.length)];
+      ped.hailing = true;
+      state.fare = { ped, stage: 'pickup' };
+      showBanner('Taxi fare — a passenger is hailing you', 2.5);
+      state.fareCd = 9999;
+    }
   }
 
   function updateCourier(dt) {
