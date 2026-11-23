@@ -145,3 +145,9 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 120 | main.ts: komentar "six linked missions" → "seven linked missions" | main.ts run | KEEP |
 | 121 | Verifikasi main.ts: dossier.json valid (teks 122.055/163.840, 4 gambar <256KiB, game 136K) | main.ts run | KEEP |
 | 122 | Verifikasi headless test tetap ALL PASS setelah update README | headless test | KEEP |
+| 123 | Layar selesai: tampilkan cash + misi 7/7 + waktu + wanted | headless test | KEEP |
+| 124 | Layar selesai: sebutkan courier + taxi sebagai aktivitas free roam | headless test | KEEP |
+| 125 | HUD: heat meter tipis di bawah bintang (total wanted points 0–10) | headless test | KEEP |
+| 126 | Crosshair merah saat mengarah ke rival/polisi (target terdeteksi) | headless test | KEEP |
+| 127 | Crosshair: drawHud terima kamera untuk konversi mouse→world | headless test | KEEP |
+| 128 | Crosshair tampil juga saat shotgun di tangan (bukan hanya pistol) | headless test | KEEP |

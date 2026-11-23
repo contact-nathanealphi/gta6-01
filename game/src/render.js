@@ -666,7 +666,7 @@ export function createRenderer(canvas) {
     ctx.strokeRect(x0 - 6, y0 - 6, MINIMAP.w + 12, MINIMAP.h + 12);
   }
 
-  function drawHud(state, ui) {
+  function drawHud(state, ui, cam) {
     const p = state.player;
     // Cash, health and wanted stars, top-left. The panel is tall enough for
     // the weapon, armor and car-health lines below the stars.
@@ -682,6 +682,13 @@ export function createRenderer(canvas) {
       // A fresh star flashes red briefly when the heat rises.
       const flash = state.wantedFlash > 0 && i === state.wanted - 1;
       text('★', 28 + i * 26, 96, 20, flash ? PALETTE.danger : (i < state.wanted ? PALETTE.gold : '#555'), 'left');
+    }
+    // A thin heat meter under the stars: total wanted points (0–10).
+    if (state.wantedPoints > 0) {
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(28, 102, 130, 5);
+      ctx.fillStyle = PALETTE.danger;
+      ctx.fillRect(28, 102, 130 * Math.min(1, state.wantedPoints / 10), 5);
     }
     if (p.shotgun > 0) {
       text(`Shotgun  ${p.shotgun} shells`, 28, 122, 15, PALETTE.gold, 'left', true);
@@ -750,11 +757,23 @@ export function createRenderer(canvas) {
     }
     // Controls hint, bottom-right.
     text('WASD move / drive · E car · F punch · Click shoot · H horn · P save · M mute · Esc pause', viewW - 16, viewH - 16, 13, PALETTE.hudMuted, 'right');
-    // Crosshair when the pistol is out on foot.
-    if (p.onFoot && p.pistol && ui.mouse) {
+    // Crosshair when a gun is out on foot. It turns red over a rival
+    // or a cop, so the player knows the shot will land on a target.
+    if (p.onFoot && (p.pistol || p.shotgun > 0) && ui.mouse) {
       const mx = ui.mouse.x;
       const my = ui.mouse.y;
-      ctx.strokeStyle = '#ffffff';
+      const wx = cam.x + mx;
+      const wy = cam.y + my;
+      let onTarget = false;
+      for (const rival of state.rivals) {
+        if (Math.hypot(rival.x - wx, rival.y - wy) < 26) { onTarget = true; break; }
+      }
+      if (!onTarget) {
+        for (const cop of state.cops) {
+          if (Math.hypot(cop.x - wx, cop.y - wy) < 26) { onTarget = true; break; }
+        }
+      }
+      ctx.strokeStyle = onTarget ? PALETTE.danger : '#ffffff';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(mx, my, 11, 0, Math.PI * 2);
@@ -879,7 +898,7 @@ export function createRenderer(canvas) {
       text('A complete open-world crime game · built for make.fun', viewW / 2, viewH - 40, 15, PALETTE.hudMuted, 'center');
       return;
     }
-    drawHud(state, ui);
+    drawHud(state, ui, cam);
     if (screen === SCREEN_PAUSED) {
       drawPanel('Paused', [`Mission ${state.missionIndex + 1} of ${MISSIONS.length} — ${state.missionActive ? 'in progress' : 'free roam'}`, `Cash: $${state.cash.toLocaleString('en-US')}   ·   Wanted: ${'★'.repeat(state.wanted)}${'☆'.repeat(5 - state.wanted)}`, 'WASD move · E car · F punch · Click shoot · H horn · P save'], 'Press Esc or Enter to keep playing');
     } else if (screen === SCREEN_BUSTED) {
@@ -887,7 +906,9 @@ export function createRenderer(canvas) {
     } else if (screen === SCREEN_WASTED) {
       drawPanel('WASTED', ['You wake up at Neon Bay General.', state.banner || ''], 'Press Enter to keep playing', PALETTE.danger);
     } else if (screen === SCREEN_COMPLETE) {
-      drawPanel('THE BIG SCORE', [`You did it, Rico. The crate is Rosa's, the city is yours.`, `Cash: $${state.cash.toLocaleString('en-US')} — the story is complete.`, 'Free roam: keep driving, keep the heat low.'], 'Press Enter to keep roaming', PALETTE.gold);
+      const mins = Math.floor(state.time / 60);
+      const secs = Math.floor(state.time % 60);
+      drawPanel('THE BIG SCORE', [`You did it, Rico. The crate is Rosa's, the city is yours.`, `Cash: $${state.cash.toLocaleString('en-US')}   ·   Missions: ${MISSIONS.length}/${MISSIONS.length}`, `Time: ${mins}:${String(secs).padStart(2, '0')}   ·   Wanted: ${'★'.repeat(state.wanted)}${'☆'.repeat(5 - state.wanted)}`, 'Free roam: keep driving, keep the heat low. Courier and taxi fares pay, too.'], 'Press Enter to keep roaming', PALETTE.gold);
     }
   }
 
