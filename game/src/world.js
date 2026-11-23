@@ -151,6 +151,8 @@ export function createGame(rng) {
     fare: null,
     fareCd: 15,
     floaters: [],
+    skidSound: false,
+    skidCd: 0,
   };
 
   function newPlayer(x, y) {
@@ -297,6 +299,8 @@ export function createGame(rng) {
     state.fare = null;
     state.fareCd = 15;
     state.floaters = [];
+    state.skidSound = false;
+    state.skidCd = 0;
     state.missionIndex = 0;
     state.stageIndex = 0;
     state.missionActive = false;
@@ -469,6 +473,7 @@ export function createGame(rng) {
     if (state.shake > 0) state.shake = Math.max(0, state.shake - dt * 26);
     if (state.wantedFlash > 0) state.wantedFlash = Math.max(0, state.wantedFlash - dt);
     if (state.hurtFlash > 0) state.hurtFlash = Math.max(0, state.hurtFlash - dt * 2.5);
+    if (state.skidCd > 0) state.skidCd = Math.max(0, state.skidCd - dt);
     if (state.nearMissCd > 0) state.nearMissCd -= dt;
     if (state.bannerTimer > 0) state.bannerTimer -= dt;
     if (state.dialogue.length > 0) {
@@ -660,6 +665,11 @@ export function createGame(rng) {
         state.skids.push({ x: bx + px * side * (spec.width / 2 - 3), y: by + py * side * (spec.width / 2 - 3), angle: car.angle, life: 4 });
       }
       if (state.skids.length > 400) state.skids.splice(0, state.skids.length - 400);
+      // The player's own hard cornering screeches (at most once per 0.8s).
+      if (car.driver === 'player' && state.skidCd <= 0) {
+        state.skidSound = true;
+        state.skidCd = 0.8;
+      }
     }
     const nx = car.x + Math.cos(car.angle) * car.speed * dt;
     const ny = car.y + Math.sin(car.angle) * car.speed * dt;

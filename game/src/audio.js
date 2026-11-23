@@ -16,7 +16,9 @@ export function createAudio() {
   let musicTimer = null;
   let musicStep = 0;
   // A slow synthwave bass line (A minor), one note per eighth at ~112 BPM.
-  const BASSLINE = [55, 55, 65.41, 82.41, 55, 49, 82.41, 73.42];
+  // Two patterns alternate every four loops so the groove does not get stale.
+  const BASSLINE_A = [55, 55, 65.41, 82.41, 55, 49, 82.41, 73.42];
+  const BASSLINE_B = [55, 65.41, 82.41, 98, 82.41, 73.42, 65.41, 49];
   const BASS_STEP = 60 / 112 / 2;
 
   function ensure() {
@@ -102,7 +104,10 @@ export function createAudio() {
     if (!ctx || musicTimer || muted) return;
     musicStep = 0;
     musicTimer = setInterval(() => {
-      playBassNote(BASSLINE[musicStep % BASSLINE.length], 0);
+      // Four loops of A, then one loop of B, then back to A.
+      const loop = Math.floor(musicStep / 8) % 5;
+      const line = loop === 4 ? BASSLINE_B : BASSLINE_A;
+      playBassNote(line[musicStep % 8], 0);
       musicStep += 1;
     }, BASS_STEP * 1000);
   }
@@ -175,6 +180,27 @@ export function createAudio() {
     },
     /** A cash cha-ching: two bright blips. */
     cash() { blip(1320, 0.07, 'sine', 0.18); blip(1760, 0.12, 'sine', 0.18, 0.07); },
+    /** A tyre screech: a short burst of filtered noise. */
+    screech() {
+      if (!ctx || muted) return;
+      const dur = 0.35;
+      const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i += 1) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 900;
+      filter.Q.value = 2;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      src.connect(filter);
+      filter.connect(gain);
+      gain.connect(master);
+      src.start();
+    },
     busted() { blip(220, 0.3, 'sawtooth', 0.2); blip(165, 0.4, 'sawtooth', 0.2, 0.25); },
     click() { blip(660, 0.06, 'square', 0.12); },
   };

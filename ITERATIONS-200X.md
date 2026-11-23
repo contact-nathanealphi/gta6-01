@@ -151,3 +151,9 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 126 | Crosshair merah saat mengarah ke rival/polisi (target terdeteksi) | headless test | KEEP |
 | 127 | Crosshair: drawHud terima kamera untuk konversi mouse→world | headless test | KEEP |
 | 128 | Crosshair tampil juga saat shotgun di tangan (bukan hanya pistol) | headless test | KEEP |
+| 129 | Musik: pola bass kedua (B) tiap 5 loop agar tidak monoton | headless test | KEEP |
+| 130 | Musik: BASSLINE_A/B + logika pergantian tiap 4 loop A + 1 loop B | headless test | KEEP |
+| 131 | Skid: flag skidSound + cooldown 0.8 dtk saat mobil pemain selip | headless test | KEEP |
+| 132 | Skid: suara screech (noise bandpass 900Hz) di audio.js | headless test | KEEP |
+| 133 | Skid: main.js mainkan screech + skidCd dihitung mundur | headless test | KEEP |
+| 134 | Skid batch terverifikasi | headless test ALL PASS | KEEP |

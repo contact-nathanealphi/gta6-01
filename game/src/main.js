@@ -157,6 +157,10 @@ function runGame() {
       state.cashSound = false;
       audio.cash();
     }
+    if (state.skidSound) {
+      state.skidSound = false;
+      audio.screech();
+    }
     if (state.crashLoud) {
       state.crashLoud = false;
       audio.crash();
