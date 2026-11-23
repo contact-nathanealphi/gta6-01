@@ -106,7 +106,7 @@ let nextCarId = 1;
 export function createGame(rng) {
   const city = buildCity(rng);
   const state = {
-    time: 0,
+    time: 105.8,
     cash: 120,
     wantedPoints: 0,
     wanted: 0,
@@ -281,7 +281,7 @@ export function createGame(rng) {
   }
 
   function reset() {
-    state.time = 0;
+    state.time = 105.8;
     state.cash = 120;
     state.wantedPoints = 0;
     state.wanted = 0;

@@ -121,6 +121,10 @@ export function stageShot(name, game) {
       if (!target) return IDLE;
       return { ...IDLE, shoot: true, aimX: target.x, aimY: target.y };
     });
+    // No red flash in the captured frame: the firefight may have hurt the
+    // player, so clear the hit flash and keep health out of the vignette.
+    state.hurtFlash = 0;
+    if (state.player.health < 35) state.player.health = 35;
     return { screen: SCREEN_PLAY };
   }
   // start: the title screen over a living street outside the diner.

@@ -21,66 +21,9 @@ export function createRenderer(canvas) {
   let viewW = 1280;
   let viewH = 800;
   const fonts = new Map();
-  // The static ground (grass, beach, water, roads, lane dashes) is painted
-  // once to an offscreen canvas and blitted each frame, instead of redrawing
-  // hundreds of shapes 60 times a second.
-  let groundCanvas = null;
-
-  function buildGround() {
-    try {
-      groundCanvas = document.createElement('canvas');
-      groundCanvas.width = WORLD.width;
-      groundCanvas.height = WORLD.height;
-      const g = groundCanvas.getContext('2d');
-      g.fillStyle = PALETTE.grass;
-      g.fillRect(0, 0, WORLD.width, WORLD.height);
-      g.fillStyle = PALETTE.sand;
-      g.fillRect(0, 2440, WORLD.width, WORLD.height - 2440);
-      g.fillStyle = PALETTE.water;
-      g.fillRect(0, 2630, WORLD.width, WORLD.height - 2630);
-      g.strokeStyle = 'rgba(255,255,255,0.5)';
-      g.lineWidth = 2;
-      g.beginPath();
-      for (let x = 0; x < WORLD.width; x += 90) {
-        g.moveTo(x, 2632);
-        g.quadraticCurveTo(x + 22, 2626, x + 45, 2632);
-      }
-      g.stroke();
-      for (const ax of AVENUES) {
-        g.fillStyle = PALETTE.sidewalk;
-        g.fillRect(ax - 86, 0, 172, WORLD.height);
-      }
-      for (const sy of STREETS) {
-        g.fillStyle = PALETTE.sidewalk;
-        g.fillRect(0, sy - 86, WORLD.width, 172);
-      }
-      for (const ax of AVENUES) {
-        g.fillStyle = PALETTE.asphalt;
-        g.fillRect(ax - 60, 0, 120, WORLD.height);
-      }
-      for (const sy of STREETS) {
-        g.fillStyle = PALETTE.asphalt;
-        g.fillRect(0, sy - 60, WORLD.width, 120);
-      }
-      g.strokeStyle = PALETTE.lane;
-      g.lineWidth = 3;
-      g.setLineDash([26, 30]);
-      g.beginPath();
-      for (const ax of AVENUES) {
-        g.moveTo(ax, 0);
-        g.lineTo(ax, WORLD.height);
-      }
-      for (const sy of STREETS) {
-        g.moveTo(0, sy);
-        g.lineTo(WORLD.width, sy);
-      }
-      g.stroke();
-      g.setLineDash([]);
-    } catch {
-      groundCanvas = null;
-    }
-  }
-
+  // When the WebGL2 3D renderer owns the world, this canvas paints only the
+  // HUD (transparent), so the 3D view shows through from behind.
+  let world3D = false;
   function resize() {
     dpr = window.devicePixelRatio || 1;
     viewW = canvas.clientWidth || window.innerWidth;
@@ -115,441 +58,6 @@ export function createRenderer(canvas) {
   function inView(cam, x, y, margin) {
     return x > cam.x - margin && x < cam.x + cam.w + margin && y > cam.y - margin && y < cam.y + cam.h + margin;
   }
-
-  function drawGround(cam) {
-    if (groundCanvas) {
-      ctx.drawImage(groundCanvas, cam.x, cam.y, cam.w, cam.h, cam.x, cam.y, cam.w, cam.h);
-      return;
-    }
-    ctx.fillStyle = PALETTE.grass;
-    ctx.fillRect(cam.x, cam.y, cam.w, cam.h);
-    // Beach along the south edge, water at its foot.
-    ctx.fillStyle = PALETTE.sand;
-    ctx.fillRect(cam.x, 2440, cam.w, WORLD.height - 2440);
-    ctx.fillStyle = PALETTE.water;
-    ctx.fillRect(cam.x, 2630, cam.w, WORLD.height - 2630);
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    for (let x = 0; x < WORLD.width; x += 90) {
-      ctx.moveTo(x, 2632);
-      ctx.quadraticCurveTo(x + 22, 2626, x + 45, 2632);
-    }
-    ctx.stroke();
-    // Sidewalks first, then asphalt on top of them.
-    for (const ax of AVENUES) {
-      ctx.fillStyle = PALETTE.sidewalk;
-      ctx.fillRect(ax - 86, 0, 172, WORLD.height);
-    }
-    for (const sy of STREETS) {
-      ctx.fillStyle = PALETTE.sidewalk;
-      ctx.fillRect(0, sy - 86, WORLD.width, 172);
-    }
-    for (const ax of AVENUES) {
-      ctx.fillStyle = PALETTE.asphalt;
-      ctx.fillRect(ax - 60, 0, 120, WORLD.height);
-    }
-    for (const sy of STREETS) {
-      ctx.fillStyle = PALETTE.asphalt;
-      ctx.fillRect(0, sy - 60, WORLD.width, 120);
-    }
-    // Lane dashes down every road.
-    ctx.strokeStyle = PALETTE.lane;
-    ctx.lineWidth = 3;
-    ctx.setLineDash([26, 30]);
-    ctx.beginPath();
-    for (const ax of AVENUES) {
-      ctx.moveTo(ax, 0);
-      ctx.lineTo(ax, WORLD.height);
-    }
-    for (const sy of STREETS) {
-      ctx.moveTo(0, sy);
-      ctx.lineTo(WORLD.width, sy);
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  function drawSkids(state, cam) {
-    for (const s of state.skids) {
-      if (!inView(cam, s.x, s.y, 30)) continue;
-      ctx.save();
-      ctx.translate(s.x, s.y);
-      ctx.rotate(s.angle);
-      ctx.globalAlpha = Math.min(0.5, (s.life / 4) * 0.5);
-      ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(-7, -2, 14, 4);
-      ctx.restore();
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  function drawBuildings(state, city, cam) {
-    for (const b of city.buildings) {
-      if (!inView(cam, b.x + b.w / 2, b.y + b.h / 2, Math.max(b.w, b.h))) continue;
-      ctx.fillStyle = 'rgba(0,0,0,0.25)';
-      ctx.fillRect(b.x + 8, b.y + 10, b.w, b.h);
-      ctx.fillStyle = b.color;
-      ctx.fillRect(b.x, b.y, b.w, b.h);
-      if (b.kind === 'lighthouse') {
-        // A lighthouse: red-white stripes and a rotating beam of light.
-        ctx.fillStyle = '#c94f43';
-        ctx.fillRect(b.x, b.y + 18, b.w, 12);
-        ctx.fillRect(b.x, b.y + 44, b.w, 12);
-        ctx.fillStyle = '#ffd23d';
-        ctx.beginPath();
-        ctx.arc(b.x + b.w / 2, b.y + 4, 8, 0, Math.PI * 2);
-        ctx.fill();
-        const beam = (state.time * 0.9) % (Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 233, 163, 0.18)';
-        ctx.beginPath();
-        ctx.moveTo(b.x + b.w / 2, b.y + 4);
-        ctx.lineTo(b.x + b.w / 2 + Math.cos(beam) * 260, b.y + 4 + Math.sin(beam) * 260);
-        ctx.lineTo(b.x + b.w / 2 + Math.cos(beam + 0.35) * 260, b.y + 4 + Math.sin(beam + 0.35) * 260);
-        ctx.closePath();
-        ctx.fill();
-        ctx.fillStyle = b.glass;
-        ctx.fillRect(b.x + 8, b.y + 8, b.w - 16, 14);
-      } else {
-        ctx.fillStyle = b.glass;
-        ctx.fillRect(b.x + 8, b.y + 8, b.w - 16, 14);
-      }
-      // Lit windows: a fixed pattern per building (from its position, so it
-      // never flickers), a few warm dots on the roof face.
-      ctx.fillStyle = 'rgba(255, 220, 130, 0.75)';
-      const cols = Math.max(1, Math.floor((b.w - 20) / 26));
-      for (let i = 0; i < cols; i += 1) {
-        const lit = ((b.x * 7 + b.y * 13 + i * 17) % 5) < 2;
-        if (lit) ctx.fillRect(b.x + 12 + i * 26, b.y + 30, 10, 12);
-      }
-      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(b.x, b.y, b.w, b.h);
-      if (b.name) {
-        text(b.name, b.x + b.w / 2, b.y + b.h / 2 + 5, 15, '#ffffff', 'center', true);
-        ctx.fillStyle = 'rgba(0,0,0,0.25)';
-        ctx.fillRect(b.x, b.y + b.h - 10, b.w, 10);
-      }
-    }
-    // Shipping containers by the port docks.
-    const containers = ['#c94f43', '#2f6fd0', '#f2c94c', '#57d977', '#7d8aa0'];
-    for (let i = 0; i < 8; i += 1) {
-      const x = 2220 + (i % 4) * 90;
-      const y = 2360 + Math.floor(i / 4) * 40;
-      ctx.fillStyle = containers[i % containers.length];
-      ctx.fillRect(x, y, 78, 30);
-      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-      ctx.strokeRect(x, y, 78, 30);
-    }
-    for (const palm of city.palms) {
-      if (!inView(cam, palm.x, palm.y, 40)) continue;
-      ctx.strokeStyle = '#5a4632';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(palm.x, palm.y);
-      ctx.lineTo(palm.x + 4, palm.y - 22);
-      ctx.stroke();
-      ctx.fillStyle = '#3f7d3a';
-      ctx.beginPath();
-      ctx.arc(palm.x + 4, palm.y - 26, 12, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  function drawCarShape(car, isPlayer) {
-    const spec = CAR_KINDS[car.kind];
-    const len = spec.length;
-    const wid = spec.width;
-    ctx.save();
-    ctx.translate(car.x, car.y);
-    ctx.rotate(car.angle);
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.fillRect(-len / 2 + 3, -wid / 2 + 4, len, wid);
-    ctx.fillStyle = car.color;
-    ctx.beginPath();
-    ctx.roundRect(-len / 2, -wid / 2, len, wid, 7);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.45)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    // Windshield and roof.
-    ctx.fillStyle = 'rgba(180,220,240,0.85)';
-    ctx.fillRect(len / 2 - 14, -wid / 2 + 3, 8, wid - 6);
-    ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    ctx.fillRect(-6, -wid / 2 + 3, 14, wid - 6);
-    // Headlights.
-    ctx.fillStyle = '#ffe9a3';
-    ctx.fillRect(len / 2 - 2, -wid / 2 + 2, 3, 5);
-    ctx.fillRect(len / 2 - 2, wid / 2 - 7, 3, 5);
-    // Brake lights glow red at the rear when the car is reversing.
-    if (car.speed < -20) {
-      ctx.fillStyle = '#ff2a2a';
-      ctx.fillRect(-len / 2 - 1, -wid / 2 + 2, 3, 5);
-      ctx.fillRect(-len / 2 - 1, wid / 2 - 7, 3, 5);
-    }
-    if (car.kind === 'patrol') {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(-len / 2 + 2, -wid / 2 + 2, 10, wid - 4);
-      const flash = Math.floor(performance.now() / 280) % 2 === 0;
-      ctx.fillStyle = flash ? '#ff3b30' : '#2f7bff';
-      ctx.fillRect(-2, -wid / 2 - 3, 8, 5);
-      ctx.fillStyle = flash ? '#2f7bff' : '#ff3b30';
-      ctx.fillRect(-2, wid / 2 - 2, 8, 5);
-    }
-    if (car.kind === 'taxi') {
-      ctx.fillStyle = '#222222';
-      for (let i = 0; i < 5; i += 1) ctx.fillRect(-14 + i * 6, -wid / 2 + 1, 4, 4);
-    }
-    if (car.smoked) {
-      ctx.fillStyle = 'rgba(120,120,120,0.55)';
-      const t = performance.now() / 300;
-      ctx.beginPath();
-      ctx.arc(-len / 4 + Math.sin(t) * 6, -8 + Math.cos(t) * 4, 9, 0, Math.PI * 2);
-      ctx.arc(len / 4, 6 + Math.sin(t + 2) * 4, 7, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
-    if (isPlayer) {
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(car.x, car.y, 30, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-  }
-
-  function drawPickups(state, cam) {
-    for (const item of state.pickups) {
-      if (!inView(cam, item.x, item.y, 30)) continue;
-      const bob = Math.sin(item.bob) * 3;
-      const y = item.y + bob;
-      if (item.kind === 'health') {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(item.x - 11, y - 11, 22, 22);
-        ctx.fillStyle = '#e5484d';
-        ctx.fillRect(item.x - 3, y - 8, 6, 16);
-        ctx.fillRect(item.x - 8, y - 3, 16, 6);
-      } else if (item.kind === 'ammo') {
-        ctx.fillStyle = PALETTE.gold;
-        ctx.fillRect(item.x - 11, y - 8, 22, 16);
-        ctx.fillStyle = '#222';
-        ctx.fillRect(item.x - 6, y - 4, 4, 8);
-        ctx.fillRect(item.x, y - 4, 4, 8);
-        ctx.fillRect(item.x + 6, y - 4, 4, 8);
-      } else if (item.kind === 'shotgun') {
-        // A shotgun: a dark barrel with a wooden pump.
-        ctx.fillStyle = '#3a3a3a';
-        ctx.fillRect(item.x - 14, y - 4, 28, 8);
-        ctx.fillStyle = '#8a6f4d';
-        ctx.fillRect(item.x - 4, y - 5, 10, 10);
-        ctx.fillStyle = PALETTE.gold;
-        ctx.fillRect(item.x + 10, y - 3, 4, 6);
-      } else if (item.kind === 'armor') {
-        // An armor vest: a blue shield.
-        ctx.fillStyle = '#2f6fd0';
-        ctx.beginPath();
-        ctx.moveTo(item.x, y - 12);
-        ctx.lineTo(item.x + 11, y - 7);
-        ctx.lineTo(item.x + 11, y + 4);
-        ctx.lineTo(item.x, y + 12);
-        ctx.lineTo(item.x - 11, y + 4);
-        ctx.lineTo(item.x - 11, y - 7);
-        ctx.closePath();
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        text('A', item.x, y + 5, 12, '#ffffff', 'center', true);
-      } else if (item.kind === 'repair') {
-        // A repair wrench: a grey spanner on a green square.
-        ctx.fillStyle = '#2fae5f';
-        ctx.fillRect(item.x - 12, y - 12, 24, 24);
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(item.x - 3, y - 3, 5, 0.5, Math.PI * 1.6);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(item.x + 1, y + 1);
-        ctx.lineTo(item.x + 8, y + 8);
-        ctx.stroke();
-      } else if (item.kind === 'cash') {
-        ctx.fillStyle = '#2fae5f';
-        ctx.beginPath();
-        ctx.arc(item.x, y, 12, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        text('$', item.x, y + 5, 14, '#ffffff', 'center', true);
-      } else if (item.kind === 'crate') {
-        ctx.fillStyle = '#8a6f4d';
-        ctx.fillRect(item.x - 14, y - 14, 28, 28);
-        ctx.strokeStyle = PALETTE.gold;
-        ctx.lineWidth = 3;
-        ctx.strokeRect(item.x - 14, y - 14, 28, 28);
-      } else if (item.kind === 'courier') {
-        // A courier parcel: a white envelope with a gold seal.
-        ctx.fillStyle = '#f4f1e6';
-        ctx.fillRect(item.x - 13, y - 9, 26, 18);
-        ctx.strokeStyle = PALETTE.gold;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(item.x - 13, y - 9, 26, 18);
-        ctx.beginPath();
-        ctx.moveTo(item.x - 13, y - 9);
-        ctx.lineTo(item.x, y + 2);
-        ctx.lineTo(item.x + 13, y - 9);
-        ctx.stroke();
-      }
-    }
-  }
-
-  function drawPeople(state, cam) {
-    for (const ped of state.peds) {
-      if (!inView(cam, ped.x, ped.y, 30)) continue;
-      if (ped.down > 0) {
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        ctx.beginPath();
-        ctx.ellipse(ped.x, ped.y, 14, 7, 0, 0, Math.PI * 2);
-        ctx.fill();
-        continue;
-      }
-      ctx.fillStyle = ped.shirt;
-      ctx.beginPath();
-      ctx.arc(ped.x, ped.y, 11, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.fillStyle = '#e8b98a';
-      ctx.beginPath();
-      ctx.arc(ped.x + Math.cos(ped.angle) * 4, ped.y + Math.sin(ped.angle) * 4, 5, 0, Math.PI * 2);
-      ctx.fill();
-      // A hailing passenger waves a yellow TAXI sign above their head.
-      if (ped.hailing) {
-        ctx.fillStyle = PALETTE.gold;
-        ctx.fillRect(ped.x - 16, ped.y - 34, 32, 13);
-        text('TAXI', ped.x, ped.y - 23, 10, '#222', 'center', true);
-      }
-    }
-    for (const cop of state.cops) {
-      if (!inView(cam, cop.x, cop.y, 30)) continue;
-      ctx.fillStyle = PALETTE.cop;
-      ctx.beginPath();
-      ctx.arc(cop.x, cop.y, 13, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = PALETTE.copDark;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(cop.x, cop.y - 3, 5, 0, Math.PI * 2);
-      ctx.fill();
-      if (cop.arrest > 0) {
-        ctx.fillStyle = PALETTE.danger;
-        ctx.fillRect(cop.x - 14, cop.y - 26, 28 * (cop.arrest / 1.6), 5);
-      }
-    }
-    for (const rival of state.rivals) {
-      if (!inView(cam, rival.x, rival.y, 30)) continue;
-      ctx.fillStyle = PALETTE.rival;
-      ctx.beginPath();
-      ctx.arc(rival.x, rival.y, 13, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#5e1a1a';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.strokeStyle = '#222';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(rival.x, rival.y);
-      ctx.lineTo(rival.x + Math.cos(rival.angle) * 20, rival.y + Math.sin(rival.angle) * 20);
-      ctx.stroke();
-      ctx.fillStyle = PALETTE.danger;
-      ctx.fillRect(rival.x - 13, rival.y - 24, 26 * (rival.health / 50), 4);
-    }
-  }
-
-  function drawPlayer(state, cam) {
-    const p = state.player;
-    if (!p.onFoot || !inView(cam, p.x, p.y, 40)) return;
-    if (p.invuln > 0 && Math.floor(p.invuln * 10) % 2 === 0) return;
-    ctx.fillStyle = PALETTE.player;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 14, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = PALETTE.playerDark;
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    ctx.fillStyle = '#e8b98a';
-    ctx.beginPath();
-    ctx.arc(p.x + Math.cos(p.angle) * 5, p.y + Math.sin(p.angle) * 5, 6, 0, Math.PI * 2);
-    ctx.fill();
-    // Armor: a pulsing blue ring while it lasts.
-    if (p.armor > 0) {
-      ctx.strokeStyle = `rgba(47,111,208,${0.5 + 0.3 * Math.sin(state.time * 6)})`;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 20, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    if (p.shotgun > 0) {
-      // A shotgun is drawn longer and thicker than the pistol.
-      ctx.strokeStyle = '#3a3a3a';
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-      ctx.lineTo(p.x + Math.cos(p.angle) * 30, p.y + Math.sin(p.angle) * 30);
-      ctx.stroke();
-      ctx.strokeStyle = '#8a6f4d';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(p.x + Math.cos(p.angle) * 12, p.y + Math.sin(p.angle) * 12);
-      ctx.lineTo(p.x + Math.cos(p.angle) * 20, p.y + Math.sin(p.angle) * 20);
-      ctx.stroke();
-    } else if (p.pistol) {
-      ctx.strokeStyle = '#222';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-      ctx.lineTo(p.x + Math.cos(p.angle) * 24, p.y + Math.sin(p.angle) * 24);
-      ctx.stroke();
-    }
-    if (state.hasCrate) {
-      ctx.fillStyle = '#8a6f4d';
-      ctx.fillRect(p.x - 9, p.y - 26, 18, 12);
-      ctx.strokeStyle = PALETTE.gold;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(p.x - 9, p.y - 26, 18, 12);
-    }
-  }
-
-  function drawBulletsAndParticles(state, cam) {
-    for (const b of state.bullets) {
-      if (!inView(cam, b.x, b.y, 30)) continue;
-      ctx.strokeStyle = '#ffe9a3';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(b.x - b.vx * 0.02, b.y - b.vy * 0.02);
-      ctx.lineTo(b.x, b.y);
-      ctx.stroke();
-    }
-    for (const pt of state.particles) {
-      if (!inView(cam, pt.x, pt.y, 20)) continue;
-      ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
-      ctx.fillStyle = pt.color;
-      ctx.beginPath();
-      ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  function drawFloaters(state, cam) {
-    for (const f of state.floaters) {
-      if (!inView(cam, f.x, f.y, 40)) continue;
-      ctx.globalAlpha = Math.max(0, f.life / f.maxLife);
-      text(f.label, f.x, f.y, 17, f.color, 'center', true);
-    }
-    ctx.globalAlpha = 1;
-  }
-
   function drawHeadlights(state, cam) {
     // At night, every car throws a pale cone of light ahead of it.
     const hour = (8 + state.time / 10) % 24;
@@ -574,46 +82,120 @@ export function createRenderer(canvas) {
       ctx.fill();
     }
   }
-
-  function drawMarker(state, cam) {
+  // Compact 2D fallback world (used when WebGL2 is unavailable and for the
+  // top-down camera): flat ground, roads, building rects, car rects, people
+  // dots and the objective marker. Keeps the game playable without the
+  // detailed 2D painters.
+  function drawFallbackWorld(state, city, cam) {
+    ctx.fillStyle = PALETTE.grass;
+    ctx.fillRect(cam.x, cam.y, cam.w, cam.h);
+    ctx.fillStyle = PALETTE.sand;
+    ctx.fillRect(cam.x, 2440, cam.w, WORLD.height - 2440);
+    ctx.fillStyle = PALETTE.water;
+    ctx.fillRect(cam.x, 2630, cam.w, WORLD.height - 2630);
+    for (const ax of AVENUES) {
+      ctx.fillStyle = PALETTE.sidewalk;
+      ctx.fillRect(ax - 86, 0, 172, WORLD.height);
+      ctx.fillStyle = PALETTE.asphalt;
+      ctx.fillRect(ax - 60, 0, 120, WORLD.height);
+    }
+    for (const sy of STREETS) {
+      ctx.fillStyle = PALETTE.sidewalk;
+      ctx.fillRect(0, sy - 86, WORLD.width, 172);
+      ctx.fillStyle = PALETTE.asphalt;
+      ctx.fillRect(0, sy - 60, WORLD.width, 120);
+    }
+    ctx.strokeStyle = PALETTE.lane;
+    ctx.lineWidth = 3;
+    ctx.setLineDash([26, 30]);
+    ctx.beginPath();
+    for (const ax of AVENUES) { ctx.moveTo(ax, 0); ctx.lineTo(ax, WORLD.height); }
+    for (const sy of STREETS) { ctx.moveTo(0, sy); ctx.lineTo(WORLD.width, sy); }
+    ctx.stroke();
+    ctx.setLineDash([]);
+    for (const b of city.buildings) {
+      if (!inView(cam, b.x + b.w / 2, b.y + b.h / 2, Math.max(b.w, b.h))) continue;
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      ctx.fillRect(b.x + 8, b.y + 10, b.w, b.h);
+      ctx.fillStyle = b.color;
+      ctx.fillRect(b.x, b.y, b.w, b.h);
+      ctx.fillStyle = b.glass;
+      ctx.fillRect(b.x + 8, b.y + 8, b.w - 16, 14);
+      if (b.name) text(b.name, b.x + b.w / 2, b.y + b.h / 2 + 5, 15, '#ffffff', 'center', true);
+    }
+    for (const palm of city.palms) {
+      if (!inView(cam, palm.x, palm.y, 40)) continue;
+      ctx.fillStyle = '#3f7d3a';
+      ctx.beginPath();
+      ctx.arc(palm.x + 4, palm.y - 26, 12, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const dot = (x, y, r, color) => {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    for (const item of state.pickups) {
+      if (!inView(cam, item.x, item.y, 30)) continue;
+      dot(item.x, item.y, 9, item.kind === 'health' ? '#e5484d' : item.kind === 'cash' ? '#2fae5f' : PALETTE.gold);
+    }
+    for (const ped of state.peds) {
+      if (!inView(cam, ped.x, ped.y, 30) || ped.down > 0) continue;
+      dot(ped.x, ped.y, 11, ped.shirt);
+    }
+    for (const cop of state.cops) {
+      if (!inView(cam, cop.x, cop.y, 30)) continue;
+      dot(cop.x, cop.y, 13, PALETTE.cop);
+    }
+    for (const rival of state.rivals) {
+      if (!inView(cam, rival.x, rival.y, 30)) continue;
+      dot(rival.x, rival.y, 13, PALETTE.rival);
+    }
+    for (const car of state.cars) {
+      if (!inView(cam, car.x, car.y, 60)) continue;
+      const spec = CAR_KINDS[car.kind];
+      ctx.save();
+      ctx.translate(car.x, car.y);
+      ctx.rotate(car.angle);
+      ctx.fillStyle = car.color;
+      ctx.fillRect(-spec.length / 2, -spec.width / 2, spec.length, spec.width);
+      ctx.fillStyle = 'rgba(180,220,240,0.85)';
+      ctx.fillRect(spec.length / 2 - 14, -spec.width / 2 + 3, 8, spec.width - 6);
+      ctx.restore();
+      if (car.driver === 'player') {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(car.x, car.y, 30, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+    const p = state.player;
+    if (p.onFoot && inView(cam, p.x, p.y, 40)) dot(p.x, p.y, 14, PALETTE.player);
+    for (const b of state.bullets) {
+      if (!inView(cam, b.x, b.y, 30)) continue;
+      ctx.strokeStyle = '#ffe9a3';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(b.x - b.vx * 0.02, b.y - b.vy * 0.02);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+    for (const f of state.floaters) {
+      if (!inView(cam, f.x, f.y, 40)) continue;
+      ctx.globalAlpha = Math.max(0, f.life / f.maxLife);
+      text(f.label, f.x, f.y, 17, f.color, 'center', true);
+    }
+    ctx.globalAlpha = 1;
     const obj = state.objective;
-    if (!obj) return;
-    const pulse = 1 + Math.sin(state.time * 4) * 0.15;
-    if (inView(cam, obj.x, obj.y, 60)) {
+    if (obj && inView(cam, obj.x, obj.y, 60)) {
       ctx.save();
       ctx.translate(obj.x, obj.y);
       ctx.rotate(Math.PI / 4);
       ctx.fillStyle = PALETTE.marker;
-      const s = 13 * pulse;
-      ctx.fillRect(-s / 2, -s / 2, s, s);
+      ctx.fillRect(-9, -9, 18, 18);
       ctx.restore();
-      ctx.strokeStyle = 'rgba(255,210,61,0.5)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(obj.x, obj.y, 26 * pulse, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.fillStyle = 'rgba(255,210,61,0.25)';
-      ctx.fillRect(obj.x - 3, obj.y - 120, 6, 110);
-    } else {
-      // Off-screen: an arrow on the view edge points at it.
-      const cx = cam.x + cam.w / 2;
-      const cy = cam.y + cam.h / 2;
-      const ang = Math.atan2(obj.y - cy, obj.x - cx);
-      const ex = cx + Math.cos(ang) * (Math.min(cam.w, cam.h) / 2 - 40);
-      const ey = cy + Math.sin(ang) * (Math.min(cam.w, cam.h) / 2 - 40);
-      ctx.save();
-      ctx.translate(ex, ey);
-      ctx.rotate(ang);
-      ctx.fillStyle = PALETTE.marker;
-      ctx.beginPath();
-      ctx.moveTo(18, 0);
-      ctx.lineTo(-10, -12);
-      ctx.lineTo(-10, 12);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-      const dist = Math.round(Math.hypot(obj.x - state.player.x, obj.y - state.player.y));
-      text(`${dist}m`, ex, ey - 18, 15, PALETTE.marker, 'center', true);
     }
   }
 
@@ -866,23 +448,14 @@ export function createRenderer(canvas) {
     const shX = sh > 0 ? (Math.random() - 0.5) * sh : 0;
     const shY = sh > 0 ? (Math.random() - 0.5) * sh : 0;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (world3D) {
+      ctx.clearRect(0, 0, viewW, viewH);
+    } else {
     ctx.fillStyle = '#0b0e18';
     ctx.fillRect(0, 0, viewW, viewH);
     ctx.save();
     ctx.translate(-cam.x + shX, -cam.y + shY);
-    drawGround(cam);
-    drawSkids(state, cam);
-    drawBuildings(state, city, cam);
-    drawPickups(state, cam);
-    drawPeople(state, cam);
-    for (const car of state.cars) {
-      if (!inView(cam, car.x, car.y, 60)) continue;
-      drawCarShape(car, car.driver === 'player');
-    }
-    drawPlayer(state, cam);
-    drawBulletsAndParticles(state, cam);
-    drawFloaters(state, cam);
-    drawMarker(state, cam);
+    drawFallbackWorld(state, city, cam);
     ctx.restore();
     // Speed lines at very high speed: short streaks near the screen edges.
     if (!state.player.onFoot) {
@@ -924,6 +497,7 @@ export function createRenderer(canvas) {
     ctx.translate(-cam.x + shX, -cam.y + shY);
     drawHeadlights(state, cam);
     ctx.restore();
+    }
     if (screen === SCREEN_TITLE) {
       const saveLine = ui.hasSave
         ? (ui.saveStoryDone ? `Saved game: $${ui.saveCash.toLocaleString('en-US')} — story complete, free roam` : `Saved game: $${ui.saveCash.toLocaleString('en-US')} — mission ${ui.saveMission + 1} of ${MISSIONS.length}`)
@@ -955,7 +529,6 @@ export function createRenderer(canvas) {
   }
 
   resize();
-  buildGround();
   window.addEventListener('resize', resize);
-  return { draw, camera, viewSize() { return { w: viewW, h: viewH }; } };
+  return { draw, camera, setWorld3D(v) { world3D = !!v; }, viewSize() { return { w: viewW, h: viewH }; } };
 }

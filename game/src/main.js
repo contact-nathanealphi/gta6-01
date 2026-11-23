@@ -12,6 +12,7 @@ import { createGame, EVENT_BUSTED, EVENT_MISSION, EVENT_STORY, EVENT_WASTED } fr
 import { createInput, PRESS_CONFIRM, PRESS_ENTER, PRESS_HORN, PRESS_MUTE, PRESS_PAUSE, PRESS_PUNCH, PRESS_RELOAD, PRESS_SAVE } from './input.js';
 import { createAudio } from './audio.js';
 import { createRenderer, SCREEN_BUSTED, SCREEN_COMPLETE, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE, SCREEN_WASTED } from './render.js';
+import { createWebGL3DViceDuskRenderer } from './renderer/webgl3d.js';
 import { stageShot } from './shots.js';
 
 /** The longest frame the loop catches up on; a longer stall (a hidden tab) is dropped, not replayed. */
@@ -30,6 +31,23 @@ const timeParam = Number.parseInt(params.get('time') ?? '', 10);
 if (Number.isInteger(timeParam) && timeParam >= 0) game.state.time = timeParam;
 const renderer = createRenderer(canvas);
 const audio = createAudio();
+// True 3D Vice-Dusk WebGL2 renderer (null when WebGL2 is unavailable —
+// the game then stays fully 2D). Initialises in the background so a slow
+// shader fetch never blocks the first frame.
+let gl3d = null;
+const gl3dReady = createWebGL3DViceDuskRenderer(canvas).then((r) => {
+  gl3d = r;
+  if (gl3d) gl3d.init(game.city);
+  return gl3d;
+}).catch(() => { gl3d = null; return null; });
+
+function syncWorld3D(state, screen) {
+  if (!gl3d) return;
+  gl3d.draw(state, game.city, screen);
+  const is3d = gl3d.mode !== 2;
+  renderer.setWorld3D(is3d);
+  gl3d.setVisible(is3d);
+}
 
 function readSave() {
   try {
@@ -49,14 +67,17 @@ function writeSave() {
   }
 }
 
-function runShot(name) {
+async function runShot(name) {
   const scene = stageShot(name, game);
   // A ?time=N override survives the shot's reset (it only affects the
   // rendering clock, not the staged scene).
   if (Number.isInteger(timeParam) && timeParam >= 0) game.state.time = timeParam;
+  // Wait for the 3D renderer (max 3 s) so the shot is captured in 3D.
+  await Promise.race([gl3dReady, new Promise((res) => setTimeout(res, 3000))]);
   let painted = 0;
   function paint() {
     const nearCar = game.state.player.onFoot ? game.nearestCar(85) : null;
+    syncWorld3D(game.state, scene.screen);
     renderer.draw(game.state, game.city, scene.screen, { hasSave: false, nearCar: nearCar ? `Steal the ${nearCar.kind}` : null, mouse: null });
     painted += 1;
     if (painted < 2) requestAnimationFrame(paint);
@@ -222,6 +243,7 @@ function runGame() {
     const state = game.state;
     const nearCar = state.player.onFoot ? game.nearestCar(85) : null;
     const mouse = input.mouse();
+    syncWorld3D(state, screen);
     renderer.draw(state, game.city, screen, {
       hasSave: !!save,
       saveCash: save ? save.cash : 0,
