@@ -51,7 +51,7 @@ void main(){
   float wet=step(0.9,n.y)*(1.0-step(0.3,vCol.r))*(1.0-step(0.3,vCol.g));
   float glint=pow(max(dot(r,sd),0.0),24.0);
   float sheen=pow(max(dot(r,normalize(vec3(0.0,0.4,-1.0))),0.0),6.0);
-  col+=uSunCol*glint*wet*0.9+vec3(1.0,0.3,0.55)*sheen*wet*0.22;
+  col+=uSunCol*glint*wet*0.35+vec3(1.0,0.3,0.55)*sheen*wet*0.22;
   float f=1.0-exp(-uFogDen*uFogDen*vDist*vDist);
   col=mix(col,uFogCol,clamp(f,0.0,1.0));
   col=mix(col,base*1.7,vEmi);

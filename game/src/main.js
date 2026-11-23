@@ -1,4 +1,4 @@
-// Boot and the one loop. ?seed=N fixes the city; ?shot= stages a scene for screenshots.
+// Boot and the one loop. ?seed=N fixes the city; ?shot= stages a scene.
 import { SAVE_KEY, STEP } from './tune.js';
 import { createRng } from './rng.js';
 import { createGame, EVENT_BUSTED, EVENT_MISSION, EVENT_STORY, EVENT_WASTED } from './world.js';
@@ -14,6 +14,8 @@ const params = new URLSearchParams(window.location.search);
 const shot = params.get('shot');
 const seedParam = Number.parseInt(params.get('seed') ?? '', 10);
 const seed = Number.isInteger(seedParam) ? seedParam : Math.floor(Math.random() * 4294967296);
+const camParam = params.get('cam');
+const todParam = params.get('tod');
 
 const canvas = document.getElementById('game');
 const status = document.getElementById('status');
@@ -58,14 +60,14 @@ function writeSave() {
 }
 
 async function runShot(name) {
-  const scene = stageShot(name, game);
+  const scene = stageShot(name, game, { cam: camParam, tod: todParam });
   if (Number.isInteger(timeParam) && timeParam >= 0) game.state.time = timeParam;
   await Promise.race([gl3dReady, new Promise((res) => setTimeout(res, 3000))]);
   let painted = 0;
   function paint() {
     const nearCar = game.state.player.onFoot ? game.nearestCar(85) : null;
     syncWorld3D(game.state, scene.screen);
-    renderer.draw(game.state, game.city, scene.screen, { hasSave: false, nearCar: nearCar ? `Steal the ${nearCar.kind}` : null, mouse: null, sys: game.sys });
+    renderer.draw(game.state, game.city, scene.screen, { hasSave: false, nearCar: nearCar ? `Steal the ${nearCar.kind}` : null, mouse: null, sys: game.sys, wheelOpen: !!scene.wheelOpen, wheelSlot: scene.wheelSlot || 0, wheelPos: scene.wheelPos || null });
     painted += 1;
     if (painted < 2) requestAnimationFrame(paint);
     else window.__shotReady = true;
@@ -121,10 +123,9 @@ function runGame() {
   }
 
   function stepWorld(presses) {
-    const state = game.state;
-    const p = state.player;
+    const s = game.state;
     const mouse = input.mouse();
-    const cam = renderer.camera(state);
+    const cam = renderer.camera(s);
     const worldInput = {
       up: input.up(),
       down: input.down(),
@@ -133,56 +134,26 @@ function runGame() {
       run: input.run(),
       enter: !!(presses & PRESS_ENTER),
       punch: !!(presses & PRESS_PUNCH),
-      reload: !!(presses & PRESS_RELOAD) && state.player.onFoot,
+      reload: !!(presses & PRESS_RELOAD) && s.player.onFoot,
       shoot: input.shooting(),
       aimX: cam.x + mouse.x,
       aimY: cam.y + mouse.y,
     };
     const events = game.step(STEP, worldInput);
-    if (events & EVENT_BUSTED) {
-      screen = SCREEN_BUSTED;
-      audio.busted();
-      announce('Busted by the NBPD.');
-    } else if (events & EVENT_WASTED) {
-      screen = SCREEN_WASTED;
-      audio.busted();
-      announce('Wasted. You wake up at Neon Bay General.');
-    } else if (events & EVENT_STORY) {
-      screen = SCREEN_COMPLETE;
-      audio.story();
-      writeSave();
-      announce('Story complete. The big score is yours.');
-    } else if (events & EVENT_MISSION) {
-      audio.mission();
-      writeSave();
-    }
-    if (state.shotSound) {
-      state.shotSound = false;
-      audio.shot();
-    }
-    if (state.punchSound) {
-      state.punchSound = false;
-      audio.punch();
-    }
-    if (state.pickupSound) {
-      state.pickupSound = false;
-      audio.pickup();
-    }
-    if (state.cashSound) {
-      state.cashSound = false;
-      audio.cash();
-    }
-    if (state.skidSound) {
-      state.skidSound = false;
-      audio.screech();
-    }
-    if (state.crashLoud) {
-      state.crashLoud = false;
-      audio.crash();
-    }
+    if (events & EVENT_BUSTED) { screen = SCREEN_BUSTED; audio.busted(); announce('Busted by the NBPD.'); }
+    else if (events & EVENT_WASTED) { screen = SCREEN_WASTED; audio.busted(); announce('Wasted. You wake up at Neon Bay General.'); }
+    else if (events & EVENT_STORY) { screen = SCREEN_COMPLETE; audio.story(); writeSave(); announce('Story complete. The big score is yours.'); }
+    else if (events & EVENT_MISSION) { audio.mission(); writeSave(); }
+    const snd = (k, f) => { if (s[k]) { s[k] = false; audio[f](); } };
+    snd('shotSound', 'shot');
+    snd('punchSound', 'punch');
+    snd('pickupSound', 'pickup');
+    snd('cashSound', 'cash');
+    snd('skidSound', 'screech');
+    snd('crashLoud', 'crash');
     const car = game.playerCar();
     audio.engine(car ? Math.min(1, Math.abs(car.speed) / 520) : 0, !!car);
-    audio.siren(state.sirenOn);
+    audio.siren(s.sirenOn);
   }
 
   function frame(now) {
@@ -279,6 +250,9 @@ function runGame() {
   });
 
   announce('Neon Bay. Press Enter to play.');
+  canvas.addEventListener('click', () => {
+    if (screen === SCREEN_TITLE) { if (save) startContinued(); else startFresh(); }
+  });
   requestAnimationFrame(frame);
 }
 

@@ -10,11 +10,8 @@ export const WEAPON_SLOTS_6 = [
 export class WeaponWheelSystem {
   constructor(state) { this.s = state; }
   available(slot) {
-    const p = this.s.player, need = WEAPON_SLOTS_6[slot - 1].need;
-    if (need === 'pistol') return !!p.pistol;
-    if (need === 'shotgun') return p.shotgun > 0;
-    if (need === 'rpg') return p.rpg > 0;
-    return true;
+    const p = this.s.player, n = WEAPON_SLOTS_6[slot - 1].need;
+    return n === 'pistol' ? !!p.pistol : n === 'shotgun' ? p.shotgun > 0 : n === 'rpg' ? p.rpg > 0 : true;
   }
   select(slot) {
     if (slot < 1 || slot > 6) return false;
@@ -32,27 +29,28 @@ export class WeaponWheelSystem {
   current() { return this.s.player.weapon || 1; }
 }
 
-export function renderRadialWeaponWheel(hud, state, highlight) {
-  const cx = hud.w / 2, cy = hud.h / 2, R = 150;
-  hud.rect(0, 0, hud.w, hud.h, 'rgba(8,10,20,0.45)');
-  hud.text('WEAPON WHEEL — SLOW-MO 0.2x', cx, cy - R - 64, 20, '#f2c94c', 'center', true);
+export function renderRadialWeaponWheel(hud, state, highlight, pos) {
+  const T = hud.text, C = hud.circ, G = hud.ring;
+  const cx = pos ? pos.x : hud.w / 2, cy = pos ? pos.y : hud.h / 2, R = pos ? 130 : 150;
+  hud.rect(0, 0, hud.w, hud.h, pos ? 'rgba(8,10,20,0.25)' : 'rgba(8,10,20,0.45)');
+  if (!pos) T('WEAPON WHEEL — SLOW-MO 0.2x', cx, cy - R - 64, 20, '#f2c94c', 'center', true);
   for (let i = 0; i < 6; i += 1) {
     const a = (-90 + i * 60) * Math.PI / 180;
     const x = cx + Math.cos(a) * R, y = cy + Math.sin(a) * R;
     const slot = WEAPON_SLOTS_6[i];
     const cur = state.player.weapon === slot.key;
     const hot = highlight === slot.key;
-    hud.circ(x, y, 52, hot ? 'rgba(242,201,76,0.95)' : cur ? 'rgba(40,48,70,0.95)' : 'rgba(12,16,26,0.9)');
-    hud.ring(x, y, 52, hot ? '#f2c94c' : slot.color);
-    hud.text('[' + slot.key + ']', x, y - 18, 13, slot.color, 'center', true);
-    hud.text(slot.name, x, y + 2, 14, '#ffffff', 'center', true);
-    hud.text(slot.desc, x, y + 20, 11, '#b9b3a4', 'center');
+    C(x, y, 52, hot ? 'rgba(242,201,76,0.95)' : cur ? 'rgba(40,48,70,0.95)' : 'rgba(12,16,26,0.9)');
+    G(x, y, 52, hot ? '#f2c94c' : slot.color);
+    T('[' + slot.key + ']', x, y - 18, 13, slot.color, 'center', true);
+    T(slot.name, x, y + 2, 14, '#ffffff', 'center', true);
+    T(slot.desc, x, y + 20, 11, '#b9b3a4', 'center');
   }
   const cur = WEAPON_SLOTS_6[(state.player.weapon || 1) - 1];
-  hud.circ(cx, cy, 58, 'rgba(12,16,26,0.95)');
-  hud.ring(cx, cy, 58, '#f2c94c');
-  hud.text(cur.name, cx, cy - 4, 15, '#ffffff', 'center', true);
-  hud.text('release Tab / Q to confirm', cx, cy + 16, 12, '#b9b3a4', 'center');
+  C(cx, cy, 58, 'rgba(12,16,26,0.95)');
+  G(cx, cy, 58, '#f2c94c');
+  T(cur.name, cx, cy - 4, 15, '#ffffff', 'center', true);
+  if (!pos) T('release Tab / Q to confirm', cx, cy + 16, 12, '#b9b3a4', 'center');
 }
 
 export function detonateHydraRpg(state, x, y) {

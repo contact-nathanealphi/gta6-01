@@ -8,8 +8,8 @@ export const CITY_DISTRICTS_6 = [
 ];
 
 export const RESPECT_RANKS = [
-  { min: 0, name: 'Street Runner' }, { min: 20, name: 'Hustler' }, { min: 40, name: 'Made Man' },
-  { min: 60, name: 'Vice Lieutenant' }, { min: 80, name: 'Syndicate Boss' }, { min: 95, name: 'Vice Kingpin' },
+  [0, 'Street Runner'], [20, 'Hustler'], [40, 'Made Man'],
+  [60, 'Vice Lieutenant'], [80, 'Syndicate Boss'], [95, 'Vice Kingpin'],
 ];
 
 export function districtAt(x, y) {
@@ -19,8 +19,8 @@ export function districtAt(x, y) {
 
 export function rankFor(rep) {
   let r = RESPECT_RANKS[0];
-  for (const k of RESPECT_RANKS) if (rep >= k.min) r = k;
-  return r;
+  for (const k of RESPECT_RANKS) if (rep >= k[0]) r = k;
+  return { name: r[1] };
 }
 
 export class DistrictStandingSystem {
@@ -35,18 +35,18 @@ export class DistrictStandingSystem {
 }
 
 export function renderFixerDialogueBox(hud, state) {
+  const T = hud.text, R = hud.rect, C = hud.circ, G = hud.ring;
   const line = state.dialogue[0] || '';
   const w = 680, x = (hud.w - w) / 2, y = hud.h - 116;
-  hud.rect(x, y, w, 82, 'rgba(12,16,26,0.92)');
-  hud.rect(x, y, w, 3, '#ff2e88');
-  const px = x + 8, py = y + 6;
-  hud.circ(px + 35, py + 35, 35, '#2a0e2e');
-  hud.ring(px + 35, py + 35, 35, '#ff2e88');
-  hud.circ(px + 35, py + 34, 19, '#e8b98a');
-  hud.rect(px + 14, py + 8, 42, 20, '#1a1a22');
-  hud.rect(px + 21, py + 30, 9, 4, '#111');
-  hud.rect(px + 40, py + 30, 9, 4, '#111');
-  hud.rect(px + 28, py + 44, 15, 4, '#c22e5e');
-  hud.text("ELENA 'VIPER' CRUZ — SYNDICATE FIXER", x + 92, y + 28, 14, '#ff2e88', 'left', true);
-  hud.text(line, x + 92, y + 56, 16, '#ffe9c4', 'left');
+  R(x, y, w, 82, 'rgba(12,16,26,0.92)');
+  R(x, y, w, 3, '#ff2e88');
+  const px = x + 8, py = y + 6, cx = px + 35, cy = py + 35;
+  C(cx, cy, 35, '#2a0e2e');
+  G(cx, cy, 35, '#ff2e88');
+  C(cx, cy - 1, 19, '#e8b98a');
+  R(px + 14, py + 8, 42, 20, '#1a1a22');
+  for (const ex of [21, 40]) R(px + ex, py + 30, 9, 4, '#111');
+  R(px + 28, py + 44, 15, 4, '#c22e5e');
+  T("ELENA 'VIPER' CRUZ — SYNDICATE FIXER", x + 92, y + 28, 14, '#ff2e88', 'left', true);
+  T(line, x + 92, y + 56, 16, '#ffe9c4', 'left');
 }

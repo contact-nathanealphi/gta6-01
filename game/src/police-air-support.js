@@ -71,6 +71,7 @@ export function renderChopperSearchlight(ctx, state) {
 }
 
 export function renderNbpdDispatchBoard(hud, state) {
+  const T = hud.text, R = hud.rect;
   const p = state.player;
   const units = [];
   if (state.air && state.air.heli) units.push(['AIR-1', 'SPOTLIGHT', state.air.heli]);
@@ -82,15 +83,14 @@ export function renderNbpdDispatchBoard(hud, state) {
   }
   for (const c of state.cops) units.push(['FOOT-' + (units.length + 1), 'ON FOOT', c]);
   const w = 224, x = hud.w - w - 14, y = 300;
-  hud.rect(x, y, w, 34 + units.length * 20, 'rgba(12,16,26,0.78)');
-  hud.rect(x, y, w, 3, '#ff2e2e');
-  hud.text('NBPD DISPATCH — ' + units.length + ' UNITS', x + 10, y + 22, 14, '#ff5a5a', 'left', true);
+  R(x, y, w, 34 + units.length * 20, 'rgba(12,16,26,0.78)');
+  R(x, y, w, 3, '#ff2e2e');
+  T('NBPD DISPATCH — ' + units.length + ' UNITS', x + 10, y + 22, 14, '#ff5a5a', 'left', true);
   for (let i = 0; i < units.length; i += 1) {
-    const u = units[i];
-    const d = Math.round(Math.hypot(u[2].x - p.x, u[2].y - p.y));
-    hud.text(u[0], x + 10, y + 46 + i * 20, 13, '#f4f1e6', 'left', true);
-    hud.text(u[1], x + 96, y + 46 + i * 20, 13, '#f2c94c', 'left');
-    hud.text(d + 'm', x + w - 10, y + 46 + i * 20, 13, '#b9b3a4', 'right');
+    const u = units[i], d = Math.round(Math.hypot(u[2].x - p.x, u[2].y - p.y)), yy = y + 46 + i * 20;
+    T(u[0], x + 10, yy, 13, '#f4f1e6', 'left', true);
+    T(u[1], x + 96, yy, 13, '#f2c94c', 'left');
+    T(d + 'm', x + w - 10, yy, 13, '#b9b3a4', 'right');
   }
 }
 

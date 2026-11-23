@@ -1,4 +1,4 @@
-// Neon Bay — rules and state: player, traffic, police, wanted, missions, combat.
+// Neon Bay — rules and state.
 
 import { AVENUES, CAR_KINDS, COPS, PALETTE, PED_COUNT, PLAYER, RIVAL, STREETS, TRAFFIC_COUNT, WANTED, WORLD } from './tune.js';
 import { buildCity, lineBlocked, randomRoadPoint, randomSidewalkPoint, resolveBuildings } from './city.js';
@@ -16,11 +16,10 @@ export const MISSIONS = [
   {
     title: 'First Delivery',
     giver: "Mama Rosa",
-    brief: ["Rico, welcome back. The docks don't pay like they used to.",
-      'Take the package to Bayfront Mall. No stops.'],
+    brief: ["Rico, welcome back. Take the package to Bayfront Mall. No stops."],
     stages: [
       { kind: 'go', x: 870, y: 550, label: "Pick up the package at Mama Rosa's" },
-      { kind: 'go', x: 1470, y: 1550, label: 'Deliver the package to Bayfront Mall' },
+      { kind: 'go', x: 1470, y: 1550, label: 'Deliver it to Bayfront Mall' },
     ],
     reward: 150,
     quip: 'Fast, but you made it. Good.',
@@ -28,8 +27,7 @@ export const MISSIONS = [
   {
     title: 'A Quiet Word',
     giver: "Mama Rosa",
-    brief: ['The Harbor Boys lean on my suppliers. A word, they said.',
-      'Grab the pistol, then have that word with their lookouts.'],
+    brief: ['The Harbor Boys lean on my suppliers. Grab the pistol, then have a word with their lookouts.'],
     stages: [
       { kind: 'go', x: 870, y: 1550, label: "Pick up the pistol at Rico's Garage" },
       { kind: 'kill', count: 3, at: [{ x: 1300, y: 1450 }, { x: 1380, y: 1620 }, { x: 1240, y: 1680 }], label: 'Deal with the 3 Harbor Boys lookouts' },
@@ -40,8 +38,7 @@ export const MISSIONS = [
   {
     title: 'The Golden Comet',
     giver: 'Mama Rosa',
-    brief: ['A Golden Comet sits in the mall lot. Its owner owes me. A lot.',
-      'Take it to your garage. Parked cars do not argue.'],
+    brief: ['A Golden Comet sits in the mall lot. Its owner owes me. Take it to your garage.'],
     stages: [
       { kind: 'steal', carKind: 'sports', x: 1350, y: 1650, label: 'Steal the Golden Comet from the mall lot' },
       { kind: 'deliver', x: 870, y: 1550, label: "Bring the Comet to Rico's Garage" },
@@ -52,8 +49,7 @@ export const MISSIONS = [
   {
     title: 'Dockside Trouble',
     giver: 'Mama Rosa',
-    brief: ['The Harbor Boys took my shipment at the port. Five of them, armed.',
-      'Go to the docks. Bring my crates back.'],
+    brief: ['The Harbor Boys took my shipment at the port. Five of them, armed. Bring my crates back.'],
     stages: [
       { kind: 'go', x: 2400, y: 2270, label: 'Reach the Port of Neon Bay' },
       { kind: 'kill', count: 5, at: [{ x: 2350, y: 2200 }, { x: 2450, y: 2180 }, { x: 2520, y: 2260 }, { x: 2300, y: 2300 }, { x: 2470, y: 2330 }], label: 'Clear the 5 Harbor Boys at the docks' },
@@ -64,8 +60,7 @@ export const MISSIONS = [
   {
     title: 'Shake the Heat',
     giver: 'Mama Rosa',
-    brief: ['The NBPD saw your face at the docks. Three stars, Rico.',
-      'Survive the chase, then come home.'],
+    brief: ['The NBPD saw your face at the docks. Three stars, Rico. Survive the chase, then come home.'],
     stages: [
       { kind: 'survive', seconds: 30, label: 'Survive the police chase — 30 seconds' },
       { kind: 'go', x: 870, y: 550, label: "Get back to Mama Rosa's Diner" },
@@ -76,8 +71,7 @@ export const MISSIONS = [
   {
     title: 'The Big Score',
     giver: 'Mama Rosa',
-    brief: ['One crate at the port. Rosa gold — enough to buy the docks.',
-      'Grab it and run. The whole NBPD will be on you.'],
+    brief: ['One crate at the port. Rosa gold — enough to buy the docks. Grab it and run.'],
     stages: [
       { kind: 'go', x: 2400, y: 2270, label: 'Reach the port docks' },
       { kind: 'carry', x: 870, y: 1550, label: "Carry the crate to Rico's Garage" },
@@ -88,8 +82,7 @@ export const MISSIONS = [
   {
     title: 'The Getaway',
     giver: 'Mama Rosa',
-    brief: ['The crate is ours — but the NBPD locked the city down. Four stars.',
-      'Shake the chase, then run for the beach boat.'],
+    brief: ['The crate is ours — but the NBPD locked the city down. Four stars. Shake the chase, run for the beach boat.'],
     stages: [
       { kind: 'survive', seconds: 20, label: 'Survive the lockdown chase — 20 seconds' },
       { kind: 'go', x: 1800, y: 2560, label: 'Reach the boat at the south beach' },
@@ -154,21 +147,12 @@ export function createGame(rng) {
   state.upgrades = garage.levels;
 
   function newPlayer(x, y) {
-    return {
-      x, y, angle: -Math.PI / 2, speed: 0, onFoot: true, carId: 0, radius: PLAYER.radius,
-      health: PLAYER.health, pistol: false, mag: 0, shotgun: 0, weapon: 2, rpg: 3, armor: 0, punchCd: 0, shootCd: 0, reloadT: 0, invuln: 0,
-      aimX: x, aimY: y - 100,
-    };
+    return { x, y, angle: -Math.PI / 2, speed: 0, onFoot: true, carId: 0, radius: PLAYER.radius, health: PLAYER.health, pistol: false, mag: 0, shotgun: 0, weapon: 2, rpg: 3, armor: 0, punchCd: 0, shootCd: 0, reloadT: 0, invuln: 0, aimX: x, aimY: y - 100 };
   }
 
   function newCar(kind, x, y, angle, driver) {
     const spec = CAR_KINDS[kind];
-    const car = {
-      id: nextCarId, kind, x, y, angle, speed: 0, color: spec.color,
-      driver, health: 100, smoked: false, radius: 22,
-      road: null, line: 0, dir: 1, targetSpeed: 0, turnCd: 0, deployT: 0,
-    };
-    nextCarId += 1;
+    const car = { id: nextCarId++, kind, x, y, angle, speed: 0, color: spec.color, driver, health: 100, smoked: false, radius: 22, road: null, line: 0, dir: 1, targetSpeed: 0, turnCd: 0, deployT: 0 };
     return car;
   }
 
@@ -176,19 +160,13 @@ export function createGame(rng) {
     const point = randomRoadPoint(rng, near, 500);
     const vertical = Math.abs(point.x - AVENUES[0]) < 40 || rng.chance(0.5);
     const car = newCar(rng.pick(['sedan', 'sedan', 'taxi', 'van', 'pickup', 'muscle', 'limo']), point.x, point.y, 0, 'traffic');
-    if (vertical) {
-      car.road = 'v';
-      car.line = AVENUES.reduce((best, ax) => (Math.abs(ax - point.x) < Math.abs(best - point.x) ? ax : best), AVENUES[0]);
-      car.dir = rng.chance(0.5) ? 1 : -1;
-      car.angle = car.dir === 1 ? Math.PI / 2 : -Math.PI / 2;
-      car.x = car.line + (car.dir === 1 ? -25 : 25);
-    } else {
-      car.road = 'h';
-      car.line = STREETS.reduce((best, sy) => (Math.abs(sy - point.y) < Math.abs(best - point.y) ? sy : best), STREETS[0]);
-      car.dir = rng.chance(0.5) ? 1 : -1;
-      car.angle = car.dir === 1 ? 0 : Math.PI;
-      car.y = car.line + (car.dir === 1 ? 25 : -25);
-    }
+    const roads = vertical ? AVENUES : STREETS;
+    const along = vertical ? point.x : point.y;
+    car.road = vertical ? 'v' : 'h';
+    car.line = roads.reduce((best, v) => (Math.abs(v - along) < Math.abs(best - along) ? v : best), roads[0]);
+    car.dir = rng.chance(0.5) ? 1 : -1;
+    if (vertical) { car.angle = car.dir === 1 ? Math.PI / 2 : -Math.PI / 2; car.x = car.line + (car.dir === 1 ? -25 : 25); }
+    else { car.angle = car.dir === 1 ? 0 : Math.PI; car.y = car.line + (car.dir === 1 ? 25 : -25); }
     car.speed = car.targetSpeed = rng.range(160, 250);
     state.cars.push(car);
     return car;
@@ -202,12 +180,7 @@ export function createGame(rng) {
 
   function spawnPed() {
     const point = randomSidewalkPoint(rng);
-    const ped = {
-      x: point.x, y: point.y, angle: rng.range(0, Math.PI * 2), speed: 0,
-      target: randomSidewalkPoint(rng), down: 0, scared: 0, fleeX: 0, fleeY: 0, radius: 12,
-      shirt: rng.pick(['#e8e2d4', '#7fb3d5', '#d4693c', '#9cc3d8', '#c2a06a', '#8a4d9e', '#4d7d5a', '#e8b4b8', '#5a6b7d', '#f2c94c']),
-      jogger: rng.chance(0.15),
-    };
+    const ped = { x: point.x, y: point.y, angle: rng.range(0, Math.PI * 2), speed: 0, target: randomSidewalkPoint(rng), down: 0, scared: 0, fleeX: 0, fleeY: 0, radius: 12, shirt: rng.pick(['#e8e2d4', '#7fb3d5', '#d4693c', '#9cc3d8', '#c2a06a', '#8a4d9e', '#4d7d5a', '#e8b4b8', '#5a6b7d', '#f2c94c']), jogger: rng.chance(0.15) };
     ped.speed = ped.jogger ? rng.range(130, 170) : rng.range(55, 95);
     state.peds.push(ped);
     return ped;
@@ -439,25 +412,27 @@ export function createGame(rng) {
 
   function step(dt, input) {
     let events = 0;
-    state.time += dt;
-    if (state.shake > 0) state.shake = Math.max(0, state.shake - dt * 26);
-    if (state.wantedFlash > 0) state.wantedFlash = Math.max(0, state.wantedFlash - dt);
-    if (state.hurtFlash > 0) state.hurtFlash = Math.max(0, state.hurtFlash - dt * 2.5);
-    if (state.skidCd > 0) state.skidCd = Math.max(0, state.skidCd - dt);
-    if (state.nearMissCd > 0) state.nearMissCd -= dt;
-    if (state.nearMissStreakT > 0) {
-      state.nearMissStreakT -= dt;
-      if (state.nearMissStreakT <= 0) state.nearMissStreak = 0;
+    const s = state;
+    s.time += dt;
+    const dec = (k, r) => { if (s[k] > 0) s[k] = Math.max(0, s[k] - dt * r); };
+    dec('shake', 26);
+    dec('wantedFlash', 1);
+    dec('hurtFlash', 2.5);
+    dec('skidCd', 1);
+    if (s.nearMissCd > 0) s.nearMissCd -= dt;
+    if (s.nearMissStreakT > 0) {
+      s.nearMissStreakT -= dt;
+      if (s.nearMissStreakT <= 0) s.nearMissStreak = 0;
     }
-    if (state.bannerTimer > 0) state.bannerTimer -= dt;
-    if (state.dialogue.length > 0) {
-      state.dialogueTimer += dt;
-      if (state.dialogueTimer > 2.6) {
-        state.dialogue.shift();
-        state.dialogueTimer = 0;
+    if (s.bannerTimer > 0) s.bannerTimer -= dt;
+    if (s.dialogue.length > 0) {
+      s.dialogueTimer += dt;
+      if (s.dialogueTimer > 2.6) {
+        s.dialogue.shift();
+        s.dialogueTimer = 0;
       }
     }
-    const p = state.player;
+    const p = s.player;
     if (p.invuln > 0) p.invuln -= dt;
     if (p.armor > 0) p.armor = Math.max(0, p.armor - dt);
     if (p.punchCd > 0) p.punchCd -= dt;
@@ -488,8 +463,8 @@ export function createGame(rng) {
     race.update(dt);
     updateAllies(dt);
     updateBullets(dt);
-    if (state.wastedFlag) {
-      state.wastedFlag = false;
+    if (s.wastedFlag) {
+      s.wastedFlag = false;
       events |= EVENT_WASTED;
     }
     updatePickups(dt);
@@ -500,7 +475,7 @@ export function createGame(rng) {
     events |= updateWanted(dt);
     events |= updateMissions(dt);
     maintainCrowd();
-    state.sirenOn = state.wanted > 0 && (state.cops.length > 0 || state.cars.some((c) => c.driver === 'police'));
+    s.sirenOn = s.wanted > 0 && (s.cops.length > 0 || s.cars.some((c) => c.driver === 'police'));
     return events;
   }
 
@@ -536,38 +511,33 @@ export function createGame(rng) {
     }
     if (input.shoot && p.shootCd <= 0 && p.reloadT <= 0) {
       const w = p.weapon || 1;
+      const ma = Math.atan2(p.aimY - p.y, p.aimX - p.x);
+      const muzzle = (n, r) => burst(p.x + Math.cos(ma) * 26, p.y + Math.sin(ma) * 26, '#ffe9a3', n, r);
+      let fired = true;
       if (w === 6 && p.rpg > 0) {
         p.shootCd = 1.1; p.rpg -= 1;
         fireBullet(p.x, p.y, p.aimX, p.aimY, 'player', 120, 700, true);
-        state.shotFired = true; state.shotSound = true;
       } else if (w === 3) {
         p.shootCd = 0.09;
         fireBullet(p.x, p.y, p.aimX, p.aimY, 'player', 10, 1000);
-        state.shotFired = true; state.shotSound = true;
       } else if (w === 5 && p.pistol && p.mag > 0) {
         p.shootCd = 0.28; p.mag -= 1;
         fireBullet(p.x, p.y, p.aimX, p.aimY, 'player', 34, 1100);
-        state.shotFired = true; state.shotSound = true;
       } else if (w === 4 && p.shotgun > 0) {
         p.shootCd = 0.7;
         p.shotgun -= 1;
         for (let i = -2; i <= 2; i += 1) {
-          const a = Math.atan2(p.aimY - p.y, p.aimX - p.x) + i * 0.07;
+          const a = ma + i * 0.07;
           state.bullets.push({ x: p.x + Math.cos(a) * 24, y: p.y + Math.sin(a) * 24, vx: Math.cos(a) * 800, vy: Math.sin(a) * 800, life: 0.5, from: 'player', damage: 12 });
         }
-        const ma = Math.atan2(p.aimY - p.y, p.aimX - p.x);
-        burst(p.x + Math.cos(ma) * 26, p.y + Math.sin(ma) * 26, '#ffe9a3', 7, 180);
-        state.shotFired = true;
-        state.shotSound = true;
+        muzzle(7, 180);
       } else if (w === 2 && p.pistol && p.mag > 0) {
         p.shootCd = 0.2;
         p.mag -= 1;
         fireBullet(p.x, p.y, p.aimX, p.aimY, 'player', PLAYER.pistolDamage, 950);
-        const ma = Math.atan2(p.aimY - p.y, p.aimX - p.x);
-        burst(p.x + Math.cos(ma) * 26, p.y + Math.sin(ma) * 26, '#ffe9a3', 4, 140);
-        state.shotFired = true;
-        state.shotSound = true;
-      }
+        muzzle(4, 140);
+      } else fired = false;
+      if (fired) { state.shotFired = true; state.shotSound = true; }
     }
     if (input.reload && p.pistol && p.mag < PLAYER.magSize && p.reloadT <= 0) p.reloadT = 0.9;
     return events;
@@ -619,79 +589,63 @@ export function createGame(rng) {
       p.onFoot = true;
       return 0;
     }
+    const s = state;
     const spec = CAR_KINDS[car.kind];
-    const top = spec.topSpeed * (1 + 0.15 * (state.upgrades.engine || 0));
+    const L = spec.length, W = spec.width;
+    let ca = Math.cos(car.angle), sa = Math.sin(car.angle);
+    const top = spec.topSpeed * (1 + 0.15 * (s.upgrades.engine || 0));
     const throttle = (input.up ? 1 : 0) - (input.down ? 0.65 : 0);
     if (throttle > 0) car.speed += spec.accel * throttle * dt;
     else if (throttle < 0) car.speed += spec.accel * throttle * dt * 1.4;
     else car.speed -= car.speed * 0.9 * dt;
     if (throttle > 0 && Math.abs(car.speed) > 120 && rng.chance(0.12)) {
-      const bx = car.x - Math.cos(car.angle) * (spec.length / 2);
-      const by = car.y - Math.sin(car.angle) * (spec.length / 2);
-      state.particles.push({ x: bx, y: by, vx: -Math.cos(car.angle) * 40, vy: -Math.sin(car.angle) * 40, life: 0.5, maxLife: 0.5, color: '#9a9a9a', size: 3 });
+      s.particles.push({ x: car.x - ca * (L / 2), y: car.y - sa * (L / 2), vx: -ca * 40, vy: -sa * 40, life: 0.5, maxLife: 0.5, color: '#9a9a9a', size: 3 });
     }
     if (car.health < 40 && !car.smoked && rng.chance(0.25)) {
-      const fx = car.x + Math.cos(car.angle) * (spec.length / 2);
-      const fy = car.y + Math.sin(car.angle) * (spec.length / 2);
-      state.particles.push({ x: fx, y: fy, vx: 0, vy: -30, life: 0.7, maxLife: 0.7, color: '#666666', size: 4 });
+      s.particles.push({ x: car.x + ca * (L / 2), y: car.y + sa * (L / 2), vx: 0, vy: -30, life: 0.7, maxLife: 0.7, color: '#666666', size: 4 });
     }
     car.speed -= car.speed * 0.12 * dt;
     car.speed = Math.max(-top * 0.4, Math.min(top, car.speed));
     const steer = (input.left ? -1 : 0) + (input.right ? 1 : 0);
     const grip = Math.min(1, Math.abs(car.speed) / 220);
     car.angle += steer * spec.turn * grip * dt * (car.speed >= 0 ? 1 : -1);
+    ca = Math.cos(car.angle); sa = Math.sin(car.angle);
     if (steer !== 0 && Math.abs(car.speed) > 260) {
-      const fx = Math.cos(car.angle);
-      const fy = Math.sin(car.angle);
-      const px = -fy;
-      const py = fx;
-      const bx = car.x - fx * (spec.length / 2 - 4);
-      const by = car.y - fy * (spec.length / 2 - 4);
-      for (const side of [-1, 1]) {
-        state.skids.push({ x: bx + px * side * (spec.width / 2 - 3), y: by + py * side * (spec.width / 2 - 3), angle: car.angle, life: 4 });
-      }
-      if (state.skids.length > 400) state.skids.splice(0, state.skids.length - 400);
-      if (car.driver === 'player' && state.skidCd <= 0) {
-        state.skidSound = true;
-        state.skidCd = 0.8;
-      }
+      const px = -sa, py = ca;
+      const bx = car.x - ca * (L / 2 - 4), by = car.y - sa * (L / 2 - 4);
+      for (const side of [-1, 1]) s.skids.push({ x: bx + px * side * (W / 2 - 3), y: by + py * side * (W / 2 - 3), angle: car.angle, life: 4 });
+      if (s.skids.length > 400) s.skids.splice(0, s.skids.length - 400);
+      if (car.driver === 'player' && s.skidCd <= 0) { s.skidSound = true; s.skidCd = 0.8; }
     }
-    if (state.nitrousT > 0) {
-      state.nitrousT -= dt;
+    if (s.nitrousT > 0) {
+      s.nitrousT -= dt;
       car.speed = Math.min(top * 1.6, car.speed + 900 * dt);
-      const bx = car.x - Math.cos(car.angle) * (spec.length / 2);
-      const by = car.y - Math.sin(car.angle) * (spec.length / 2);
-      state.particles.push({ x: bx, y: by, vx: -Math.cos(car.angle) * 120, vy: -Math.sin(car.angle) * 120, life: 0.4, maxLife: 0.4, color: '#2e7bff', size: 4 });
+      s.particles.push({ x: car.x - ca * (L / 2), y: car.y - sa * (L / 2), vx: -ca * 120, vy: -sa * 120, life: 0.4, maxLife: 0.4, color: '#2e7bff', size: 4 });
     }
     if (input.shoot && p.weapon === 3 && p.shootCd <= 0) {
       p.shootCd = 0.12;
-      const tx = input.aimX !== undefined ? input.aimX : p.aimX;
-      const ty = input.aimY !== undefined ? input.aimY : p.aimY;
-      fireBullet(car.x, car.y, tx, ty, 'player', 10, 1000);
-      state.shotSound = true;
+      fireBullet(car.x, car.y, input.aimX !== undefined ? input.aimX : p.aimX, input.aimY !== undefined ? input.aimY : p.aimY, 'player', 10, 1000);
+      s.shotSound = true;
     }
-    const nx = car.x + Math.cos(car.angle) * car.speed * dt;
-    const ny = car.y + Math.sin(car.angle) * car.speed * dt;
+    const nx = car.x + ca * car.speed * dt, ny = car.y + sa * car.speed * dt;
     const before = Math.abs(car.speed);
     const body = { x: nx, y: ny, radius: 20 };
     if (resolveBuildings(city.buildings, body)) {
       if (before > 240) {
         car.health -= (before - 240) / 12;
         burst(body.x, body.y, '#ffd23d', 10, 260);
-        state.crashLoud = true;
-        if (car.driver === 'player') state.shake = 12;
+        s.crashLoud = true;
+        if (car.driver === 'player') s.shake = 12;
       }
       car.speed *= 0.35;
     }
     car.x = Math.max(24, Math.min(WORLD.width - 24, body.x));
     car.y = Math.max(24, Math.min(WORLD.height - 24, body.y));
-    for (const other of state.cars) {
+    for (const other of s.cars) {
       if (other === car) continue;
       const d = Math.hypot(other.x - car.x, other.y - car.y);
       if (d < 44 && d > 0.01) {
-        const overlap = 44 - d;
-        const ux = (car.x - other.x) / d;
-        const uy = (car.y - other.y) / d;
+        const overlap = 44 - d, ux = (car.x - other.x) / d, uy = (car.y - other.y) / d;
         car.x += ux * overlap * 0.25;
         car.y += uy * overlap * 0.25;
         other.x -= ux * overlap * 0.75;
@@ -701,18 +655,18 @@ export function createGame(rng) {
           car.speed *= 0.7;
           burst(car.x, car.y, '#ffd23d', 6, 200);
         }
-      } else if (car.driver === 'player' && other.driver === 'traffic' && d < 75 && Math.abs(car.speed) > 300 && state.nearMissCd <= 0) {
-        state.nearMissCd = 2;
-        if (state.nearMissStreakT > 0) state.nearMissStreak += 1;
-        else state.nearMissStreak = 1;
-        state.nearMissStreakT = 5;
-        const bonus = Math.min(30, 5 + state.nearMissStreak * 5);
-        state.cash += bonus;
+      } else if (car.driver === 'player' && other.driver === 'traffic' && d < 75 && Math.abs(car.speed) > 300 && s.nearMissCd <= 0) {
+        s.nearMissCd = 2;
+        if (s.nearMissStreakT > 0) s.nearMissStreak += 1;
+        else s.nearMissStreak = 1;
+        s.nearMissStreakT = 5;
+        const bonus = Math.min(30, 5 + s.nearMissStreak * 5);
+        s.cash += bonus;
         floatText(car.x, car.y - 30, `+$${bonus}`, '#57d977');
-        showBanner(state.nearMissStreak > 1 ? `Near miss x${state.nearMissStreak}!  +$${bonus}` : `Near miss!  +$${bonus}`, 1.2);
+        showBanner(s.nearMissStreak > 1 ? `Near miss x${s.nearMissStreak}!  +$${bonus}` : `Near miss!  +$${bonus}`, 1.2);
       }
     }
-    for (const ped of state.peds) {
+    for (const ped of s.peds) {
       if (ped.down > 0) continue;
       if (Math.hypot(ped.x - car.x, ped.y - car.y) < 34 && Math.abs(car.speed) > 60) {
         ped.down = 2.2;
@@ -725,19 +679,19 @@ export function createGame(rng) {
     }
     if (car.health <= 0 && !car.smoked) {
       car.smoked = true;
-      spawnBurningWreck(state, car.x, car.y, car.angle);
+      spawnBurningWreck(s, car.x, car.y, car.angle);
       car.speed = 0;
       burst(car.x, car.y, '#888888', 16, 260);
       burst(car.x, car.y, '#ffd23d', 10, 300);
       burst(car.x, car.y, '#ff5a3c', 8, 200);
-      state.shake = Math.max(state.shake, 8);
+      s.shake = Math.max(s.shake, 8);
       showBanner('Your car is wrecked — find another ride', 2.5);
     }
     p.x = car.x;
     p.y = car.y;
     p.angle = car.angle;
-    p.aimX = car.x + Math.cos(car.angle) * 120;
-    p.aimY = car.y + Math.sin(car.angle) * 120;
+    p.aimX = car.x + ca * 120;
+    p.aimY = car.y + sa * 120;
     return 0;
   }
 
@@ -759,29 +713,17 @@ export function createGame(rng) {
       if (car.road === 'v') car.y += move * car.dir;
       else car.x += move * car.dir;
       if (car.turnCd <= 0) {
-        if (car.road === 'v') {
-          for (const sy of STREETS) {
-            if (Math.abs(car.y - sy) < 34 && rng.chance(0.3)) {
-              car.road = 'h';
-              car.line = sy;
-              car.dir = rng.chance(0.5) ? 1 : -1;
-              car.angle = car.dir === 1 ? 0 : Math.PI;
-              car.y = sy + (car.dir === 1 ? 25 : -25);
-              car.turnCd = 4;
-              break;
-            }
-          }
-        } else {
-          for (const ax of AVENUES) {
-            if (Math.abs(car.x - ax) < 34 && rng.chance(0.3)) {
-              car.road = 'v';
-              car.line = ax;
-              car.dir = rng.chance(0.5) ? 1 : -1;
-              car.angle = car.dir === 1 ? Math.PI / 2 : -Math.PI / 2;
-              car.x = ax + (car.dir === 1 ? -25 : 25);
-              car.turnCd = 4;
-              break;
-            }
+        const roads = car.road === 'v' ? STREETS : AVENUES;
+        const pos = car.road === 'v' ? car.y : car.x;
+        for (const line of roads) {
+          if (Math.abs(pos - line) < 34 && rng.chance(0.3)) {
+            car.road = car.road === 'v' ? 'h' : 'v';
+            car.line = line;
+            car.dir = rng.chance(0.5) ? 1 : -1;
+            if (car.road === 'h') { car.angle = car.dir === 1 ? 0 : Math.PI; car.y = line + (car.dir === 1 ? 25 : -25); }
+            else { car.angle = car.dir === 1 ? Math.PI / 2 : -Math.PI / 2; car.x = line + (car.dir === 1 ? -25 : 25); }
+            car.turnCd = 4;
+            break;
           }
         }
       }
@@ -1013,15 +955,14 @@ export function createGame(rng) {
   }
 
   function updateRivals(dt) {
-    const p = state.player;
-    let events = 0;
-    for (let i = state.rivals.length - 1; i >= 0; i -= 1) {
-      const rival = state.rivals[i];
+    const p = state.player, s = state;
+    for (let i = s.rivals.length - 1; i >= 0; i -= 1) {
+      const rival = s.rivals[i];
       if (rival.health <= 0) {
         burst(rival.x, rival.y, '#a83232', 10, 200);
         spawnPickup('cash', rival.x, rival.y, rng.int(40, 90));
-        state.rivals.splice(i, 1);
-        state.rivalsLeft = Math.max(0, state.rivalsLeft - 1);
+        s.rivals.splice(i, 1);
+        s.rivalsLeft = Math.max(0, s.rivalsLeft - 1);
         continue;
       }
       const d = Math.hypot(p.x - rival.x, p.y - rival.y);
@@ -1040,15 +981,14 @@ export function createGame(rng) {
         fireBullet(rival.x, rival.y, p.x, p.y, 'rival', RIVAL.damage, 720);
       }
     }
-    return events;
+    return 0;
   }
 
   function updateBullets(dt) {
-    const p = state.player;
-    for (let i = state.bullets.length - 1; i >= 0; i -= 1) {
-      const b = state.bullets[i];
-      const px = b.x;
-      const py = b.y;
+    const p = state.player, s = state;
+    for (let i = s.bullets.length - 1; i >= 0; i -= 1) {
+      const b = s.bullets[i];
+      const px = b.x, py = b.y;
       b.x += b.vx * dt;
       b.y += b.vy * dt;
       b.life -= dt;
@@ -1060,10 +1000,10 @@ export function createGame(rng) {
       if (!dead) {
         const hitCircle = (t) => Math.hypot(t.x - b.x, t.y - b.y) < t.radius + 4;
         if (b.from === 'player') {
-          for (const rival of state.rivals) {
+          for (const rival of s.rivals) {
             if (hitCircle(rival)) { rival.health -= b.damage; burst(b.x, b.y, '#a83232', 6, 160); dead = true; break; }
           }
-          if (!dead) for (const cop of state.cops) {
+          if (!dead) for (const cop of s.cops) {
             if (hitCircle(cop)) {
               cop.health -= b.damage;
               addWanted(1);
@@ -1072,7 +1012,7 @@ export function createGame(rng) {
               break;
             }
           }
-          if (!dead) for (const ped of state.peds) {
+          if (!dead) for (const ped of s.peds) {
             if (ped.down > 0) continue;
             if (hitCircle(ped)) {
               ped.down = 3;
@@ -1083,7 +1023,7 @@ export function createGame(rng) {
               break;
             }
           }
-          if (!dead) for (const car of state.cars) {
+          if (!dead) for (const car of s.cars) {
             if (car.driver === 'player') continue;
             if (Math.hypot(car.x - b.x, car.y - b.y) < 24) {
               car.health -= b.damage;
@@ -1096,7 +1036,7 @@ export function createGame(rng) {
         } else if (p.invuln <= 0 && hitCircle(p)) {
           p.health -= p.armor > 0 ? b.damage / 2 : b.damage;
           p.invuln = 0.4;
-          state.hurtFlash = 1;
+          s.hurtFlash = 1;
           burst(p.x, p.y, '#c94f43', 6, 160);
           dead = true;
           if (p.health <= 0) {
@@ -1106,22 +1046,23 @@ export function createGame(rng) {
         }
       }
       if (dead) {
-        if (b.rocket) detonateHydraRpg(state, b.x, b.y);
-        state.bullets.splice(i, 1);
+        if (b.rocket) detonateHydraRpg(s, b.x, b.y);
+        s.bullets.splice(i, 1);
       }
     }
   }
 
   function wastePlayer() {
-    const lost = Math.max(25, Math.floor(state.cash * 0.08));
-    state.cash -= lost;
-    state.wantedPoints = 0;
-    state.wanted = 0;
-    state.cops = [];
-    state.courier = null;
+    const s = state;
+    const lost = Math.max(25, Math.floor(s.cash * 0.08));
+    s.cash -= lost;
+    s.wantedPoints = 0;
+    s.wanted = 0;
+    s.cops = [];
+    s.courier = null;
     keepObjective();
-    for (const car of state.cars) if (car.driver === 'police') { car.driver = 'parked'; car.speed = 0; }
-    const p = state.player;
+    for (const car of s.cars) if (car.driver === 'police') { car.driver = 'parked'; car.speed = 0; }
+    const p = s.player;
     p.health = PLAYER.health;
     if (!p.onFoot) {
       const car = playerCar();
@@ -1133,115 +1074,116 @@ export function createGame(rng) {
     p.y = 640;
     p.angle = -Math.PI / 2;
     showBanner(`WASTED — you wake up at Neon Bay General, $${lost} lighter`, 3);
-    state.wastedFlag = true;
+    s.wastedFlag = true;
   }
 
   function updateFare(dt) {
-    const p = state.player;
+    const p = state.player, s = state;
     const car = playerCar();
     const inTaxi = !p.onFoot && car && car.kind === 'taxi';
     if (!inTaxi) {
-      if (state.fare) {
-        if (state.fare.ped) state.fare.ped.hailing = false;
-        state.fare = null;
+      if (s.fare) {
+        if (s.fare.ped) s.fare.ped.hailing = false;
+        s.fare = null;
         keepObjective();
       }
       return;
     }
-    if (state.fare) {
-      const f = state.fare;
+    if (s.fare) {
+      const f = s.fare;
       if (f.stage === 'pickup') {
         const ped = f.ped;
         if (!ped || ped.down > 0) {
           if (ped) ped.hailing = false;
-          state.fare = null;
+          s.fare = null;
           return;
         }
-        state.objective = { x: ped.x, y: ped.y, label: 'Taxi fare — pick up the passenger' };
+        s.objective = { x: ped.x, y: ped.y, label: 'Taxi fare — pick up the passenger' };
         if (Math.hypot(p.x - ped.x, p.y - ped.y) < 70) {
           const dest = randomSidewalkPoint(rng);
           f.stage = 'deliver';
           f.x = dest.x; f.y = dest.y;
           f.timer = 45;
           f.reward = rng.int(80, 150);
-          state.peds.splice(state.peds.indexOf(ped), 1);
+          s.peds.splice(s.peds.indexOf(ped), 1);
           showBanner('Passenger aboard — deliver them in 45s!', 2.5);
         }
         return;
       }
       f.timer -= dt;
-      state.objective = { x: f.x, y: f.y, label: `Taxi fare — ${Math.max(0, Math.ceil(f.timer))}s` };
+      s.objective = { x: f.x, y: f.y, label: `Taxi fare — ${Math.max(0, Math.ceil(f.timer))}s` };
       if (Math.hypot(p.x - f.x, p.y - f.y) < 75) {
-        state.cash += f.reward;
+        s.cash += f.reward;
         floatText(p.x, p.y - 30, `+$${f.reward}`, '#57d977');
         showBanner(`Fare complete — +$${f.reward}`, 2.5);
-        state.fare = null;
+        s.fare = null;
         keepObjective();
-        state.fareCd = 30;
+        s.fareCd = 30;
         return;
       }
       if (f.timer <= 0) {
         showBanner('Fare expired — the passenger walked away', 2.5);
         if (f.ped) f.ped.hailing = false;
-        state.fare = null;
+        s.fare = null;
         keepObjective();
-        state.fareCd = 20;
+        s.fareCd = 20;
       }
       return;
     }
-    state.fareCd -= dt;
-    if (state.fareCd <= 0) {
-      const candidates = state.peds.filter((ped) => ped.down <= 0);
+    s.fareCd -= dt;
+    if (s.fareCd <= 0) {
+      const candidates = s.peds.filter((ped) => ped.down <= 0);
       if (candidates.length === 0) return;
       const ped = candidates[Math.floor(rng.next() * candidates.length)];
       ped.hailing = true;
-      state.fare = { ped, stage: 'pickup' };
+      s.fare = { ped, stage: 'pickup' };
       showBanner('Taxi fare — a passenger is hailing you', 2.5);
-      state.fareCd = 9999;
+      s.fareCd = 9999;
     }
   }
 
   function updateCourier(dt) {
-    if (!state.storyDone) return;
-    if (state.courier) {
-      const c = state.courier;
+    const s = state;
+    if (!s.storyDone) return;
+    if (s.courier) {
+      const c = s.courier;
       c.timer -= dt;
-      state.objective = { x: c.x, y: c.y, label: `Courier delivery — ${Math.max(0, Math.ceil(c.timer))}s` };
-      const p = state.player;
+      s.objective = { x: c.x, y: c.y, label: `Courier delivery — ${Math.max(0, Math.ceil(c.timer))}s` };
+      const p = s.player;
       if (Math.hypot(p.x - c.x, p.y - c.y) < 75) {
-        state.cash += c.reward;
+        s.cash += c.reward;
         floatText(p.x, p.y - 30, `+$${c.reward}`, '#57d977');
         showBanner(`Courier done — +$${c.reward}`, 2.5);
-        state.courier = null;
-        state.objective = null;
-        state.courierCd = 35;
+        s.courier = null;
+        s.objective = null;
+        s.courierCd = 35;
         return;
       }
       if (c.timer <= 0) {
         showBanner('Courier job expired — too slow', 2.5);
-        state.courier = null;
-        state.objective = null;
-        state.courierCd = 25;
+        s.courier = null;
+        s.objective = null;
+        s.courierCd = 25;
       }
       return;
     }
-    state.courierCd -= dt;
-    if (state.courierCd <= 0) {
+    s.courierCd -= dt;
+    if (s.courierCd <= 0) {
       const spot = randomSidewalkPoint(rng);
       spawnPickup('courier', spot.x, spot.y, 0);
       showBanner('Courier job available — grab the package', 2.5);
-      state.courierCd = 9999;
+      s.courierCd = 9999;
     }
   }
 
   function updatePickups(dt) {
-    const p = state.player;
-    for (let i = state.pickups.length - 1; i >= 0; i -= 1) {
-      const item = state.pickups[i];
+    const p = state.player, s = state;
+    for (let i = s.pickups.length - 1; i >= 0; i -= 1) {
+      const item = s.pickups[i];
       item.bob += dt * 3;
       if (Math.hypot(item.x - p.x, item.y - p.y) > 46) continue;
       if (item.kind === 'repair' && p.onFoot) continue;
-      state.pickupSound = true;
+      s.pickupSound = true;
       if (item.kind === 'health') {
         if (p.health >= PLAYER.health) continue;
         p.health = Math.min(PLAYER.health, p.health + item.amount);
@@ -1262,94 +1204,93 @@ export function createGame(rng) {
         car.health = Math.min(100, car.health + item.amount);
         showBanner(`Car repaired +${item.amount} HP`, 1.5);
       } else if (item.kind === 'cash') {
-        state.cash += item.amount;
-        state.cashSound = true;
-        state.pickupSound = false;
+        s.cash += item.amount;
+        s.cashSound = true;
+        s.pickupSound = false;
         floatText(p.x, p.y - 30, `+$${item.amount}`, '#57d977');
         showBanner(`+$${item.amount}`, 1.2);
         const spot = randomSidewalkPoint(rng);
         spawnPickup('cash', spot.x, spot.y, rng.int(30, 90));
       } else if (item.kind === 'crate') {
-        state.hasCrate = true;
-        state.wantedPoints = 8;
-        state.wanted = 4;
-        state.lastCrime = state.time;
+        s.hasCrate = true;
+        s.wantedPoints = 8;
+        s.wanted = 4;
+        s.lastCrime = s.time;
         showBanner('Crate grabbed — the whole NBPD is coming!', 3);
-        const mission = MISSIONS[state.missionIndex];
-        const stage = mission.stages[state.stageIndex];
-        state.objective = { x: stage.x, y: stage.y, label: stage.label };
+        const mission = MISSIONS[s.missionIndex];
+        const stage = mission.stages[s.stageIndex];
+        s.objective = { x: stage.x, y: stage.y, label: stage.label };
       } else if (item.kind === 'courier') {
         const dest = randomSidewalkPoint(rng);
-        state.courier = { x: dest.x, y: dest.y, timer: 40, reward: rng.int(120, 200) };
-        state.objective = { x: dest.x, y: dest.y, label: `Courier delivery — ${Math.ceil(state.courier.timer)}s` };
+        s.courier = { x: dest.x, y: dest.y, timer: 40, reward: rng.int(120, 200) };
+        s.objective = { x: dest.x, y: dest.y, label: `Courier delivery — ${Math.ceil(s.courier.timer)}s` };
         showBanner('Courier job — deliver the package in 40s!', 3);
       }
-      state.pickups.splice(i, 1);
+      s.pickups.splice(i, 1);
     }
   }
 
   function updateParticles(dt) {
-    for (let i = state.particles.length - 1; i >= 0; i -= 1) {
-      const pt = state.particles[i];
+    const s = state;
+    for (let i = s.particles.length - 1; i >= 0; i -= 1) {
+      const pt = s.particles[i];
       pt.x += pt.vx * dt;
       pt.y += pt.vy * dt;
       pt.vx *= 0.94;
       pt.vy *= 0.94;
       pt.life -= dt;
-      if (pt.life <= 0) state.particles.splice(i, 1);
+      if (pt.life <= 0) s.particles.splice(i, 1);
     }
-    for (let i = state.skids.length - 1; i >= 0; i -= 1) {
-      state.skids[i].life -= dt;
-      if (state.skids[i].life <= 0) state.skids.splice(i, 1);
+    for (let i = s.skids.length - 1; i >= 0; i -= 1) {
+      s.skids[i].life -= dt;
+      if (s.skids[i].life <= 0) s.skids.splice(i, 1);
     }
   }
 
   function updateWanted(dt) {
-    if (state.wantedPoints <= 0) return 0;
-    const p = state.player;
+    const s = state;
+    if (s.wantedPoints <= 0) return 0;
+    const p = s.player;
     let nearestCop = Infinity;
-    for (const cop of state.cops) nearestCop = Math.min(nearestCop, Math.hypot(cop.x - p.x, cop.y - p.y));
-    for (const car of state.cars) {
-      if (car.driver === 'police') nearestCop = Math.min(nearestCop, Math.hypot(car.x - p.x, car.y - p.y));
-    }
-    if (state.time - state.lastCrime > WANTED.coolDelay && nearestCop > WANTED.spotRange) {
-      state.wantedPoints = Math.max(0, state.wantedPoints - WANTED.coolRate * dt);
-      state.wanted = Math.min(5, Math.floor(state.wantedPoints / 2));
+    for (const cop of s.cops) nearestCop = Math.min(nearestCop, Math.hypot(cop.x - p.x, cop.y - p.y));
+    for (const car of s.cars) if (car.driver === 'police') nearestCop = Math.min(nearestCop, Math.hypot(car.x - p.x, car.y - p.y));
+    if (s.time - s.lastCrime > WANTED.coolDelay && nearestCop > WANTED.spotRange) {
+      s.wantedPoints = Math.max(0, s.wantedPoints - WANTED.coolRate * dt);
+      s.wanted = Math.min(5, Math.floor(s.wantedPoints / 2));
     }
     return 0;
   }
 
   function updateMissions(dt) {
     if (!state.missionActive) return 0;
-    const mission = MISSIONS[state.missionIndex];
-    const stage = mission.stages[state.stageIndex];
-    const p = state.player;
+    const s = state;
+    const mission = MISSIONS[s.missionIndex];
+    const stage = mission.stages[s.stageIndex];
+    const p = s.player;
     if (stage.kind === 'go') {
       if (Math.hypot(p.x - stage.x, p.y - stage.y) < 75) return completeStage();
     } else if (stage.kind === 'kill') {
-      if (state.rivalsLeft <= 0 && state.rivals.length === 0) return completeStage();
-      if (state.rivals.length > 0) {
-        state.objective = { x: state.rivals[0].x, y: state.rivals[0].y, label: stage.label };
-      }
+      if (s.rivalsLeft <= 0 && s.rivals.length === 0) return completeStage();
+      if (s.rivals.length > 0) s.objective = { x: s.rivals[0].x, y: s.rivals[0].y, label: stage.label };
     } else if (stage.kind === 'steal') {
-      if (p.carId === state.targetCarId) return completeStage();
+      if (p.carId === s.targetCarId) return completeStage();
     } else if (stage.kind === 'deliver') {
       const car = playerCar();
       if (car && car.kind === (stage.carKind || 'sports') && Math.hypot(p.x - stage.x, p.y - stage.y) < 75) return completeStage();
     } else if (stage.kind === 'survive') {
-      state.stageTimer -= dt;
-      state.objective = { x: p.x, y: p.y, label: `${stage.label} — ${Math.max(0, Math.ceil(state.stageTimer))}s` };
-      if (state.stageTimer <= 0) {
-        state.wantedPoints = 0;
-        state.wanted = 0;
-        state.cops = [];
-        for (const car of state.cars) if (car.driver === 'police') { car.driver = 'parked'; car.speed = 0; }
+      s.stageTimer -= dt;
+      s.objective = { x: p.x, y: p.y, label: `${stage.label} — ${Math.max(0, Math.ceil(s.stageTimer))}s` };
+      if (s.stageTimer <= 0) {
+        s.wantedPoints = 0;
+        s.wanted = 0;
+        s.cops = [];
+        for (const car of s.cars) if (car.driver === 'police') { car.driver = 'parked'; car.speed = 0; }
         showBanner('You shook them — now get home', 2.5);
         return completeStage();
       }
     } else if (stage.kind === 'carry') {
-      if (state.hasCrate && Math.hypot(p.x - stage.x, p.y - stage.y) < 75) {
-        state.hasCrate = false;
+      if (s.hasCrate && Math.hypot(p.x - stage.x, p.y - stage.y) < 75) {
+        s.hasCrate = false;
         return completeStage();
       }
     }
@@ -1358,9 +1299,10 @@ export function createGame(rng) {
 
   function maintainCrowd() {
     const p = state.player;
+    const near = (e) => Math.hypot(e.x - p.x, e.y - p.y) < 1000;
     let nearCars = 0, nearPeds = 0;
-    for (const c of state.cars) if (c.driver === 'traffic' && Math.hypot(c.x - p.x, c.y - p.y) < 1000) nearCars += 1;
-    for (const ped of state.peds) if (Math.hypot(ped.x - p.x, ped.y - p.y) < 1000) nearPeds += 1;
+    for (const c of state.cars) if (c.driver === 'traffic' && near(c)) nearCars += 1;
+    for (const ped of state.peds) if (near(ped)) nearPeds += 1;
     while (nearCars < 14 && state.cars.length < 34) { spawnTrafficCar(p); nearCars += 1; }
     while (state.cars.filter((c) => c.driver === 'traffic').length < TRAFFIC_COUNT) spawnTrafficCar(p);
     while (nearPeds < 18 && state.peds.length < 44) { spawnPed(); nearPeds += 1; }
@@ -1369,28 +1311,20 @@ export function createGame(rng) {
 
   function saveGame() {
     const p = state.player;
-    return {
-      cash: state.cash,
-      health: p.health,
-      missionIndex: state.missionIndex,
-      pistol: p.pistol,
-      shotgun: p.shotgun,
-      x: p.x,
-      y: p.y,
-      storyDone: state.storyDone,
-    };
+    return { cash: state.cash, health: p.health, missionIndex: state.missionIndex, pistol: p.pistol, shotgun: p.shotgun, x: p.x, y: p.y, storyDone: state.storyDone };
   }
 
   function loadGame(save) {
     reset();
+    const pl = state.player;
     state.cash = save.cash ?? 120;
-    state.player.health = save.health ?? PLAYER.health;
-    state.player.pistol = !!save.pistol;
-    if (state.player.pistol) state.player.weapon = 2;
-    state.player.shotgun = save.shotgun ?? 0;
-    if (state.player.pistol) state.player.mag = PLAYER.magSize;
-    state.player.x = save.x ?? 870;
-    state.player.y = save.y ?? 640;
+    pl.health = save.health ?? PLAYER.health;
+    pl.pistol = !!save.pistol;
+    if (pl.pistol) pl.weapon = 2;
+    pl.shotgun = save.shotgun ?? 0;
+    if (pl.pistol) pl.mag = PLAYER.magSize;
+    pl.x = save.x ?? 870;
+    pl.y = save.y ?? 640;
     state.storyDone = !!save.storyDone;
     const index = Math.min(save.missionIndex ?? 0, MISSIONS.length - 1);
     if (!state.storyDone) startMission(index);

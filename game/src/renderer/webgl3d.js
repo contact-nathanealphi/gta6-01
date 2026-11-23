@@ -1,4 +1,4 @@
-// True 3D Vice-Dusk WebGL2 renderer: third-person 3D city at golden hour, 2D fallback.
+// True 3D Vice-Dusk WebGL2 renderer: third-person city at golden hour.
 
 import { WORLD } from '../tune.js';
 import { lineBlocked } from '../city.js';
@@ -43,27 +43,20 @@ function vicePerspective(fov, aspect, near, far) {
   return [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0];
 }
 
-function viceLookAt(eye, target, up) {
-  let zx = eye[0] - target[0], zy = eye[1] - target[1], zz = eye[2] - target[2];
-  let l = Math.hypot(zx, zy, zz);
-  zx /= l; zy /= l; zz /= l;
-  let xx = up[1] * zz - up[2] * zy, xy = up[2] * zx - up[0] * zz, xz = up[0] * zy - up[1] * zx;
-  l = Math.hypot(xx, xy, xz);
-  xx /= l; xy /= l; xz /= l;
+function viceLookAt(e, t, up) {
+  const n = (x, y, z) => { const l = Math.hypot(x, y, z); return [x / l, y / l, z / l]; };
+  const [zx, zy, zz] = n(e[0] - t[0], e[1] - t[1], e[2] - t[2]);
+  const [xx, xy, xz] = n(up[1] * zz - up[2] * zy, up[2] * zx - up[0] * zz, up[0] * zy - up[1] * zx);
   const yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
   return [xx, yx, zx, 0, xy, yy, zy, 0, xz, yz, zz, 0,
-    -(xx * eye[0] + xy * eye[1] + xz * eye[2]),
-    -(yx * eye[0] + yy * eye[1] + yz * eye[2]),
-    -(zx * eye[0] + zy * eye[1] + zz * eye[2]), 1];
+    -(xx * e[0] + xy * e[1] + xz * e[2]),
+    -(yx * e[0] + yy * e[1] + yz * e[2]),
+    -(zx * e[0] + zy * e[1] + zz * e[2]), 1];
 }
 
 function viceMul(a, b) {
   const o = new Array(16);
-  for (let c = 0; c < 4; c += 1) {
-    for (let r = 0; r < 4; r += 1) {
-      o[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
-    }
-  }
+  for (let c = 0; c < 4; c += 1) for (let r = 0; r < 4; r += 1) o[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
   return o;
 }
 
@@ -84,11 +77,7 @@ function viceSkyCube() {
   const f = [[0, 1, 2, 3], [5, 4, 7, 6], [4, 0, 3, 7], [1, 5, 6, 2], [3, 2, 6, 7], [4, 5, 1, 0]];
   const out = new Float32Array(36 * 3);
   let n = 0;
-  for (const [a, b, c, d] of f) {
-    for (const [i, j, k] of [[a, b, c], [a, c, d]]) {
-      for (const idx of [i, j, k]) { out[n] = v[idx][0]; out[n + 1] = v[idx][1]; out[n + 2] = v[idx][2]; n += 3; }
-    }
-  }
+  for (const [a, b, c, d] of f) for (const [i, j, k] of [[a, b, c], [a, c, d]]) for (const idx of [i, j, k]) { out[n] = v[idx][0]; out[n + 1] = v[idx][1]; out[n + 2] = v[idx][2]; n += 3; }
   return out;
 }
 
@@ -96,12 +85,10 @@ function viceWaterGrid() {
   const cols = 32, rows = 10;
   const x0 = -200, x1 = 3800, z0 = 2630, z1 = 3050;
   const verts = [];
-  for (let r = 0; r < rows; r += 1) {
-    for (let c = 0; c < cols; c += 1) {
-      const ax = x0 + (x1 - x0) * (c / cols), az = z0 + (z1 - z0) * (r / rows);
-      const bx = x0 + (x1 - x0) * ((c + 1) / cols), bz = z0 + (z1 - z0) * ((r + 1) / rows);
-      verts.push(ax, 0, az, bx, 0, az, bx, 0, bz, ax, 0, az, bx, 0, bz, ax, 0, bz);
-    }
+  for (let r = 0; r < rows; r += 1) for (let c = 0; c < cols; c += 1) {
+    const ax = x0 + (x1 - x0) * (c / cols), az = z0 + (z1 - z0) * (r / rows);
+    const bx = x0 + (x1 - x0) * ((c + 1) / cols), bz = z0 + (z1 - z0) * ((r + 1) / rows);
+    verts.push(ax, 0, az, bx, 0, az, bx, 0, bz, ax, 0, az, bx, 0, bz, ax, 0, bz);
   }
   return new Float32Array(verts);
 }
@@ -174,16 +161,11 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
   function chaseCamera(state, city) {
     const p = state.player;
     const car = state.cars.find((c) => c.driver === 'player');
-    let px, pz, fx, fz, speed;
-    if (car && !p.onFoot) {
-      px = car.x; pz = car.y; fx = Math.cos(car.angle); fz = Math.sin(car.angle); speed = Math.abs(car.speed);
-    } else {
-      px = p.x; pz = p.y; fx = Math.cos(p.angle); fz = Math.sin(p.angle); speed = 0;
-    }
+    const o = car && !p.onFoot ? car : p;
+    const px = o.x, pz = o.y, fx = Math.cos(o.angle), fz = Math.sin(o.angle), speed = car && !p.onFoot ? Math.abs(car.speed) : 0;
     const onFoot = p.onFoot;
     let dist = onFoot ? 58 : 115;
-    const height = onFoot ? 28 : 55;
-    const ahead = onFoot ? 45 : 85;
+    const height = onFoot ? 28 : 55, ahead = onFoot ? 45 : 85;
     let ex = px - fx * dist, ez = pz - fz * dist;
     if (city) {
       while (dist > 36 && lineBlocked(city.buildings, px, pz, ex, ez)) {
@@ -192,10 +174,9 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
         ez = pz - fz * dist;
       }
     }
-    const ey = height;
     const tx = px + fx * ahead, ty = onFoot ? 4 : 6, tz = pz + fz * ahead;
     const fov = (62 + Math.min(10, speed * 0.012)) * Math.PI / 180;
-    return { eye: [ex, ey, ez], target: [tx, ty, tz], fov };
+    return { eye: [ex, height, ez], target: [tx, ty, tz], fov };
   }
 
   function cinematicCamera(state) {
@@ -207,6 +188,16 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
       target: [p.x, 12, p.y],
       fov: 58 * Math.PI / 180,
     };
+  }
+
+  function shotCamera(state) {
+    const p = state.player;
+    const car = state.cars.find((c) => c.driver === 'player'), o = car && !p.onFoot ? car : p;
+    const cx = o.x, cz = o.y, fx = Math.cos(o.angle), fz = Math.sin(o.angle);
+    if (state.shotCam === 'drone') return { eye: [3400, 260, 3100], target: [1700, 25, 1300], fov: 58 * Math.PI / 180 };
+    if (state.shotCam === 'hero') return { eye: [3200, 150, 2900], target: [3050, 0, 2000], fov: 58 * Math.PI / 180 };
+    if (state.shotCam === 'action') return { eye: [cx - fx * 150, 72, cz - fz * 150], target: [cx + fx * 90, 8, cz + fz * 90], fov: 62 * Math.PI / 180 };
+    return { eye: [cx - fx * 115, 55, cz - fz * 115], target: [cx + fx * 110, 6, cz + fz * 110], fov: 62 * Math.PI / 180 };
   }
 
   window.addEventListener('keydown', (e) => {
@@ -230,19 +221,11 @@ export async function createWebGL3DViceDuskRenderer(canvas2d) {
       if (glCanvas.width !== Math.round(viewW * dpr)) resize();
       const hour = (8 + state.time / 10) % 24;
       const sun = viceDuskSun(hour);
-      const cam = (screen === 'title' || mode === 1) ? cinematicCamera(state) : chaseCamera(state, city);
-      if (!eyeInit) {
-        smoothEye[0] = cam.eye[0]; smoothEye[1] = cam.eye[1]; smoothEye[2] = cam.eye[2];
-        eyeInit = true;
-      } else {
-        const dx = cam.eye[0] - smoothEye[0], dy = cam.eye[1] - smoothEye[1], dz = cam.eye[2] - smoothEye[2];
-        const d = Math.hypot(dx, dy, dz);
-        if (d > 200) {
-          smoothEye[0] = cam.eye[0]; smoothEye[1] = cam.eye[1]; smoothEye[2] = cam.eye[2];
-        } else {
-          smoothEye[0] += dx * 0.5; smoothEye[1] += dy * 0.5; smoothEye[2] += dz * 0.5;
-        }
-      }
+      const cam = state.shotCam ? shotCamera(state) : (screen === 'title' || mode === 1) ? cinematicCamera(state) : chaseCamera(state, city);
+      const dx = cam.eye[0] - smoothEye[0], dy = cam.eye[1] - smoothEye[1], dz = cam.eye[2] - smoothEye[2];
+      const d = Math.hypot(dx, dy, dz);
+      if (state.shotCam || !eyeInit || d > 200) { smoothEye[0] = cam.eye[0]; smoothEye[1] = cam.eye[1]; smoothEye[2] = cam.eye[2]; eyeInit = true; }
+      else { smoothEye[0] += dx * 0.5; smoothEye[1] += dy * 0.5; smoothEye[2] += dz * 0.5; }
       const proj = vicePerspective(cam.fov, viewW / viewH, 1, 9000);
       const view = viceLookAt(smoothEye, cam.target, [0, 1, 0]);
       const vp = viceMul(proj, view);

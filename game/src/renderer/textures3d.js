@@ -1,6 +1,4 @@
-// Procedural Vice-Dusk texture atlas (1024x1024, offscreen Canvas2D, no files):
-// 4 skyscraper facades with lit windows + neon trim, a helipad roof tile and a
-// white tile for plain vertex-coloured geometry. UVs assume UNPACK_FLIP_Y.
+// Procedural Vice-Dusk texture atlas (1024x1024, offscreen Canvas2D, no files).
 
 export const VICE_FACADE_UV = [
   [0.0, 0.75, 0.25, 1.0],
@@ -16,26 +14,22 @@ export function createViceDuskTextureAtlas(gl) {
   c.width = 1024;
   c.height = 1024;
   const g = c.getContext('2d');
+  const F = (col, x, y, w, h) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
   const glass = ['#1a2436', '#232c40', '#141c2c', '#2a2438'];
   const neon = ['#ff2d78', '#00e5ff', '#ffd23d', '#ff7a2d'];
   for (let t = 0; t < 4; t += 1) {
     const x0 = t * 256;
-    g.fillStyle = glass[t];
-    g.fillRect(x0, 0, 256, 256);
+    F(glass[t], x0, 0, 256, 256);
     for (let r = 0; r < 8; r += 1) {
       for (let col = 0; col < 6; col += 1) {
         const lit = ((t * 7 + r * 3 + col * 5) % 4) < 2;
-        g.fillStyle = lit ? ((r + col) % 3 === 0 ? '#7fe3ff' : '#ffd27a') : 'rgba(0,0,0,0.35)';
-        g.fillRect(x0 + 14 + col * 40, 12 + r * 30, 26, 18);
+        F(lit ? ((r + col) % 3 === 0 ? '#7fe3ff' : '#ffd27a') : 'rgba(0,0,0,0.35)', x0 + 14 + col * 40, 12 + r * 30, 26, 18);
       }
     }
-    g.fillStyle = neon[t];
-    g.fillRect(x0, 200, 256, 6);
-    g.fillStyle = 'rgba(255,255,255,0.25)';
-    g.fillRect(x0, 210, 256, 2);
+    F(neon[t], x0, 200, 256, 6);
+    F('rgba(255,255,255,0.25)', x0, 210, 256, 2);
   }
-  g.fillStyle = '#3a3f4a';
-  g.fillRect(0, 256, 256, 256);
+  F('#3a3f4a', 0, 256, 256, 256);
   g.strokeStyle = '#f2c94c';
   g.lineWidth = 6;
   g.beginPath();
@@ -45,8 +39,7 @@ export function createViceDuskTextureAtlas(gl) {
   g.font = 'bold 60px sans-serif';
   g.textAlign = 'center';
   g.fillText('H', 128, 404);
-  g.fillStyle = '#ffffff';
-  g.fillRect(256, 256, 64, 64);
+  F('#ffffff', 256, 256, 64, 64);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   const tex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, tex);

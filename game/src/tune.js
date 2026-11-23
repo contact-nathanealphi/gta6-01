@@ -1,6 +1,6 @@
-// Neon Bay — every tuning number and colour in one place.
-// The world is a fixed 3600x2700 logical city; the camera follows the player,
-// so nothing below depends on the screen size.
+// Neon Bay — every tuning number and colour in one place. The world is a fixed
+// 3600x2700 logical city; the camera follows the player, so nothing below depends
+// on the screen size.
 
 export const WORLD = { width: 3600, height: 2700 };
 
@@ -83,6 +83,6 @@ export const PALETTE = {
   night: 'rgba(10, 12, 30, 0.35)',
 };
 
-export const FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+export const FONT = 'system-ui, sans-serif';
 
 export const SAVE_KEY = 'neon-bay.save.v1';

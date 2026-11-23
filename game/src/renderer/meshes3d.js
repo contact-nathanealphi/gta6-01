@@ -1,4 +1,4 @@
-// Vice-Dusk 3D geometry: one merged static mesh (city) + one dynamic mesh per frame.
+// Vice-Dusk 3D geometry: static city mesh + dynamic mesh per frame.
 
 import { AVENUES, CAR_KINDS, STREETS, WORLD } from '../tune.js';
 import { VICE_FACADE_UV, VICE_ROOF_UV, VICE_WHITE_UV } from './textures3d.js';
@@ -15,20 +15,15 @@ export function viceCreateMesh(capacity) {
   let n = 0;
   function vert(x, y, z, nx, ny, nz, r, g, b, u, v, e) {
     const o = n * VICE_VERT_STRIDE;
-    data[o] = x; data[o + 1] = y; data[o + 2] = z;
-    data[o + 3] = nx; data[o + 4] = ny; data[o + 5] = nz;
-    data[o + 6] = r; data[o + 7] = g; data[o + 8] = b;
-    data[o + 9] = u; data[o + 10] = v; data[o + 11] = e;
+    const vals = [x, y, z, nx, ny, nz, r, g, b, u, v, e];
+    for (let i = 0; i < 12; i += 1) data[o + i] = vals[i];
     n += 1;
   }
   function quad(a, b, c, d, nx, ny, nz, col, uv, emi) {
-    const u0 = uv[0], v0 = uv[1], u1 = uv[2], v1 = uv[3];
-    vert(a[0], a[1], a[2], nx, ny, nz, col[0], col[1], col[2], u0, v0, emi);
-    vert(b[0], b[1], b[2], nx, ny, nz, col[0], col[1], col[2], u1, v0, emi);
-    vert(c[0], c[1], c[2], nx, ny, nz, col[0], col[1], col[2], u1, v1, emi);
-    vert(a[0], a[1], a[2], nx, ny, nz, col[0], col[1], col[2], u0, v0, emi);
-    vert(c[0], c[1], c[2], nx, ny, nz, col[0], col[1], col[2], u1, v1, emi);
-    vert(d[0], d[1], d[2], nx, ny, nz, col[0], col[1], col[2], u0, v1, emi);
+    const P = [a, b, c, a, c, d];
+    const U = [uv[0], uv[2], uv[2], uv[0], uv[2], uv[0]];
+    const V = [uv[1], uv[1], uv[3], uv[1], uv[3], uv[3]];
+    for (let i = 0; i < 6; i += 1) vert(P[i][0], P[i][1], P[i][2], nx, ny, nz, col[0], col[1], col[2], U[i], V[i], emi);
   }
   function tri(a, b, c, nx, ny, nz, col, uv, emi) {
     vert(a[0], a[1], a[2], nx, ny, nz, col[0], col[1], col[2], uv[0], uv[1], emi);
@@ -64,9 +59,7 @@ export function viceCreateMesh(capacity) {
 export function viceBuildingHeight(b) {
   const h = (((b.x * 7 + b.y * 13) % 100) + 100) % 100 / 100;
   const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
-  const downtown = cx > 1200 && cx < 3000 && cy > 600 && cy < 2000 ? 1.5 : 1.0;
-  const beach = cy > 2300 ? 0.6 : 1.0;
-  return (60 + h * 140) * downtown * beach;
+  return (60 + h * 140) * (cx > 1200 && cx < 3000 && cy > 600 && cy < 2000 ? 1.5 : 1) * (cy > 2300 ? 0.6 : 1);
 }
 
 const NEON_TRIM = [[1, 0.18, 0.47], [0, 0.9, 1], [1, 0.82, 0.24], [1, 0.48, 0.18]];
@@ -114,8 +107,8 @@ export function buildViceCityStaticGeometry(city) {
       continue;
     }
     if (b.kind === 'lighthouse') {
-      m.box(cx, 32, cz, 34, 64, 34, 0, viceHex('#c94f43'), VICE_WHITE_UV, 0);
-      m.box(cx, 96, cz, 30, 64, 30, 0, white, VICE_WHITE_UV, 0);
+      m.box(cx, 32, cz, 34, 64, 34, 0, viceHex('#c94f43'), VICE_WHITE_UV, 0.15);
+      m.box(cx, 96, cz, 30, 64, 30, 0, white, VICE_WHITE_UV, 0.3);
       m.box(cx, 132, cz, 22, 10, 22, 0, [1, 0.82, 0.24], VICE_WHITE_UV, 1);
       continue;
     }
@@ -183,18 +176,19 @@ export function buildViceDynamicGeometry(state, m) {
     const col = viceHex(car.color || spec.color);
     const L = spec.length, W = spec.width;
     const co = Math.cos(car.angle), si = Math.sin(car.angle);
-    m.box(car.x - co * (L * 0.18), 7, car.y - si * (L * 0.18), L * 0.62, 7, W, yaw, col, VICE_WHITE_UV, 0);
-    m.box(car.x + co * (L * 0.32), 6, car.y + si * (L * 0.32), L * 0.3, 5, W * 0.94, yaw, col, VICE_WHITE_UV, 0);
-    m.box(car.x - co * (L * 0.3), 6, car.y - si * (L * 0.3), L * 0.28, 5, W * 0.94, yaw, col, VICE_WHITE_UV, 0);
-    m.box(car.x - co * 2, 14, car.y - si * 2, L * 0.42, 7, W * 0.8, yaw, viceHex('#0e1a26'), VICE_WHITE_UV, 0.35);
-    const fx0 = car.x + co * (L / 2), fz0 = car.y + si * (L / 2);
-    m.tri([fx0, 0.5, fz0], [fx0 + co * 95 - si * 26, 0.5, fz0 + si * 95 + co * 26], [fx0 + co * 95 + si * 26, 0.5, fz0 + si * 95 - co * 26], 0, 1, 0, [1, 0.93, 0.65], VICE_WHITE_UV, 0.5);
+    const X = (a, b) => car.x + co * a - si * b, Z = (a, b) => car.y + si * a + co * b;
+    m.box(X(-L * 0.18, 0), 7, Z(-L * 0.18, 0), L * 0.62, 7, W, yaw, col, VICE_WHITE_UV, 0);
+    m.box(X(L * 0.32, 0), 6, Z(L * 0.32, 0), L * 0.3, 5, W * 0.94, yaw, col, VICE_WHITE_UV, 0);
+    m.box(X(-L * 0.3, 0), 6, Z(-L * 0.3, 0), L * 0.28, 5, W * 0.94, yaw, col, VICE_WHITE_UV, 0);
+    m.box(X(-2, 0), 14, Z(-2, 0), L * 0.42, 7, W * 0.8, yaw, viceHex('#0e1a26'), VICE_WHITE_UV, 0.35);
+    const fx0 = X(L / 2, 0), fz0 = Z(L / 2, 0);
+    m.tri([fx0, 0.5, fz0], [X(L / 2 + 70, 20), 0.5, Z(L / 2 + 70, 20)], [X(L / 2 + 70, -20), 0.5, Z(L / 2 + 70, -20)], 0, 1, 0, [1, 0.93, 0.65], VICE_WHITE_UV, 0.3);
     for (const [lx, lz] of [[L * 0.32, W / 2], [L * 0.32, -W / 2], [-L * 0.32, W / 2], [-L * 0.32, -W / 2]]) {
-      m.box(car.x + lx * co - lz * si, 4, car.y + lx * si + lz * co, 10, 8, 3, yaw, dark, VICE_WHITE_UV, 0);
+      m.box(X(lx, lz), 4, Z(lx, lz), 10, 8, 3, yaw, dark, VICE_WHITE_UV, 0);
     }
     for (const s of [-1, 1]) {
-      m.box(car.x + (L / 2 - 1) * co - s * (W / 2 - 4) * si, 8, car.y + (L / 2 - 1) * si + s * (W / 2 - 4) * co, 3, 3, 5, yaw, [1, 0.9, 0.6], VICE_WHITE_UV, 1);
-      m.box(car.x - (L / 2 - 1) * co - s * (W / 2 - 4) * si, 8, car.y - (L / 2 - 1) * si + s * (W / 2 - 4) * co, 3, 3, 5, yaw, [1, 0.15, 0.15], VICE_WHITE_UV, car.speed < -20 ? 1 : 0.5);
+      m.box(X(L / 2 - 1, s * (W / 2 - 4)), 8, Z(L / 2 - 1, s * (W / 2 - 4)), 3, 3, 5, yaw, [1, 0.9, 0.6], VICE_WHITE_UV, 1);
+      m.box(X(-(L / 2 - 1), s * (W / 2 - 4)), 8, Z(-(L / 2 - 1), s * (W / 2 - 4)), 3, 3, 5, yaw, [1, 0.15, 0.15], VICE_WHITE_UV, car.speed < -20 ? 1 : 0.5);
     }
     m.box(car.x, 1.5, car.y, L + 8, 1.5, W + 8, yaw, col, VICE_WHITE_UV, 0.7);
     if (car.kind === 'patrol') {
@@ -204,8 +198,8 @@ export function buildViceDynamicGeometry(state, m) {
     if (car.kind === 'taxi') {
       m.box(car.x, 22, car.y, 14, 4, 8, yaw, [1, 0.82, 0.24], VICE_WHITE_UV, 0.8);
     }
-    if (car.driver === 'player' && state.upgrades && state.upgrades.glow > 0) m.groundQuad(car.x - 26, car.y - 16, car.x + 26, car.y + 16, 0.4, [1, 0.18, 0.55], 0.8);
-    if (car.driver === 'player' && state.nitrousT > 0) m.box(car.x - co * (L / 2 + 6), 6, car.y - si * (L / 2 + 6), 14, 5, 8, yaw, [0.2, 0.6, 1], VICE_WHITE_UV, 1);
+    if (car.driver === 'player' && state.upgrades && state.upgrades.glow > 0) { const q = Math.abs(si) > 0.7 ? [16, 26] : [26, 16]; m.groundQuad(car.x - q[0], car.y - q[1], car.x + q[0], car.y + q[1], 0.4, [1, 0.18, 0.55], 0.8); }
+    if (car.driver === 'player' && state.nitrousT > 0) for (const s of [-6, 6]) m.box(car.x - co * (L / 2 + 4) - si * s, 4, car.y - si * (L / 2 + 4) + co * s, 5, 4, 5, yaw, [0.2, 0.6, 1], VICE_WHITE_UV, 1);
   }
   function person(x, y, shirt, angle) {
     const yaw = -angle;
@@ -264,14 +258,15 @@ export function buildViceDynamicGeometry(state, m) {
     m.box(h.x, h.z + 11, h.y, 56, 1.5, 3, -h.rotor, [0.9, 0.9, 0.9], VICE_WHITE_UV, 0.4);
     m.box(h.x, h.z + 11, h.y, 56, 1.5, 3, -h.rotor + Math.PI / 2, [0.9, 0.9, 0.9], VICE_WHITE_UV, 0.4);
     m.box(h.x, h.z + 2, h.y, 6, 3, 6, 0, strobe ? [1, 0.2, 0.2] : [0.2, 0.4, 1], VICE_WHITE_UV, 1);
-    fan(h.x, h.z - 2, h.y, h.spotX, 1, h.spotY, 60, [1, 0.93, 0.6], 0.35);
-    m.groundQuad(h.spotX - 55, h.spotY - 55, h.spotX + 55, h.spotY + 55, 0.3, [1, 0.93, 0.6], 0.35);
+    fan(h.x, h.z - 2, h.y, h.spotX, 1, h.spotY, 35, [1, 0.93, 0.6], 0.15);
+    m.groundQuad(h.spotX - 35, h.spotY - 35, h.spotX + 35, h.spotY + 35, 0.3, [1, 0.93, 0.6], 0.22);
   }
   for (const w of state.wrecks || []) {
     m.box(w.x, 7, w.y, 44, 12, 22, -w.angle, [0.1, 0.1, 0.1], VICE_WHITE_UV, 0);
-    const fl = 8 + Math.sin(state.time * 9 + w.x) * 3;
-    m.box(w.x, 14, w.y, 10, fl, 10, 0, [1, 0.48, 0.1], VICE_WHITE_UV, 1);
-    m.box(w.x + 8, 12, w.y, 8, fl * 0.7, 8, 0, [1, 0.82, 0.24], VICE_WHITE_UV, 1);
+    const fl = 14 + Math.sin(state.time * 9 + w.x) * 5;
+    m.box(w.x, 16, w.y, 14, fl, 14, 0, [1, 0.48, 0.1], VICE_WHITE_UV, 1);
+    m.box(w.x + 8, 14, w.y, 10, fl * 0.7, 10, 0, [1, 0.82, 0.24], VICE_WHITE_UV, 1);
+    m.box(w.x - 6, 34, w.y, 14, 26, 14, 0, [0.22, 0.22, 0.25], VICE_WHITE_UV, 0);
   }
   if (state.race && state.race.active) {
     const cg = StreetRaceCircuit.CIRCUITS[state.race.circuit].gates;

@@ -1,4 +1,4 @@
-// Neon Bay's map: avenues and streets, buildings per block, named places, palms.
+// Neon Bay's map: avenues, streets, buildings, landmarks, palms.
 
 import { AVENUES, ROAD_HALF, STREETS, WALK, WORLD } from './tune.js';
 
@@ -28,12 +28,8 @@ export function buildCity(rng) {
       const y1 = STREETS[row + 1] - ROAD_HALF - WALK - 14;
       const landmark = LANDMARKS.find((place) => place.col === col && place.row === row);
       if (landmark) {
-        const w = Math.min(300, x1 - x0);
-        const h = Math.min(190, y1 - y0);
-        buildings.push({
-          x: x0 + (x1 - x0 - w) / 2, y: y0 + (y1 - y0 - h) / 2, w, h,
-          color: landmark.color, glass: rng.pick(GLASS_COLORS), name: landmark.name, kind: landmark.kind,
-        });
+        const w = Math.min(300, x1 - x0), h = Math.min(190, y1 - y0);
+        buildings.push({ x: x0 + (x1 - x0 - w) / 2, y: y0 + (y1 - y0 - h) / 2, w, h, color: landmark.color, glass: rng.pick(GLASS_COLORS), name: landmark.name, kind: landmark.kind });
         continue;
       }
       const count = rng.int(1, 2);
@@ -104,25 +100,20 @@ export function resolveBuildings(buildings, body) {
   for (const b of buildings) {
     const nearX = Math.max(b.x, Math.min(body.x, b.x + b.w));
     const nearY = Math.max(b.y, Math.min(body.y, b.y + b.h));
-    const dx = body.x - nearX;
-    const dy = body.y - nearY;
+    const dx = body.x - nearX, dy = body.y - nearY;
     const distSq = dx * dx + dy * dy;
     if (distSq >= body.radius * body.radius) continue;
     pushed = true;
     if (distSq > 0.01) {
-      const dist = Math.sqrt(distSq);
-      const push = body.radius - dist;
+      const dist = Math.sqrt(distSq), push = body.radius - dist;
       body.x += (dx / dist) * push;
       body.y += (dy / dist) * push;
     } else {
-      const left = body.x - b.x;
-      const right = b.x + b.w - body.x;
-      const top = body.y - b.y;
-      const bottom = b.y + b.h - body.y;
-      const smallest = Math.min(left, right, top, bottom);
-      if (smallest === left) body.x = b.x - body.radius;
-      else if (smallest === right) body.x = b.x + b.w + body.radius;
-      else if (smallest === top) body.y = b.y - body.radius;
+      const l = body.x - b.x, r = b.x + b.w - body.x, t = body.y - b.y, bo = b.y + b.h - body.y;
+      const m = Math.min(l, r, t, bo);
+      if (m === l) body.x = b.x - body.radius;
+      else if (m === r) body.x = b.x + b.w + body.radius;
+      else if (m === t) body.y = b.y - body.radius;
       else body.y = b.y + b.h + body.radius;
     }
   }
@@ -130,23 +121,14 @@ export function resolveBuildings(buildings, body) {
 }
 
 export function lineBlocked(buildings, x1, y1, x2, y2) {
-  for (const b of buildings) {
-    if (segmentHitsRect(x1, y1, x2, y2, b)) return true;
-  }
+  for (const b of buildings) if (segmentHitsRect(x1, y1, x2, y2, b)) return true;
   return false;
 }
 
 function segmentHitsRect(x1, y1, x2, y2, r) {
   if (x1 >= r.x && x1 <= r.x + r.w && y1 >= r.y && y1 <= r.y + r.h) return true;
-  const edges = [
-    [r.x, r.y, r.x + r.w, r.y],
-    [r.x + r.w, r.y, r.x + r.w, r.y + r.h],
-    [r.x + r.w, r.y + r.h, r.x, r.y + r.h],
-    [r.x, r.y + r.h, r.x, r.y],
-  ];
-  for (const [ax, ay, bx, by] of edges) {
-    if (segmentsCross(x1, y1, x2, y2, ax, ay, bx, by)) return true;
-  }
+  const edges = [[r.x, r.y, r.x + r.w, r.y], [r.x + r.w, r.y, r.x + r.w, r.y + r.h], [r.x + r.w, r.y + r.h, r.x, r.y + r.h], [r.x, r.y + r.h, r.x, r.y]];
+  for (const [ax, ay, bx, by] of edges) if (segmentsCross(x1, y1, x2, y2, ax, ay, bx, by)) return true;
   return false;
 }
 

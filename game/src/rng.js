@@ -1,6 +1,5 @@
-// A small seeded random number generator (mulberry32): the same seed gives the
-// same city and the same traffic, which is what makes the screenshot scenes
-// repeatable. The helpers below are the only randomness the game uses.
+// Seeded RNG (mulberry32): same seed gives the same city and traffic, which is
+// what makes the screenshot scenes repeatable.
 
 export function createRng(seed) {
   let a = seed | 0;
@@ -12,21 +11,9 @@ export function createRng(seed) {
   }
   return {
     next,
-    /** A float in [min, max). */
-    range(min, max) {
-      return min + next() * (max - min);
-    },
-    /** An integer in [min, max] (both ends included). */
-    int(min, max) {
-      return min + Math.floor(next() * (max - min + 1));
-    },
-    /** One element of an array. */
-    pick(list) {
-      return list[Math.floor(next() * list.length)];
-    },
-    /** True with the given probability. */
-    chance(p) {
-      return next() < p;
-    },
+    range(min, max) { return min + next() * (max - min); },
+    int(min, max) { return min + Math.floor(next() * (max - min + 1)); },
+    pick(list) { return list[Math.floor(next() * list.length)]; },
+    chance(p) { return next() < p; },
   };
 }
