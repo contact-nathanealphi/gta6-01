@@ -28,7 +28,7 @@ export class DistrictStandingSystem {
   rep(name) { return this.s.rep[name] || 0; }
   grant(x, y, amount) {
     const d = districtAt(x, y);
-    this.s.rep[d.name] = Math.min(100, this.rep(d.name) + amount);
+    this.s.rep[d.name] = Math.max(0, Math.min(100, this.rep(d.name) + amount));
     return d;
   }
   current() { const p = this.s.player; return districtAt(p.x, p.y); }

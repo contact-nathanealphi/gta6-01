@@ -10,6 +10,7 @@ export const WEAPON_SLOTS_6 = [
 export class WeaponWheelSystem {
   constructor(state) { this.s = state; }
   available(slot) {
+    if (slot < 1 || slot > 6) return false;
     const p = this.s.player, n = WEAPON_SLOTS_6[slot - 1].need;
     return n === 'pistol' ? !!p.pistol : n === 'shotgun' ? p.shotgun > 0 : n === 'rpg' ? p.rpg > 0 : true;
   }

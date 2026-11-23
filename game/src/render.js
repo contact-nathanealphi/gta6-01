@@ -236,7 +236,7 @@ export function createRenderer(canvas) {
     R(14, 14, 250, 190, PALETTE.hudPanel);
     text(`$${s.cash.toLocaleString('en-US')}`, 28, 46, 28, PALETTE.gold, 'left', true);
     R(28, 58, 180, 12, '#333');
-    R(28, 58, 180 * (p.health / PLAYER.health), 12, p.health > 35 ? PALETTE.health : PALETTE.danger);
+    R(28, 58, 180 * Math.max(0, Math.min(1, p.health / PLAYER.health)), 12, p.health > 35 ? PALETTE.health : PALETTE.danger);
     text(`${Math.ceil(p.health)}`, 216, 70, 14, PALETTE.hudText, 'left', true);
     for (let i = 0; i < 5; i += 1) {
       const flash = s.wantedFlash > 0 && i === s.wanted - 1;

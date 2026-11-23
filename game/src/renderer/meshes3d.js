@@ -269,7 +269,9 @@ export function buildViceDynamicGeometry(state, m) {
     m.box(w.x - 6, 34, w.y, 14, 26, 14, 0, [0.22, 0.22, 0.25], VICE_WHITE_UV, 0);
   }
   if (state.race && state.race.active) {
-    const cg = StreetRaceCircuit.CIRCUITS[state.race.circuit].gates;
+    const circ = StreetRaceCircuit.CIRCUITS[state.race.circuit];
+    if (!circ) return m.slice();
+    const cg = circ.gates;
     for (let i = 0; i < cg.length; i += 1) {
       const g = cg[i], col = i === state.race.gate ? [1, 0.18, 0.55] : [0, 0.9, 1];
       for (const s of [-30, 30]) m.box(g[0] + s, 22, g[1], 6, 44, 6, 0, col, VICE_WHITE_UV, 1);

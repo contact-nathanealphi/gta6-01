@@ -23,7 +23,7 @@ const drv = (g, av) => {
 const sedan = (g, x, y) => {
   const p = g.state.player;
   p.x = 830; p.y = 660;
-  const c = g.nearestCar(85);
+  const c = g.nearestCar(85) || g.nearestCar(400);
   if (c) g.enterCar(c);
   const m = g.playerCar();
   if (m) { m.x = x; m.y = y; m.angle = Math.PI / 2; m.speed = 0; }

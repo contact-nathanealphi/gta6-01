@@ -15,6 +15,7 @@ export class PoliceAirSupportSystem {
       h.rotor += dt * 30;
       h.spotX = p.x; h.spotY = p.y;
       if (s.wanted === 0) h.leaving = true;
+      else if (s.wanted >= 3) h.leaving = false;
       if (h.leaving) {
         h.z += dt * 9;
         h.x += (h.x - p.x) * dt * 0.4; h.y += (h.y - p.y) * dt * 0.4;

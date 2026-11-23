@@ -35,8 +35,6 @@ export const CAR_KINDS = {
 
 export const TRAFFIC_COUNT = 22;
 export const PED_COUNT = 30;
-export const DENSE = { cars: 14, peds: 18, radius: 1000, carCap: 34, pedCap: 44 };
-
 export const WANTED = {
   stealOccupied: 2,
   hitPed: 2,

@@ -138,7 +138,7 @@ export function createAudio() {
     isMuted() { return muted; },
     music(on) { if (on) startMusic(); else stopMusic(); },
     station(bass, bpm, wave) {
-      radioLine = bass; radioStep = 60 / bpm / 2; radioWave = wave || 'sawtooth';
+      radioLine = bass; radioStep = 60 / (Number.isFinite(bpm) && bpm > 0 ? bpm : 112) / 2; radioWave = wave || 'sawtooth';
       if (ctx && !muted) { stopMusic(); startMusic(); }
     },
     engine(speed01, driving) {

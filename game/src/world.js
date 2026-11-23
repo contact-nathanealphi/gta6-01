@@ -931,7 +931,7 @@ export function createGame(rng) {
   }
 
   function bustPlayer() {
-    const fine = Math.max(50, Math.floor(state.cash * 0.15));
+    const fine = Math.min(state.cash, Math.max(50, Math.floor(state.cash * 0.15)));
     state.cash -= fine;
     state.wantedPoints = 0;
     state.wanted = 0;
@@ -1054,7 +1054,7 @@ export function createGame(rng) {
 
   function wastePlayer() {
     const s = state;
-    const lost = Math.max(25, Math.floor(s.cash * 0.08));
+    const lost = Math.min(s.cash, Math.max(25, Math.floor(s.cash * 0.08)));
     s.cash -= lost;
     s.wantedPoints = 0;
     s.wanted = 0;

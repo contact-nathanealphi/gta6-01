@@ -7,6 +7,7 @@ export class CrewAbilitySystem {
   }
   use(idx) {
     const s = this.s, p = s.player;
+    if (idx < 0 || idx > 2) return false;
     if (s.crewCd[idx] > 0) { this.say('Crew recharging — ' + Math.ceil(s.crewCd[idx]) + 's', 1.5); return false; }
     if (idx === 0) {
       s.wantedPoints = Math.max(0, s.wantedPoints - 4);

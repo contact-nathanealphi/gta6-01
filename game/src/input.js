@@ -23,7 +23,7 @@ export function createInput(target) {
   });
   window.addEventListener('keyup', (event) => held.delete(HELD[event.code]));
   // A key released while the tab is hidden never sends keyup: let go of everything on blur.
-  window.addEventListener('blur', () => { held.clear(); mouse.down = false; });
+  window.addEventListener('blur', () => { held.clear(); mouse.down = false; presses = 0; digits = 0; });
   const track = (event) => {
     const r = target.getBoundingClientRect();
     mouse.x = event.clientX - r.left;

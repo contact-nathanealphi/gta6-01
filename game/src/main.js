@@ -159,7 +159,7 @@ function runGame() {
   function frame(now) {
     requestAnimationFrame(frame);
     const wheelOpen = input.wheelHeld();
-    accumulator += Math.min((now - last) / 1000, MAX_FRAME) * (wheelOpen ? 0.2 : 1);
+    accumulator += Math.min(Math.max(0, (now - last) / 1000), MAX_FRAME) * (wheelOpen ? 0.2 : 1);
     last = now;
     const presses = input.takePresses();
     if (screen !== SCREEN_PLAY) input.takeDigits();
