@@ -669,9 +669,9 @@ export function createRenderer(canvas) {
   function drawHud(state, ui) {
     const p = state.player;
     // Cash, health and wanted stars, top-left. The panel is tall enough for
-    // the weapon and armor lines below the stars.
+    // the weapon, armor and car-health lines below the stars.
     ctx.fillStyle = PALETTE.hudPanel;
-    ctx.fillRect(14, 14, 250, 140);
+    ctx.fillRect(14, 14, 250, 168);
     text(`$${state.cash.toLocaleString('en-US')}`, 28, 46, 28, PALETTE.gold, 'left', true);
     ctx.fillStyle = '#333';
     ctx.fillRect(28, 58, 180, 12);
@@ -700,6 +700,12 @@ export function createRenderer(canvas) {
         const kmh = Math.round(Math.abs(myCar.speed) * 0.32);
         text(`${kmh} km/h`, 28, 122, 15, PALETTE.hudText, 'left');
         text(myCar.kind === 'patrol' ? 'NBPD Interceptor' : (CAR_KINDS[myCar.kind] ? CAR_KINDS[myCar.kind].label : myCar.kind), 150, 122, 15, PALETTE.hudMuted, 'left');
+        // Car health bar, so the player knows when to find a repair wrench.
+        text('CAR', 28, 168, 13, PALETTE.hudMuted, 'left');
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(72, 158, 160, 9);
+        ctx.fillStyle = myCar.health > 50 ? '#57d977' : myCar.health > 25 ? '#f2c94c' : '#ff4d4d';
+        ctx.fillRect(72, 158, 160 * Math.max(0, myCar.health) / 100, 9);
       }
     }
     drawMinimap(state);

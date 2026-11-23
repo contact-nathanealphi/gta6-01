@@ -635,6 +635,12 @@ export function createGame(rng) {
       const by = car.y - Math.sin(car.angle) * (spec.length / 2);
       state.particles.push({ x: bx, y: by, vx: -Math.cos(car.angle) * 40, vy: -Math.sin(car.angle) * 40, life: 0.5, maxLife: 0.5, color: '#9a9a9a', size: 3 });
     }
+    // A damaged car (health under 40) smokes from the hood.
+    if (car.health < 40 && !car.smoked && rng.chance(0.25)) {
+      const fx = car.x + Math.cos(car.angle) * (spec.length / 2);
+      const fy = car.y + Math.sin(car.angle) * (spec.length / 2);
+      state.particles.push({ x: fx, y: fy, vx: 0, vy: -30, life: 0.7, maxLife: 0.7, color: '#666666', size: 4 });
+    }
     car.speed -= car.speed * 0.12 * dt;
     car.speed = Math.max(-spec.topSpeed * 0.4, Math.min(spec.topSpeed, car.speed));
     const steer = (input.left ? -1 : 0) + (input.right ? 1 : 0);

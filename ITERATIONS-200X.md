@@ -133,3 +133,6 @@ TERUS hingga tercapai. Setiap iterasi = perubahan nyata + uji.**
 | 108 | Tuning: wanted coolDelay 15→13 dtk (panas lebih cepat dingin) | headless test | KEEP |
 | 109 | Tuning: player walk 245→250, run 365→375 (jalan kaki lebih lincah) | headless test | KEEP |
 | 110 | Tuning batch terverifikasi: semua misi tetap selesai, soak stabil | headless test ALL PASS | KEEP |
+| 111 | HUD: bar kesehatan mobil (CAR) di bawah speedometer saat mengemudi | headless test + screenshot 2-drive | KEEP |
+| 112 | Panel HUD dipertinggi 140→168 agar bar CAR muat | screenshot 2-drive | KEEP |
+| 113 | Asap dari kap mobil saat HP mobil < 40 (tanda butuh repair) | headless test | KEEP |
